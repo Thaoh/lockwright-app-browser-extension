@@ -15,7 +15,8 @@ export default {
   testPathIgnorePatterns: ['/node_modules/', '/.yalc/', '/packages/'],
   // pnpm stores packages under node_modules/.pnpm/<id>/node_modules/<pkg>.
   // Allowlist must also match that nested layout or ESM deps won't be transformed.
+  // Some @tetherto git packages publish unscoped folder names (pearpass-*, pear-apps-*).
   transformIgnorePatterns: [
-    'node_modules/(?!(?:\\.pnpm/[^/]+/node_modules/)?(?:htm|react-strict-dom|@tetherto)/)'
+    'node_modules/(?!(?:\\.pnpm/[^/]+/node_modules/)?(?:htm|react-strict-dom|@tetherto/[^/]+|pearpass-[^/]+|pear-apps-[^/]+)/)'
   ]
 }
