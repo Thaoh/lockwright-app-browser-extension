@@ -4,13 +4,31 @@
   "version": "2.2.0",
   "type": "module",
   "license": "Apache-2.0",
+  "packageManager": "pnpm@11.10.0",
+  "engines": {
+    "node": ">=22.12.0",
+    "pnpm": ">=11.10.0"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=22.12.0",
+      "onFail": "error"
+    },
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.10.0",
+      "onFail": "error"
+    }
+  },
   "scripts": {
+    "preinstall": "node scripts/ensure-pnpm.mjs",
     "dev": "vite",
     "build:main": "vite build --config vite.config.main.js",
     "build:content": "vite build --config vite.config.content.js",
     "build:background": "vite build --config vite.config.background.js",
     "build:inject": "vite build --config vite.config.inject.js",
-    "build": "npm run lingui:extract && npm run lingui:compile && npm run build:main && npm run build:content && npm run build:background && npm run build:inject",
+    "build": "pnpm run lingui:extract && pnpm run lingui:compile && pnpm run build:main && pnpm run build:content && pnpm run build:background && pnpm run build:inject",
     "build:watch:main": "vite build --watch --config vite.config.main.js --mode development",
     "build:watch:content": "vite build --watch --config vite.config.content.js --mode development",
     "build:watch:background": "vite build --watch --config vite.config.background.js --mode development",
@@ -74,6 +92,7 @@
     "@vitejs/plugin-react": "4.3.4",
     "autoprefixer": "10.4.27",
     "babel-jest": "29.7.0",
+    "eslint": "9.39.4",
     "husky": "9.1.7",
     "jest": "29.7.0",
     "jest-environment-jsdom": "29.7.0",
@@ -85,14 +104,5 @@
     "typescript": "5.9.3",
     "vite": "6.3.1",
     "vite-plugin-babel": "1.5.1"
-  },
-  "overrides": {
-    "react-native-windows": {
-      "react": "$react"
-    },
-    "react-native": {
-      ".": "0.79.5",
-      "@types/react": "18.3.0"
-    }
   }
 }

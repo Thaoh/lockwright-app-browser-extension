@@ -15,8 +15,8 @@ Newer contributors are encouraged to start small and simple. Tests - both failin
 
 - Keep pull requests focused on a single feature or bug fix
 - Provide a clear description of changes
-- Ensure code passes linting: `npm run lint`
-- Ensure tests are passing: `npm test`
+- Ensure code passes linting: `pnpm run lint`
+- Ensure tests are passing: `pnpm test`
   - except, of course, any added failing tests
 
 

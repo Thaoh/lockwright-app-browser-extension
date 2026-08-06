@@ -6,7 +6,7 @@
 //   PEARPASS_FLAVOR=nightly node scripts/apply-flavor.mjs
 //   PEARPASS_FLAVOR=release node scripts/apply-flavor.mjs   (no-op)
 //
-// Do not run `npm test` against a tree this script has touched — the
+// Do not run `pnpm test` against a tree this script has touched — the
 // firefoxExtensionId test compares public/manifest.json's gecko.id against
 // FIREFOX_EXTENSION_ID from @tetherto/pearpass-lib-constants and will fail
 // on a flavored manifest.

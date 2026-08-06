@@ -55,11 +55,15 @@ git clone git@github.com:tetherto/pearpass-app-browser-extension.git
 # 2. Go to the cloned directory
 cd pearpass-app-browser-extension
 
-# 3. Install dependencies
-npm install
+# 3. Enable pnpm (Corepack ships with Node)
+corepack enable
+corepack prepare pnpm@11.10.0 --activate
 
-# 4. Build the extension
-npm run build
+# 4. Install dependencies (npm/yarn are blocked; lifecycle scripts are allowlisted)
+NPM_CONFIG_LEGACY_PEER_DEPS=true pnpm install
+
+# 5. Build the extension
+pnpm run build
 ```
 
 This creates a `dist/` directory containing the packed extension files.
@@ -67,7 +71,7 @@ This creates a `dist/` directory containing the packed extension files.
 For development with hot-reloading:
 
 ```bash
-npm run build:watch
+pnpm run build:watch
 ```
 
 This will watch for file changes and rebuild automatically.
@@ -93,7 +97,7 @@ Visit the official PearPass documentation for step-by-step guides on setup, vaul
 This project uses Jest for unit and integration testing.
 
 ```bash
-npm test
+pnpm test
 ```
 
 ---
