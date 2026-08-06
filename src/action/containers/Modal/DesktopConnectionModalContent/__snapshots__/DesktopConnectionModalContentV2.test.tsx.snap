@@ -15,9 +15,18 @@ exports[`DesktopConnectionModalContent matches snapshot 1`] = `
       type="button"
     />
     <div>
-      <p>
-        The browser extension needs the PearPass desktop app to be open and running to access your secure vaults.
-      </p>
+      <div
+        class="flex flex-col gap-[var(--spacing12)]"
+      >
+        <p>
+          The browser extension needs the PearPass desktop app to be open and running to access your secure vaults.
+        </p>
+        <p
+          data-testid="desktop-connection-modal-tips"
+        >
+          Firefox / Zen: use the Firefox build of this extension and keep the desktop app installed so the native messaging host is registered. Flatpak Zen needs permission to read the host native-messaging paths.
+        </p>
+      </div>
     </div>
     <footer>
       <div

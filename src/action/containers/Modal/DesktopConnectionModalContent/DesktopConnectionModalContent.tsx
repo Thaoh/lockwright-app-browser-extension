@@ -11,7 +11,9 @@ const TEST_IDS = {
   root: 'desktop-connection-modal',
   closeButton: 'desktop-connection-modal-close',
   discardButton: 'desktop-connection-modal-discard',
-  retryButton: 'desktop-connection-modal-retry'
+  retryButton: 'desktop-connection-modal-retry',
+  detail: 'desktop-connection-modal-detail',
+  tips: 'desktop-connection-modal-tips'
 } as const
 
 type RetryResult = { success?: boolean; message?: string } | undefined | void
@@ -19,11 +21,14 @@ type RetryResult = { success?: boolean; message?: string } | undefined | void
 interface DesktopConnectionModalContentProps {
   onRetry?: () => Promise<RetryResult>
   onClose?: () => void
+  /** Resolved user-facing error (e.g. host-not-found / Zen guidance). */
+  detail?: string
 }
 
 export const DesktopConnectionModalContent = ({
   onRetry,
-  onClose
+  onClose,
+  detail
 }: DesktopConnectionModalContentProps) => {
   const { theme } = useTheme()
   const { colors } = theme
@@ -90,12 +95,35 @@ export const DesktopConnectionModalContent = ({
         </div>
       }
     >
-      <Text variant="caption" color={colors.colorTextSecondary}>
-        <Trans>
-          The browser extension needs the PearPass desktop app to be open and
-          running to access your secure vaults.
-        </Trans>
-      </Text>
+      <div className="flex flex-col gap-[var(--spacing12)]">
+        <Text variant="caption" color={colors.colorTextSecondary}>
+          <Trans>
+            The browser extension needs the PearPass desktop app to be open and
+            running to access your secure vaults.
+          </Trans>
+        </Text>
+        {detail ? (
+          <Text
+            variant="caption"
+            color={colors.colorTextSecondary}
+            data-testid={TEST_IDS.detail}
+          >
+            {detail}
+          </Text>
+        ) : null}
+        <Text
+          variant="caption"
+          color={colors.colorTextSecondary}
+          data-testid={TEST_IDS.tips}
+        >
+          <Trans>
+            Firefox / Zen: use the Firefox build of this extension and keep the
+            desktop app installed so the native messaging host is registered.
+            Flatpak Zen needs permission to read the host native-messaging
+            paths.
+          </Trans>
+        </Text>
+      </div>
     </Dialog>
   )
 }

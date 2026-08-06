@@ -92,6 +92,27 @@ describe('openOnboardingPage', () => {
     expect(chrome.tabs.reload).not.toHaveBeenCalled()
   })
 
+  it('opens onboarding when there is no selected tab (Zen empty workspace)', async () => {
+    global.chrome = {
+      runtime: {
+        getURL: (path: string) => `chrome-extension://mock-id/${path}`
+      },
+      tabs: {
+        query: jest.fn().mockResolvedValue([]),
+        update: jest.fn().mockResolvedValue({}),
+        create: jest.fn().mockResolvedValue({}),
+        reload: jest.fn().mockResolvedValue(undefined)
+      },
+      windows: {
+        update: jest.fn().mockResolvedValue({})
+      }
+    } as unknown as typeof chrome
+
+    await openOnboardingPage()
+
+    expect(chrome.tabs.create).toHaveBeenCalledWith({ url: ONBOARDING_URL })
+  })
+
   it('reloads and focuses existing tab but skips window focus when windowId is missing', async () => {
     const existingTab = { id: 42, url: ONBOARDING_URL }
 

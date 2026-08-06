@@ -24,6 +24,7 @@ import {
 } from '../shared/constants/nativeMessaging'
 import { base64Encode, base64Decode } from '../shared/utils/base64'
 import { logger } from '../shared/utils/logger'
+import { resolveNativeHostUserMessage } from '../shared/utils/nativeHostErrors'
 import { secureZero } from '../shared/utils/secureZero'
 
 const concatUint8Arrays = (arrays) => {
@@ -145,7 +146,7 @@ export class SecureChannelClient {
         )
         return {
           state: BLOCKING_STATE.CONNECTION,
-          error: availabilityStatus.message
+          error: resolveNativeHostUserMessage(availabilityStatus.message)
         }
       }
 
@@ -187,9 +188,12 @@ export class SecureChannelClient {
       await this.clearSession('DesktopNotPaired')
       return { state: BLOCKING_STATE.PAIRING, error: 'Desktop unpaired' }
     } catch (e) {
-      // Desktop unreachable or other error
+      // Desktop unreachable, host missing, or other error
       logger.log('[getBlockingState] Error:', e?.message)
-      return { state: BLOCKING_STATE.CONNECTION, error: e?.message }
+      return {
+        state: BLOCKING_STATE.CONNECTION,
+        error: resolveNativeHostUserMessage(e?.message)
+      }
     }
   }
 

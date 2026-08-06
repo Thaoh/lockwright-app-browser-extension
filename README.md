@@ -13,6 +13,7 @@
 - [Introduction](#introduction)
 - [Features](#features)
 - [Installation](#installation)
+- [Native messaging (desktop bridge) — Firefox / Zen / Flatpak](#native-messaging-desktop-bridge--firefox--zen--flatpak)
 - [Usage Examples](#usage-examples)
 - [Testing](#testing)
 - [Dependencies](#dependencies)
@@ -62,11 +63,16 @@ corepack prepare pnpm@11.10.0 --activate
 # 4. Install dependencies (npm/yarn are blocked; lifecycle scripts are allowlisted)
 NPM_CONFIG_LEGACY_PEER_DEPS=true pnpm install
 
-# 5. Build the extension
+# 5. Build the extension (Chrome)
 pnpm run build
+
+# Or build a Firefox package (dist-firefox/ + dist-firefox.zip)
+pnpm run build:firefox
 ```
 
-This creates a `dist/` directory containing the packed extension files.
+`pnpm run build` creates a `dist/` directory for Chromium browsers.
+
+`pnpm run build:firefox` runs the Chromium build, then packages a Gecko-ready copy into `dist-firefox/` and `dist-firefox.zip` (Chrome-only manifest fields and `offscreen.*` assets are stripped).
 
 For development with hot-reloading:
 
@@ -76,11 +82,45 @@ pnpm run build:watch
 
 This will watch for file changes and rebuild automatically.
 
-### Load the extension in your browser
+### Load the extension in Chrome
 
-1. Open your browser's extension management page (e.g. `chrome://extensions` in Chrome).
+1. Open `chrome://extensions`.
 2. Enable **Developer mode**.
 3. Click **Load unpacked** and select the `dist/` directory.
+
+### Load the extension in Firefox
+
+1. Run `pnpm run build:firefox`.
+2. Open `about:debugging#/runtime/this-firefox`.
+3. Click **Load Temporary Add-on…** and select `dist-firefox/manifest.json` (or `dist-firefox.zip`).
+
+### Load the extension in Zen Browser
+
+Zen is a Firefox fork. Use the **Firefox** package (`pnpm run build:firefox`), not the Chromium `dist/`.
+
+1. Run `pnpm run build:firefox`.
+2. Open `about:debugging#/runtime/this-firefox` (same as Firefox).
+3. Click **Load Temporary Add-on…** and select `dist-firefox/manifest.json`.
+
+### Native messaging (desktop bridge) — Firefox / Zen / Flatpak
+
+The extension talks to the PearPass desktop app through a native messaging host. If the host is missing, the popup shows a connection error with Firefox/Zen guidance.
+
+**Typical host manifest locations (Linux):**
+
+| Browser | Path |
+| --- | --- |
+| Firefox / Zen (often) | `~/.mozilla/native-messaging-hosts/` |
+| Zen-specific (if used) | `~/.zen/native-messaging-hosts/` |
+| Flatpak Zen | Host must also be readable inside the sandbox (e.g. `~/.var/app/app.zen_browser.zen/…` or a Flatpak filesystem override) |
+
+**macOS:** `~/Library/Application Support/Mozilla/NativeMessagingHosts/` (Zen may also use a Zen-specific Application Support folder).
+
+**Windows:** Mozilla native messaging registry keys (same family as Firefox).
+
+The PearPass desktop installer currently registers Mozilla-standard paths. Zen usually picks those up; if it does not, dual-write into Zen-specific directories is a desktop-app follow-up. For Flatpak Zen, grant the app access to the host file (Flatseal → filesystem, or `flatpak override`) and ensure the webextension native-messaging permission is allowed for the PearPass host id.
+
+Always keep the desktop app running with browser integration enabled when using the extension.
 
 ---
 

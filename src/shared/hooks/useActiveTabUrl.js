@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 
+import { queryActiveTab } from '../utils/tabs'
+
 /**
  * Hook that tracks the URL of the currently active browser tab.
  * It automatically updates when the tab's URL changes or when the user switches tabs.
@@ -16,8 +18,8 @@ export const useActiveTabUrl = () => {
   const updateUrl = useCallback(() => {
     setLoading(true)
 
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const tab = tabs[0]
+    void (async () => {
+      const tab = await queryActiveTab()
 
       if (!tab) {
         setUrl('')
@@ -29,14 +31,13 @@ export const useActiveTabUrl = () => {
         setUrl(tab.url)
       } else if (tab.pendingUrl) {
         setUrl(tab.pendingUrl)
-      }
-      // URL restricted (chrome:// pages, etc.)
-      else {
+      } else {
+        // URL restricted (chrome:// pages, etc.) or Zen empty workspace
         setUrl('')
       }
 
       setLoading(false)
-    })
+    })()
   }, [])
 
   useEffect(() => {

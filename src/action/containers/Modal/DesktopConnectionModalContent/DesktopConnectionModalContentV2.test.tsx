@@ -24,7 +24,13 @@ jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
   useTheme: () => ({
     theme: { colors: { colorTextSecondary: '#bdc3ac' } }
   }),
-  Text: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
+  Text: ({
+    children,
+    'data-testid': dataTestId
+  }: {
+    children: React.ReactNode
+    'data-testid'?: string
+  }) => <p data-testid={dataTestId}>{children}</p>,
   Button: ({
     children,
     onClick,
@@ -101,6 +107,18 @@ describe('DesktopConnectionModalContent', () => {
         /The browser extension needs the PearPass desktop app to be open and running/
       )
     ).toBeInTheDocument()
+    expect(
+      screen.getByTestId('desktop-connection-modal-tips')
+    ).toBeInTheDocument()
+  })
+
+  it('shows detail when provided (host-not-found guidance)', () => {
+    render(
+      <DesktopConnectionModalContent detail="Native messaging host not found." />
+    )
+    expect(
+      screen.getByTestId('desktop-connection-modal-detail')
+    ).toHaveTextContent('Native messaging host not found.')
   })
 
   it('disables close-on-outside-click', () => {

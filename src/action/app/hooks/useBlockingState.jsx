@@ -66,12 +66,13 @@ export const useBlockingState = () => {
   }, [closeAllModals, navigate])
 
   const showConnectionModal = useCallback(
-    (onRetry) => {
+    (onRetry, detail) => {
       closeAllModals()
       setModal(
         <DesktopConnectionModalContent
           onRetry={onRetry}
           onClose={closeAllModals}
+          detail={detail}
         />,
         { fullScreen: false, closeable: true }
       )
@@ -104,7 +105,7 @@ export const useBlockingState = () => {
           showPairingModal()
           break
         case BLOCKING_STATE.CONNECTION:
-          showConnectionModal(handleConnectionRetry)
+          showConnectionModal(handleConnectionRetry, state.error)
           break
       }
     } catch (error) {

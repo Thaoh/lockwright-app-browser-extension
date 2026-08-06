@@ -18,6 +18,7 @@ import {
   DESKTOP_APP_STATUS
 } from '../shared/constants/nativeMessaging'
 import { logger } from '../shared/utils/logger'
+import { isNativeHostNotFoundError } from '../shared/utils/nativeHostErrors'
 import { runtime } from '../shared/utils/runtime'
 
 const createError = (message) => new Error(message)
@@ -297,8 +298,9 @@ const getErrorCode = (errorMessage) => {
     return ERROR_CODES.NO_SESSION
   }
 
-  // Check for disconnection errors
+  // Check for disconnection / missing native-host errors
   if (
+    isNativeHostNotFoundError(errorMessage) ||
     errorMessage.includes(
       DISCONNECTION_ERROR_MESSAGES.NATIVE_HOST_DISCONNECTED
     ) ||

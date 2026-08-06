@@ -6,15 +6,13 @@ import { Trans } from '@lingui/react/macro'
 import { Title, Text, useTheme } from '@tetherto/pearpass-lib-ui-kit'
 
 import { useDesktopPairing } from '../../../../hooks/useDesktopPairing'
+import { queryActiveTab, queryTabsByUrl } from '../../../../shared/utils/tabs'
 import { MasterPasswordPrompt } from '../../MasterPasswordPrompt/MasterPasswordPrompt'
 
 export async function openOnboardingPage() {
   const onboardingUrl = chrome.runtime.getURL('onboarding.html')
 
-  const [currentTab] = await chrome.tabs.query({
-    active: true,
-    currentWindow: true
-  })
+  const currentTab = await queryActiveTab()
 
   const isCurrentTabOnboarding = currentTab?.url?.includes('onboarding.html')
 
@@ -25,9 +23,9 @@ export async function openOnboardingPage() {
     return
   }
 
-  const allExtensionTabs = await chrome.tabs.query({
-    url: chrome.runtime.getURL('*')
-  })
+  // Zen/Firefox may have no selected tab; url filters can also fail — helpers
+  // fall back safely so we still open/focus onboarding.
+  const allExtensionTabs = await queryTabsByUrl(chrome.runtime.getURL('*'))
 
   const existingOnboardingTab = allExtensionTabs.find((t) =>
     t.url?.includes('onboarding.html')

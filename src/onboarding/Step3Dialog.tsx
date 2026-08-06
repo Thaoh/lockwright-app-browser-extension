@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Trans } from '@lingui/react/macro'
 import {
   Button,
@@ -10,22 +10,51 @@ import {
 import { DoneAll } from '@tetherto/pearpass-lib-ui-kit/icons'
 import { ONBOARDING_ICON_SIZE } from './constants'
 
-export const Step3Dialog = () => {
-  const { theme } = useTheme()
-  const accentColor = theme.colors.colorLinkText
-
-  const handleNext = () => {
+async function tryOpenExtensionPopup(): Promise<boolean> {
+  try {
     if (
       typeof chrome !== 'undefined' &&
       chrome.action &&
-      chrome.action.openPopup
+      typeof chrome.action.openPopup === 'function'
     ) {
-      chrome.action.openPopup()
+      await chrome.action.openPopup()
+      return true
     }
+  } catch {
+    // Firefox/Zen often reject openPopup outside a restricted user-gesture context
+  }
+  return false
+}
+
+export const Step3Dialog = () => {
+  const { theme } = useTheme()
+  const accentColor = theme.colors.colorLinkText
+  const [showToolbarHint, setShowToolbarHint] = useState(false)
+
+  const handleNext = () => {
+    void (async () => {
+      const opened = await tryOpenExtensionPopup()
+      if (!opened) {
+        setShowToolbarHint(true)
+      }
+    })()
   }
 
   const footer = (
-    <div className="flex w-full items-center justify-end">
+    <div className="flex w-full flex-col items-end gap-[var(--spacing8)]">
+      {showToolbarHint ? (
+        <Text
+          as="p"
+          variant="caption"
+          color={theme.colors.colorTextSecondary}
+          data-testid="onboarding-step3-toolbar-hint"
+        >
+          <Trans>
+            Click the PearPass icon in your browser toolbar to open the
+            extension.
+          </Trans>
+        </Text>
+      ) : null}
       <Button
         variant="primary"
         size="medium"

@@ -90,6 +90,8 @@ export const AVAILABILITY_ERROR_MESSAGES = {
   INTEGRATION_DISABLED:
     'Unable to connect to desktop app. Please ensure the PearPass desktop app is running and browser extension integration is enabled in Privacy settings.',
   CONNECTING: 'Connecting to desktop app. Please wait...',
+  HOST_NOT_FOUND:
+    'Native messaging host not found. Start the PearPass desktop app with browser integration enabled. On Firefox or Zen, ensure the host is installed under Mozilla native-messaging paths (see README → Firefox / Zen). Flatpak Zen needs host filesystem access.',
   DEFAULT:
     'Unable to connect to desktop app. Please ensure the PearPass desktop app is running.'
 }

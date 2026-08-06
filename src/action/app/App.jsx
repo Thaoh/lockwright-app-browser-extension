@@ -103,7 +103,10 @@ export const App = () => {
 
   const containerStyle = {
     ...heightStyle,
-    width: `${windowSize.width}px`,
+    // Cap to viewport so Zen/Firefox HiDPI panel scaling cannot spill the UI
+    width: `min(${windowSize.width}px, 100vw)`,
+    maxHeight: '100vh',
+    overflow: 'auto',
     padding: '4px',
     border: `1px solid ${theme.colors.colorBorderTertiary}`,
     borderRadius: `${rawTokens.radius8}px`,
