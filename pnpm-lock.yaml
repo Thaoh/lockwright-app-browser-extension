@@ -287,6 +287,9 @@ importers:
       react-redux:
         specifier: 9.2.0
         version: 9.2.0(@types/react@19.0.0)(react@19.1.0)(redux@5.0.1)
+      react-strict-dom:
+        specifier: 0.0.55
+        version: 0.0.55(postcss@8.5.8)(react-dom@19.1.0(react@19.1.0))(react-native@0.79.5(@babel/core@7.26.10(supports-color@8.1.1))(@types/react@19.0.0)(react@19.1.0)(supports-color@8.1.1))(react@19.1.0)(supports-color@8.1.1)
       styled-components:
         specifier: 6.1.19
         version: 6.1.19(react-dom@19.1.0(react@19.1.0))(react@19.1.0)

@@ -1,18 +1,31 @@
 const path = require('node:path')
+const fs = require('node:fs')
 
 const dev = process.env.NODE_ENV !== 'production'
 const isTest = process.env.NODE_ENV === 'test'
 
-const resolvePaths = [
-  __dirname,
-  path.resolve(
+function getReactStrictDomResolvePaths() {
+  const paths = [
     __dirname,
-    'node_modules/@tetherto/pearpass-lib-ui-kit/node_modules'
-  )
-]
+    path.resolve(__dirname, 'node_modules/@tetherto/pearpass-lib-ui-kit/node_modules'),
+    path.resolve(__dirname, 'node_modules/.pnpm/node_modules')
+  ]
+
+  try {
+    const kitReal = fs.realpathSync(
+      path.resolve(__dirname, 'node_modules/@tetherto/pearpass-lib-ui-kit')
+    )
+    // pnpm: <store>/node_modules/@tetherto/<pkg> → sibling deps live in <store>/node_modules
+    paths.push(path.resolve(kitReal, '../..'))
+  } catch {
+    // ui-kit not installed yet
+  }
+
+  return paths
+}
 
 const rsdBabelPreset = require.resolve('react-strict-dom/babel-preset', {
-  paths: resolvePaths
+  paths: getReactStrictDomResolvePaths()
 })
 
 module.exports = {
