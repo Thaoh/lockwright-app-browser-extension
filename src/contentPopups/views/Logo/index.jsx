@@ -15,7 +15,12 @@ export const Logo = () => {
 
   const { filteredRecords, isInitialized, isLoading } = useFilteredRecords()
 
-  const count = filteredRecords?.length || 0
+  const isOtpFillMode = routerState?.fillMode === 'otp'
+  const count =
+    (isOtpFillMode
+      ? filteredRecords?.filter((record) => Boolean(record?.otpPublic))
+      : filteredRecords
+    )?.length || 0
   const isReady = isInitialized && !isLoading
   const shouldShowLogo = isReady && count > 0
 

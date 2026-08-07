@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { CreditCard } from '@tetherto/pearpass-lib-ui-kit/icons'
-import { RECORD_TYPES, useVault } from '@tetherto/pearpass-lib-vault'
+import {
+  generateOtpCodesByIds,
+  RECORD_TYPES,
+  useVault
+} from '@tetherto/pearpass-lib-vault'
 
 import { isPasswordAutofillRecord } from './isPasswordAutofillRecord'
 import { PopupCard } from '../../../shared/components/PopupCard'
@@ -74,10 +78,18 @@ export const Autofill = () => {
     })
   }, [filteredRecords, passkeyRequest])
 
-  const regularLogins = useMemo(
-    () => (filteredRecords || []).filter(isPasswordAutofillRecord),
-    [filteredRecords]
-  )
+  const isOtpFillMode = routerState?.fillMode === 'otp'
+
+  const regularLogins = useMemo(() => {
+    const records = (filteredRecords || []).filter(isPasswordAutofillRecord)
+
+    if (!isOtpFillMode) {
+      return records
+    }
+
+    // Prefer logins that have OTP configured for this site
+    return records.filter((record) => Boolean(record?.otpPublic))
+  }, [filteredRecords, isOtpFillMode])
 
   useEffect(() => {
     if (!popupRef.current) return
@@ -102,7 +114,38 @@ export const Autofill = () => {
     regularLogins.length
   ])
 
-  const handleAutofillLogin = (record) => {
+  const handleAutofillLogin = async (record) => {
+    if (isOtpFillMode) {
+      let otpCode = record?.otpPublic?.currentCode ?? null
+
+      if (!otpCode && record?.id) {
+        try {
+          const results = await generateOtpCodesByIds([record.id])
+          otpCode = results?.[0]?.code ?? null
+        } catch (error) {
+          logger.error('Failed to generate OTP code for autofill:', error)
+          return
+        }
+      }
+
+      if (!otpCode) {
+        return
+      }
+
+      window.parent.postMessage(
+        {
+          type: 'autofillLogin',
+          data: {
+            iframeId: routerState?.iframeId,
+            iframeType: routerState?.iframeType,
+            otpCode
+          }
+        },
+        '*'
+      )
+      return
+    }
+
     window.parent.postMessage(
       {
         type: 'autofillLogin',
