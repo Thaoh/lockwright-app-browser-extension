@@ -46,6 +46,12 @@ PearPass is also available on [desktop](https://github.com/tetherto/pearpass-app
 
 ## Installation
 
+This project uses [pnpm](https://pnpm.io/) (`packageManager` is pinned in `package.json`). Enable Corepack once if needed:
+
+```bash
+corepack enable
+```
+
 ### Steps
 
 ```bash
@@ -56,10 +62,12 @@ git clone git@github.com:tetherto/pearpass-app-browser-extension.git
 cd pearpass-app-browser-extension
 
 # 3. Install dependencies
-npm install
+#    Cold installs of git+https @tetherto packages run nested `npm install` during prepare;
+#    if that fails on peer deps, set: npm_config_legacy_peer_deps=true
+pnpm install
 
 # 4. Build the extension
-npm run build
+pnpm run build
 ```
 
 This creates a `dist/` directory containing the packed extension files.
@@ -67,10 +75,16 @@ This creates a `dist/` directory containing the packed extension files.
 For development with hot-reloading:
 
 ```bash
-npm run build:watch
+pnpm run build:watch
 ```
 
 This will watch for file changes and rebuild automatically.
+
+On Windows PowerShell, for a cold install if git-dep prepare fails on peers:
+
+```powershell
+$env:npm_config_legacy_peer_deps='true'; pnpm install
+```
 
 ### Load the extension in your browser
 
@@ -93,7 +107,7 @@ Visit the official PearPass documentation for step-by-step guides on setup, vaul
 This project uses Jest for unit and integration testing.
 
 ```bash
-npm test
+pnpm test
 ```
 
 ---

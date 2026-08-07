@@ -4,13 +4,14 @@
   "version": "2.2.0",
   "type": "module",
   "license": "Apache-2.0",
+  "packageManager": "pnpm@11.18.0",
   "scripts": {
     "dev": "vite",
     "build:main": "vite build --config vite.config.main.js",
     "build:content": "vite build --config vite.config.content.js",
     "build:background": "vite build --config vite.config.background.js",
     "build:inject": "vite build --config vite.config.inject.js",
-    "build": "npm run lingui:extract && npm run lingui:compile && npm run build:main && npm run build:content && npm run build:background && npm run build:inject",
+    "build": "pnpm run lingui:extract && pnpm run lingui:compile && pnpm run build:main && pnpm run build:content && pnpm run build:background && pnpm run build:inject",
     "build:watch:main": "vite build --watch --config vite.config.main.js --mode development",
     "build:watch:content": "vite build --watch --config vite.config.content.js --mode development",
     "build:watch:background": "vite build --watch --config vite.config.background.js --mode development",
@@ -53,7 +54,8 @@
     "react-redux": "9.2.0",
     "styled-components": "6.1.19",
     "tailwind-merge": "3.3.0",
-    "tailwindcss": "4.1.4"
+    "tailwindcss": "4.1.4",
+    "tldts": "^7.4.10"
   },
   "devDependencies": {
     "@babel/core": "7.26.10",
@@ -85,14 +87,5 @@
     "typescript": "5.9.3",
     "vite": "6.3.1",
     "vite-plugin-babel": "1.5.1"
-  },
-  "overrides": {
-    "react-native-windows": {
-      "react": "$react"
-    },
-    "react-native": {
-      ".": "0.79.5",
-      "@types/react": "18.3.0"
-    }
   }
 }
