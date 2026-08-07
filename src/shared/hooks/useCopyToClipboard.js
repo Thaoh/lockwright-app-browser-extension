@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react'
 
 import { t } from '@lingui/core/macro'
-import { CLIPBOARD_CLEAR_TIMEOUT } from '@tetherto/pearpass-lib-constants'
+import { DEFAULT_CLIPBOARD_CLEAR_TIMEOUT } from '@tetherto/pearpass-lib-constants'
 import { Check } from '@tetherto/pearpass-lib-ui-kit/icons'
 
 import { MESSAGES } from '../../background/constants'
@@ -70,13 +70,13 @@ export const useCopyToClipboard = ({ onCopy } = {}) => {
           if (typeof chrome !== 'undefined') {
             chrome?.runtime?.sendMessage?.({
               type: SCHEDULE_CLIPBOARD_CLEAR,
-              delayMs: CLIPBOARD_CLEAR_TIMEOUT
+              delayMs: DEFAULT_CLIPBOARD_CLEAR_TIMEOUT
             })
           }
         } catch {
           setTimeout(() => {
             navigator?.clipboard?.writeText('')
-          }, CLIPBOARD_CLEAR_TIMEOUT)
+          }, DEFAULT_CLIPBOARD_CLEAR_TIMEOUT)
         }
 
         if (timeoutRef.current) {
