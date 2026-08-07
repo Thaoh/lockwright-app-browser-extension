@@ -50,7 +50,9 @@ export const isOtpField = (element) => {
     return false
   }
 
-  const autocomplete = (element.getAttribute('autocomplete') || '').toLowerCase()
+  const autocomplete = (
+    element.getAttribute('autocomplete') || ''
+  ).toLowerCase()
   if (
     autocomplete === 'one-time-code' ||
     autocomplete.split(/\s+/).includes('one-time-code')
