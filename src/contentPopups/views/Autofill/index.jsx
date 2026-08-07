@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { CreditCard } from '@tetherto/pearpass-lib-ui-kit/icons'
 import { RECORD_TYPES, useVault } from '@tetherto/pearpass-lib-vault'
 
+import { isPasswordAutofillRecord } from './isPasswordAutofillRecord'
 import { PopupCard } from '../../../shared/components/PopupCard'
 import { RecordItem } from '../../../shared/components/RecordItem'
 import { useRouter } from '../../../shared/context/RouterContext'
@@ -74,10 +75,7 @@ export const Autofill = () => {
   }, [filteredRecords, passkeyRequest])
 
   const regularLogins = useMemo(
-    () =>
-      (filteredRecords || []).filter(
-        (r) => !(r.type === RECORD_TYPES.LOGIN && r.data?.credential)
-      ),
+    () => (filteredRecords || []).filter(isPasswordAutofillRecord),
     [filteredRecords]
   )
 
@@ -105,10 +103,6 @@ export const Autofill = () => {
   ])
 
   const handleAutofillLogin = (record) => {
-    const targetOrigin = document.referrer
-      ? new URL(document.referrer).origin
-      : '*'
-
     window.parent.postMessage(
       {
         type: 'autofillLogin',
@@ -119,7 +113,7 @@ export const Autofill = () => {
           password: record?.data?.password
         }
       },
-      targetOrigin
+      '*'
     )
   }
 
@@ -199,20 +193,12 @@ export const Autofill = () => {
     )
   }
 
-  const handleAutoFill = (record) => {
-    const isPasskey =
-      record.type === RECORD_TYPES.LOGIN && record.data?.credential
-
-    if (isPasskey) {
-      handleAutofillPasskey(record)
-      return
-    }
-
+  const handlePasswordListFill = (record) => {
     if (routerState.recordType === RECORD_TYPES.IDENTITY) {
       handleAutofillIdentity(record)
     } else if (routerState.recordType === RECORD_TYPES.CREDIT_CARD) {
       handleAutofillCreditCard(record)
-    } else if (routerState.recordType === RECORD_TYPES.LOGIN) {
+    } else {
       handleAutofillLogin(record)
     }
   }
@@ -228,7 +214,7 @@ export const Autofill = () => {
 
   const isCreditCard = routerState.recordType === RECORD_TYPES.CREDIT_CARD
 
-  const renderRecordList = (records) =>
+  const renderRecordList = (records, onFill) =>
     records.map((record) => {
       const websiteDomain = record?.data?.websites?.[0]
 
@@ -236,7 +222,7 @@ export const Autofill = () => {
         <div
           key={record.id}
           className="bg-grey500-mode1 cursor-pointer rounded-[10px] p-2 hover:bg-[rgba(134,170,172,0.2)]"
-          onClick={() => handleAutoFill(record)}
+          onClick={() => onFill(record)}
         >
           <RecordItem
             websiteDomain={websiteDomain}
@@ -281,7 +267,7 @@ export const Autofill = () => {
                         <UserKeyIcon size="24" />
                         <span>Passkey</span>
                       </div>
-                      {renderRecordList(passkeyRecords)}
+                      {renderRecordList(passkeyRecords, handleAutofillPasskey)}
                     </>
                   )}
                 </div>
@@ -297,7 +283,7 @@ export const Autofill = () => {
                         )}
                         <span>{isCreditCard ? 'Card' : 'Password'}</span>
                       </div>
-                      {renderRecordList(regularLogins)}
+                      {renderRecordList(regularLogins, handlePasswordListFill)}
                     </>
                   )}
                 </div>

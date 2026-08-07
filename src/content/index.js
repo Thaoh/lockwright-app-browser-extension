@@ -7,6 +7,7 @@ import { RECORD_TYPES } from '@tetherto/pearpass-lib-vault'
 import { IFRAME_TYPES } from './constants/iframe'
 import { LOGO_PADDING, LOGO_SIZE } from './constants/styles'
 import { createIframe } from './utils/createIframe'
+import { findLoginFields } from './utils/findLoginFields'
 import { findLoginForms } from './utils/findLoginForms'
 import { findSelectOptionValue } from './utils/findSelectOptionValue'
 import { getField, PASSWORD_MATCHERS } from './utils/getField'
@@ -15,6 +16,7 @@ import { isCreditCardField } from './utils/isCreditCardField'
 import { isIdentityField } from './utils/isIdentityField'
 import { isPasswordField } from './utils/isPasswordField'
 import { isUsernameField } from './utils/isUsernameField'
+import { setInputValue } from './utils/setInputValue'
 import { showPasswordStrengthNearField } from './utils/showPasswordStrengthNearField'
 import { triggerInputEvents } from './utils/triggerInputEvents'
 import { CONTENT_MESSAGE_TYPES } from '../shared/constants/nativeMessaging'
@@ -210,8 +212,8 @@ function handlePasswordSuggestionOutsideClick(event) {
 
 function handleInsertPassword({ password, iframeData }) {
   if (iframeData.element) {
-    iframeData.element.value = password
-    triggerInputEvents(iframeData.element, ['input', 'change', 'blur'])
+    setInputValue(iframeData.element, password)
+    triggerInputEvents(iframeData.element, ['blur'])
     showPasswordStrengthNearField(iframeData.element, password)
   }
 
@@ -246,27 +248,30 @@ function showAutofillPopup({ positions, recordType }) {
   })
 }
 
-function handleAutofillLogin({ username, password }) {
+function handleAutofillLogin({ username, password, preferredElement }) {
   if (!isAutoFillEnabled) {
     return
   }
 
-  const { element: usernameField } = getField(['username', 'email'])
-  const { element: passwordField } = getField(PASSWORD_MATCHERS)
+  const { usernameField, passwordField } = findLoginFields(preferredElement)
 
-  if (usernameField) {
-    usernameField.value = username
-    triggerInputEvents(usernameField, ['input', 'change', 'blur'])
+  if (usernameField && username !== undefined && username !== null) {
+    setInputValue(usernameField, username)
+    triggerInputEvents(usernameField, ['blur'])
   }
 
-  if (passwordField) {
-    passwordField.value = password
-    triggerInputEvents(passwordField, ['input', 'change', 'blur'])
+  if (passwordField && password !== undefined && password !== null) {
+    setInputValue(passwordField, password)
+    triggerInputEvents(passwordField, ['blur'])
   }
 }
 
 const handleAutoFillLoginFromPopup = ({ username, password, iframeData }) => {
-  handleAutofillLogin({ username, password })
+  handleAutofillLogin({
+    username,
+    password,
+    preferredElement: getIframeData(IFRAME_TYPES.logo)?.element
+  })
 
   removeIframe(iframeData)
 
@@ -305,49 +310,49 @@ function handleAutofillIdentity({
   ])
 
   if (nameField) {
-    nameField.value = name
+    setInputValue(nameField, name)
   }
 
   if (emailField) {
-    emailField.value = email
+    setInputValue(emailField, email)
   }
 
   if (phoneField) {
-    phoneField.value = phoneNumber
+    setInputValue(phoneField, phoneNumber)
   }
 
   if (addressField) {
-    addressField.value = address
+    setInputValue(addressField, address)
   }
 
   if (zipField) {
-    zipField.value = zip
+    setInputValue(zipField, zip)
   }
 
   if (cityField) {
     if (cityFieldType === 'select') {
-      cityField.value = findSelectOptionValue(cityField, city)
+      setInputValue(cityField, findSelectOptionValue(cityField, city))
       return
     }
 
-    cityField.value = city
+    setInputValue(cityField, city)
   }
 
   if (regionField) {
     if (regionFieldType === 'select') {
-      regionField.value = findSelectOptionValue(regionField, region)
+      setInputValue(regionField, findSelectOptionValue(regionField, region))
       return
     }
 
-    regionField.value = region
+    setInputValue(regionField, region)
   }
 
   if (countryField) {
     if (countryFieldType === 'select') {
-      countryField.value = findSelectOptionValue(countryField, country)
+      setInputValue(countryField, findSelectOptionValue(countryField, country))
       return
     }
-    countryField.value = country
+    setInputValue(countryField, country)
   }
 }
 
@@ -430,18 +435,18 @@ function handleAutofillCreditCard({
   ])
 
   if (numberField) {
-    numberField.value = cardNumber
-    triggerInputEvents(numberField, ['input', 'change', 'blur'])
+    setInputValue(numberField, cardNumber)
+    triggerInputEvents(numberField, ['blur'])
   }
 
   if (nameField) {
-    nameField.value = cardholderName
-    triggerInputEvents(nameField, ['input', 'change', 'blur'])
+    setInputValue(nameField, cardholderName)
+    triggerInputEvents(nameField, ['blur'])
   }
 
   if (securityCodeField) {
-    securityCodeField.value = securityCode
-    triggerInputEvents(securityCodeField, ['input', 'change', 'blur'])
+    setInputValue(securityCodeField, securityCode)
+    triggerInputEvents(securityCodeField, ['blur'])
   }
 
   // Stored expiration is "MM YY"
@@ -449,27 +454,33 @@ function handleAutofillCreditCard({
 
   if (expireMonthField && month) {
     if (expireMonthFieldType === 'select') {
-      expireMonthField.value = findSelectOptionValue(expireMonthField, month)
+      setInputValue(
+        expireMonthField,
+        findSelectOptionValue(expireMonthField, month)
+      )
     } else {
-      expireMonthField.value = month
+      setInputValue(expireMonthField, month)
     }
-    triggerInputEvents(expireMonthField, ['input', 'change', 'blur'])
+    triggerInputEvents(expireMonthField, ['blur'])
   }
 
   if (expireYearField && year) {
     const fullYear = `20${year}`
     if (expireYearFieldType === 'select') {
-      expireYearField.value = findSelectOptionValue(expireYearField, fullYear)
+      setInputValue(
+        expireYearField,
+        findSelectOptionValue(expireYearField, fullYear)
+      )
     } else {
-      expireYearField.value = year
+      setInputValue(expireYearField, year)
     }
-    triggerInputEvents(expireYearField, ['input', 'change', 'blur'])
+    triggerInputEvents(expireYearField, ['blur'])
   }
 
   // Only fill a combined expiration field when there are no split inputs
   if (expireField && !expireMonthField && !expireYearField && month && year) {
-    expireField.value = `${month}/${year}`
-    triggerInputEvents(expireField, ['input', 'change', 'blur'])
+    setInputValue(expireField, `${month}/${year}`)
+    triggerInputEvents(expireField, ['blur'])
   }
 }
 
