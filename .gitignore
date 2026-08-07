@@ -31,3 +31,14 @@ yalc.lock
 tsconfig.tsbuildinfo
 
 /src/locales
+
+# Agentic architecture (local orchestration — do not commit)
+# Keep tracked: root AGENTS.md (UI kit), root CLAUDE.md (project/UI rules),
+# and .claude/skills/ (use-ui-kit). Model routing + agents live only in
+# CLAUDE.local.md / .claude/agents|workflows (this machine).
+.agent.md
+CLAUDE.local.md
+.plans
+.claude/agents/
+.claude/workflows/
+.claude/worktrees/
