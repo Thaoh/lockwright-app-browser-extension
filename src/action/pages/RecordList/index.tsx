@@ -19,11 +19,15 @@ import { useModal } from '../../../shared/context/ModalContext'
 import { useRouter } from '../../../shared/context/RouterContext'
 import { DeleteRecordsModalContent } from '../../../shared/containers/DeleteRecordsModalContent'
 import { MoveFolderModalContent } from '../../../shared/containers/MoveFolderModalContent'
+import { useActiveTabUrl } from '../../../shared/hooks/useActiveTabUrl'
 import {
   groupRecordsByTimePeriod,
   type VaultRecord
 } from '../../../shared/utils/groupRecordsByTimePeriod'
 import { isFavorite } from '../../../shared/utils/isFavorite'
+
+const isHttpUrl = (value: string): boolean =>
+  value.startsWith('http://') || value.startsWith('https://')
 
 export const RecordList = () => {
   const { state: routerState } = useRouter() as {
@@ -31,6 +35,7 @@ export const RecordList = () => {
   }
   const { setModal, isOpen: isModalOpen } = useModal()
   const { searchValue } = useAppHeaderContext()
+  const { url: activeTabUrl } = useActiveTabUrl()
 
   const { theme } = useTheme()
   const [sortKey, setSortKey] = useState<SortKey>(SORT_KEYS.LAST_UPDATED_NEWEST)
@@ -63,9 +68,19 @@ export const RecordList = () => {
     updateFavoriteState: (ids: string[], isFavorite: boolean) => Promise<void>
   }
 
+  const currentSiteUrl = useMemo(() => {
+    // Vault-home convenience only — skip favorites folder and custom folders.
+    if (isFavoritesView || selectedFolder) return null
+    if (!activeTabUrl || !isHttpUrl(activeTabUrl)) return null
+    return activeTabUrl
+  }, [activeTabUrl, isFavoritesView, selectedFolder])
+
   const sections = useMemo(
-    () => groupRecordsByTimePeriod(records ?? [], sort),
-    [records, sort]
+    () =>
+      groupRecordsByTimePeriod(records ?? [], sort, {
+        currentSiteUrl
+      }),
+    [records, sort, currentSiteUrl]
   )
 
   useEffect(() => {

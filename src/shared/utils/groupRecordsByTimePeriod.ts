@@ -1,3 +1,5 @@
+import { recordMatchesCurrentSite } from './doesWebsiteMatchPage'
+
 export type VaultRecord = {
   id: string
   type: string
@@ -26,21 +28,71 @@ export type RecordSection = {
   title: string
   key: string
   isFavorites?: boolean
+  isCurrentSite?: boolean
   data: VaultRecord[]
+}
+
+export type GroupRecordsOptions = {
+  currentSiteUrl?: string | null
 }
 
 const getDateField = (key?: string): 'createdAt' | 'updatedAt' =>
   key === 'createdAt' ? 'createdAt' : 'updatedAt'
 
+const collectCurrentSite = (
+  records: VaultRecord[],
+  currentSiteUrl?: string | null
+): { currentSite: VaultRecord[]; currentSiteIds: Set<string> } => {
+  const currentSite: VaultRecord[] = []
+  const currentSiteIds = new Set<string>()
+
+  if (typeof currentSiteUrl === 'string' && currentSiteUrl.length > 0) {
+    for (const record of records) {
+      if (recordMatchesCurrentSite(record, currentSiteUrl)) {
+        currentSite.push(record)
+        currentSiteIds.add(record.id)
+      }
+    }
+  }
+
+  return { currentSite, currentSiteIds }
+}
+
+const prependCurrentSite = (
+  sections: RecordSection[],
+  currentSite: VaultRecord[]
+): RecordSection[] => {
+  if (!currentSite.length) return sections
+  return [
+    {
+      title: 'Current Site',
+      key: 'currentSite',
+      isCurrentSite: true,
+      data: currentSite
+    },
+    ...sections
+  ]
+}
+
 export const groupRecordsByTimePeriod = (
   records: VaultRecord[] | undefined | null,
-  sort?: RecordSort
+  sort?: RecordSort,
+  options?: GroupRecordsOptions
 ): RecordSection[] => {
   if (!records?.length) return []
 
+  const { currentSite, currentSiteIds } = collectCurrentSite(
+    records,
+    options?.currentSiteUrl
+  )
+
   if (sort?.key === 'data.title') {
-    const favorites = records.filter((r) => r.isFavorite)
-    const rest = records.filter((r) => !r.isFavorite)
+    const favorites = records.filter(
+      (r) => r.isFavorite && !currentSiteIds.has(r.id)
+    )
+    const rest = records.filter(
+      (r) => !r.isFavorite && !currentSiteIds.has(r.id)
+    )
     const sections: RecordSection[] = []
     if (favorites.length) {
       sections.push({
@@ -53,7 +105,7 @@ export const groupRecordsByTimePeriod = (
     if (rest.length) {
       sections.push({ title: 'All Items', key: 'all', data: rest })
     }
-    return sections
+    return prependCurrentSite(sections, currentSite)
   }
 
   const dateField = getDateField(sort?.key)
@@ -77,6 +129,7 @@ export const groupRecordsByTimePeriod = (
   const favoriteIds = new Set<string>()
 
   for (const record of records) {
+    if (currentSiteIds.has(record.id)) continue
     if (record.isFavorite) {
       favorites.push(record)
       favoriteIds.add(record.id)
@@ -84,6 +137,7 @@ export const groupRecordsByTimePeriod = (
   }
 
   for (const record of records) {
+    if (currentSiteIds.has(record.id)) continue
     if (favoriteIds.has(record.id)) continue
 
     const timestamp =
@@ -133,5 +187,5 @@ export const groupRecordsByTimePeriod = (
     })
   }
 
-  return sections.concat(timeSections)
+  return prependCurrentSite(sections.concat(timeSections), currentSite)
 }
