@@ -81,14 +81,13 @@ export const Autofill = () => {
   const isOtpFillMode = routerState?.fillMode === 'otp'
 
   const regularLogins = useMemo(() => {
-    const records = (filteredRecords || []).filter(isPasswordAutofillRecord)
-
-    if (!isOtpFillMode) {
-      return records
+    if (isOtpFillMode) {
+      // Site-matched logins for OTP fields — include passkey-only / no otpPublic.
+      // Fill still gated on otpCode in handleAutofillLogin.
+      return filteredRecords || []
     }
 
-    // Prefer logins that have OTP configured for this site
-    return records.filter((record) => Boolean(record?.otpPublic))
+    return (filteredRecords || []).filter(isPasswordAutofillRecord)
   }, [filteredRecords, isOtpFillMode])
 
   useEffect(() => {
