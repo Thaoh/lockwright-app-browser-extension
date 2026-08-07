@@ -7,6 +7,7 @@ import { Pressable } from '@tetherto/pearpass-lib-ui-kit/components/Pressable'
 import {
   ErrorFilled,
   ExpandMore,
+  PublicOutlined,
   StarFilled
 } from '@tetherto/pearpass-lib-ui-kit/icons'
 
@@ -41,6 +42,8 @@ type ActiveContextMenu = {
 
 const sectionLabel = (key: string, fallback: string): string => {
   switch (key) {
+    case 'currentSite':
+      return t`Current Site`
     case 'favorites':
       return t`Favorites`
     case 'all':
@@ -199,6 +202,14 @@ export const RecordListView = ({
                     >
                       <ExpandMore width={16} height={16} color={iconColor} />
                     </div>
+
+                    {section.isCurrentSite && (
+                      <PublicOutlined
+                        width={14}
+                        height={14}
+                        color={iconColor}
+                      />
+                    )}
 
                     {section.isFavorites && (
                       <StarFilled width={14} height={14} color={iconColor} />

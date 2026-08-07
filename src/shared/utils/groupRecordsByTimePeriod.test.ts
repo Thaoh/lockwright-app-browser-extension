@@ -176,4 +176,141 @@ describe('groupRecordsByTimePeriod', () => {
       expect(sectionKeys(sections)).toEqual(['today', 'older'])
     })
   })
+
+  describe('current site section', () => {
+    it('prepends currentSite above favorites when a website matches', () => {
+      const records = [
+        buildRecord({
+          id: 'siteMatch',
+          isFavorite: true,
+          updatedAt: NOW - 1 * 60 * 60 * 1000,
+          data: { title: 'Site', websites: ['example.com'] }
+        }),
+        buildRecord({
+          id: 'favOther',
+          isFavorite: true,
+          updatedAt: NOW - 1 * 60 * 60 * 1000,
+          data: { title: 'Fav', websites: ['other.com'] }
+        }),
+        buildRecord({
+          id: 'today',
+          updatedAt: NOW - 1 * 60 * 60 * 1000,
+          data: { title: 'Today', websites: ['unrelated.com'] }
+        })
+      ]
+
+      const sections = groupRecordsByTimePeriod(records, undefined, {
+        currentSiteUrl: 'https://www.example.com/login'
+      })
+
+      expect(sectionKeys(sections)).toEqual([
+        'currentSite',
+        'favorites',
+        'today'
+      ])
+      expect(idsByKey(sections, 'currentSite')).toEqual(['siteMatch'])
+      expect(idsByKey(sections, 'favorites')).toEqual(['favOther'])
+      expect(idsByKey(sections, 'today')).toEqual(['today'])
+      expect(sections.find((s) => s.key === 'currentSite')?.isCurrentSite).toBe(
+        true
+      )
+    })
+
+    it('excludes matching records from favorites and time buckets', () => {
+      const records = [
+        buildRecord({
+          id: 'matchFav',
+          isFavorite: true,
+          updatedAt: NOW - 1 * 60 * 60 * 1000,
+          data: { title: 'Match', websites: ['https://example.com'] }
+        }),
+        buildRecord({
+          id: 'matchToday',
+          updatedAt: NOW - 1 * 60 * 60 * 1000,
+          data: { title: 'Match2', websites: ['login.example.com'] }
+        })
+      ]
+
+      const sections = groupRecordsByTimePeriod(
+        records,
+        { key: 'updatedAt' },
+        {
+          currentSiteUrl: 'https://example.com'
+        }
+      )
+
+      expect(sectionKeys(sections)).toEqual(['currentSite'])
+      expect(idsByKey(sections, 'currentSite')).toEqual([
+        'matchFav',
+        'matchToday'
+      ])
+      expect(idsByKey(sections, 'favorites')).toEqual([])
+      expect(idsByKey(sections, 'today')).toEqual([])
+    })
+
+    it('omits currentSite when url is missing, empty, or no matches', () => {
+      const records = [
+        buildRecord({
+          id: 'a',
+          updatedAt: NOW - 1 * 60 * 60 * 1000,
+          data: { title: 'A', websites: ['example.com'] }
+        })
+      ]
+
+      expect(
+        sectionKeys(groupRecordsByTimePeriod(records, undefined, {}))
+      ).toEqual(['today'])
+      expect(
+        sectionKeys(
+          groupRecordsByTimePeriod(records, undefined, { currentSiteUrl: '' })
+        )
+      ).toEqual(['today'])
+      expect(
+        sectionKeys(
+          groupRecordsByTimePeriod(records, undefined, {
+            currentSiteUrl: null
+          })
+        )
+      ).toEqual(['today'])
+      expect(
+        sectionKeys(
+          groupRecordsByTimePeriod(records, undefined, {
+            currentSiteUrl: 'https://other.com'
+          })
+        )
+      ).toEqual(['today'])
+    })
+
+    it('prepends currentSite for alphabetical sort as well', () => {
+      const records = [
+        buildRecord({
+          id: 'site',
+          isFavorite: true,
+          data: { title: 'Site', websites: ['example.com'] }
+        }),
+        buildRecord({
+          id: 'fav',
+          isFavorite: true,
+          data: { title: 'Fav', websites: ['other.com'] }
+        }),
+        buildRecord({
+          id: 'rest',
+          data: { title: 'Rest', websites: ['unrelated.com'] }
+        })
+      ]
+
+      const sections = groupRecordsByTimePeriod(
+        records,
+        { key: 'data.title' },
+        {
+          currentSiteUrl: 'https://example.com'
+        }
+      )
+
+      expect(sectionKeys(sections)).toEqual(['currentSite', 'favorites', 'all'])
+      expect(idsByKey(sections, 'currentSite')).toEqual(['site'])
+      expect(idsByKey(sections, 'favorites')).toEqual(['fav'])
+      expect(idsByKey(sections, 'all')).toEqual(['rest'])
+    })
+  })
 })
