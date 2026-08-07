@@ -25,6 +25,10 @@ import {
   type VaultRecord
 } from '../../../shared/utils/groupRecordsByTimePeriod'
 import { isFavorite } from '../../../shared/utils/isFavorite'
+import {
+  hydrateUriMatchSettings,
+  onUriMatchSettingsChanged
+} from '../../../shared/utils/uriMatchSetting'
 
 const isHttpUrl = (value: string): boolean =>
   value.startsWith('http://') || value.startsWith('https://')
@@ -42,6 +46,21 @@ export const RecordList = () => {
   const [isMultiSelectOn, setIsMultiSelectOn] = useState(false)
   const [selectedRecords, setSelectedRecords] = useState<string[]>([])
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null)
+  const [uriMatchEpoch, setUriMatchEpoch] = useState(0)
+
+  useEffect(() => {
+    let alive = true
+    void hydrateUriMatchSettings().then(() => {
+      if (alive) setUriMatchEpoch((n) => n + 1)
+    })
+    const unsubscribe = onUriMatchSettingsChanged(() => {
+      setUriMatchEpoch((n) => n + 1)
+    })
+    return () => {
+      alive = false
+      unsubscribe()
+    }
+  }, [])
 
   const isFavoritesView = isFavorite(routerState?.folder ?? '')
   const selectedFolder =
@@ -80,7 +99,7 @@ export const RecordList = () => {
       groupRecordsByTimePeriod(records ?? [], sort, {
         currentSiteUrl
       }),
-    [records, sort, currentSiteUrl]
+    [records, sort, currentSiteUrl, uriMatchEpoch]
   )
 
   useEffect(() => {

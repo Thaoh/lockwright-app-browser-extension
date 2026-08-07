@@ -124,11 +124,19 @@ jest.mock('@tetherto/pearpass-lib-constants', () => ({
 
 const mockSetAutofill = jest.fn(async () => undefined)
 const mockGetAutofill = jest.fn(async () => true)
+const mockGetDefaultUriMatch = jest.fn(async () => 'domain')
+const mockSetDefaultUriMatch = jest.fn(async () => undefined)
 
 jest.mock('../../../../../shared/utils/autofillSetting', () => ({
   __esModule: true,
   getAutofillEnabled: () => mockGetAutofill(),
   setAutofillEnabled: (v: boolean) => mockSetAutofill(v)
+}))
+
+jest.mock('../../../../../shared/utils/uriMatchSetting', () => ({
+  __esModule: true,
+  getDefaultUriMatchType: () => mockGetDefaultUriMatch(),
+  setDefaultUriMatchType: (v: string) => mockSetDefaultUriMatch(v)
 }))
 
 jest.mock('../../../../../shared/utils/passkeyVerificationPreference', () => ({
@@ -188,6 +196,9 @@ describe('AppPreferencesContent', () => {
     mockSetAutofill.mockClear()
     mockGetAutofill.mockClear()
     mockGetAutofill.mockResolvedValue(true)
+    mockGetDefaultUriMatch.mockClear()
+    mockSetDefaultUriMatch.mockClear()
+    mockGetDefaultUriMatch.mockResolvedValue('domain')
     mockTimeoutMs = 30_000
     mockIsAllowHttpEnabled = false
     mockIsCopyEnabled = true
@@ -210,6 +221,9 @@ describe('AppPreferencesContent', () => {
 
     expect(screen.getByTestId('settings-autofill-toggle')).toBeInTheDocument()
     expect(screen.getByTestId('settings-allow-http-toggle')).toBeInTheDocument()
+    expect(
+      screen.getByTestId('settings-default-uri-match-select')
+    ).toBeInTheDocument()
     expect(screen.getByTestId('settings-auto-lock-select')).toBeInTheDocument()
     expect(
       screen.getByTestId('settings-copy-to-clipboard-toggle')
@@ -285,5 +299,17 @@ describe('AppPreferencesContent', () => {
     fireEvent.click(screen.getByTestId('settings-auto-lock-option-minutes_1'))
 
     expect(mockSetTimeoutMs).toHaveBeenCalledWith(60_000)
+  })
+
+  it('persists Default URI match through setDefaultUriMatchType', async () => {
+    render(<AppPreferencesContent />)
+
+    await screen.findByTestId('settings-default-uri-match-select')
+    fireEvent.click(screen.getByTestId('settings-default-uri-match-select'))
+    fireEvent.click(
+      screen.getByTestId('settings-default-uri-match-option-host')
+    )
+
+    expect(mockSetDefaultUriMatch).toHaveBeenCalledWith('host')
   })
 })

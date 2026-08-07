@@ -26,22 +26,37 @@ import {
 import { useAllowHttpEnabled } from '../../../../../shared/hooks/useAllowHttpEnabled'
 import { useCopyToClipboard } from '../../../../../shared/hooks/useCopyToClipboard'
 import {
+  URI_MATCH_TYPES,
+  type UriMatchType
+} from '../../../../../shared/constants/uriMatch'
+import {
   getAutofillEnabled,
   setAutofillEnabled
 } from '../../../../../shared/utils/autofillSetting'
 import { isPasswordChangeReminderDisabled } from '../../../../../shared/utils/isPasswordChangeReminderDisabled'
 import { getPasskeyVerificationPreference } from '../../../../../shared/utils/passkeyVerificationPreference'
+import {
+  getDefaultUriMatchType,
+  setDefaultUriMatchType
+} from '../../../../../shared/utils/uriMatchSetting'
 
 const TEST_IDS = {
   root: 'settings-app-preferences',
   autofillToggle: 'settings-autofill-toggle',
   allowHttpToggle: 'settings-allow-http-toggle',
+  defaultUriMatchSelect: 'settings-default-uri-match-select',
+  defaultUriMatchOption: 'settings-default-uri-match-option',
   autoLockSelect: 'settings-auto-lock-select',
   autoLockOption: 'settings-auto-lock-option',
   copyToClipboardToggle: 'settings-copy-to-clipboard-toggle',
   remindersToggle: 'settings-reminders-toggle',
   passkeyValidation: 'settings-passkey-validation'
 } as const
+
+type UriMatchOption = {
+  value: UriMatchType
+  label: string
+}
 
 type TimeoutOption = {
   key: string
@@ -73,10 +88,13 @@ export const AppPreferencesContent = () => {
   ]
 
   const [isAutoLockDropdownOpen, setIsAutoLockDropdownOpen] = useState(false)
+  const [isUriMatchDropdownOpen, setIsUriMatchDropdownOpen] = useState(false)
   const [isReminderDisabled, setIsReminderDisabled] = useState(() =>
     isPasswordChangeReminderDisabled()
   )
   const [isAutofillEnabled, setIsAutofillEnabledState] = useState(true)
+  const [defaultUriMatchType, setDefaultUriMatchTypeState] =
+    useState<UriMatchType>(URI_MATCH_TYPES.DOMAIN)
   const [passkeyVerification, setPasskeyVerification] = useState(() =>
     getPasskeyVerificationPreference()
   )
@@ -86,10 +104,44 @@ export const AppPreferencesContent = () => {
     getAutofillEnabled().then((enabled) => {
       if (alive) setIsAutofillEnabledState(enabled)
     })
+    getDefaultUriMatchType().then((matchType) => {
+      if (alive) setDefaultUriMatchTypeState(matchType as UriMatchType)
+    })
     return () => {
       alive = false
     }
   }, [])
+
+  const uriMatchOptions = useMemo<UriMatchOption[]>(
+    () => [
+      { value: URI_MATCH_TYPES.DOMAIN, label: t`Domain` },
+      { value: URI_MATCH_TYPES.HOST, label: t`Host` },
+      { value: URI_MATCH_TYPES.STARTS_WITH, label: t`Starts with` },
+      { value: URI_MATCH_TYPES.EXACT, label: t`Exact` }
+    ],
+    []
+  )
+
+  const selectedUriMatchOption = useMemo(
+    () =>
+      uriMatchOptions.find((option) => option.value === defaultUriMatchType) ??
+      uriMatchOptions[0],
+    [uriMatchOptions, defaultUriMatchType]
+  )
+
+  const handleUriMatchSelect = useCallback(
+    async (option: UriMatchOption) => {
+      const prev = defaultUriMatchType
+      setDefaultUriMatchTypeState(option.value)
+      setIsUriMatchDropdownOpen(false)
+      try {
+        await setDefaultUriMatchType(option.value)
+      } catch {
+        setDefaultUriMatchTypeState(prev)
+      }
+    },
+    [defaultUriMatchType]
+  )
 
   const translatedTimeoutOptions = useMemo(
     () =>
@@ -212,6 +264,40 @@ export const AppPreferencesContent = () => {
               label={t`Allow non-secure websites`}
               description={t`Allow autofill and access on HTTP websites. When disabled, only secure HTTPS sites are supported`}
             />
+          </div>
+          <div className="border-border-primary flex items-center justify-between gap-[12px] border-t p-[12px]">
+            <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
+              <Text variant="labelEmphasized">{t`Default URI match`}</Text>
+              <Text variant="caption" color={colors.colorTextSecondary}>
+                {t`Choose how PearPass decides when to offer autofill for a site.`}
+              </Text>
+            </div>
+            <Dropdown
+              open={isUriMatchDropdownOpen}
+              onOpenChange={setIsUriMatchDropdownOpen}
+              trigger={
+                <Button
+                  variant="secondary"
+                  size="small"
+                  iconAfter={<KeyboardArrowBottom />}
+                  data-testid={TEST_IDS.defaultUriMatchSelect}
+                >
+                  {selectedUriMatchOption?.label ?? t`Domain`}
+                </Button>
+              }
+            >
+              {uriMatchOptions.map((option) => (
+                <NavbarListItem
+                  key={option.value}
+                  testID={`${TEST_IDS.defaultUriMatchOption}-${option.value}`}
+                  label={option.label}
+                  selected={option.value === defaultUriMatchType}
+                  onClick={() => {
+                    void handleUriMatchSelect(option)
+                  }}
+                />
+              ))}
+            </Dropdown>
           </div>
         </div>
       </section>

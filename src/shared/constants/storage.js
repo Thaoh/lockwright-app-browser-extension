@@ -9,7 +9,9 @@ export const LOCAL_STORAGE_KEYS = {
 export const CHROME_STORAGE_KEYS = {
   AUTOFILL_ENABLED: 'autofill-enabled',
   ALLOW_HTTP_ENABLED: 'allow-http-enabled',
-  LOCALE: 'locale'
+  LOCALE: 'locale',
+  DEFAULT_URI_MATCH_TYPE: 'default-uri-match-type',
+  URI_MATCH_OVERRIDES: 'uri-match-overrides'
 }
 
 export const PASSKEY_VERIFICATION_OPTIONS = {

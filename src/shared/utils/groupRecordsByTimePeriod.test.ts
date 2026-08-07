@@ -1,7 +1,12 @@
+import { URI_MATCH_TYPES } from '../constants/uriMatch'
 import {
   groupRecordsByTimePeriod,
   type VaultRecord
 } from './groupRecordsByTimePeriod'
+import {
+  __resetUriMatchSettingsCacheForTests,
+  setUriMatchOverrides
+} from './uriMatchSetting'
 
 // Anchored on a Wednesday to keep "this week" / "this month" boundaries
 // well-separated from "today" / "yesterday".
@@ -24,10 +29,26 @@ const idsByKey = (
 describe('groupRecordsByTimePeriod', () => {
   beforeEach(() => {
     jest.useFakeTimers().setSystemTime(NOW)
+    __resetUriMatchSettingsCacheForTests()
+    global.chrome = {
+      storage: {
+        local: {
+          get: jest.fn().mockResolvedValue({}),
+          set: jest.fn().mockResolvedValue(undefined)
+        },
+        onChanged: {
+          addListener: jest.fn(),
+          removeListener: jest.fn()
+        }
+      }
+    } as typeof chrome
   })
 
   afterEach(() => {
     jest.useRealTimers()
+    __resetUriMatchSettingsCacheForTests()
+    // @ts-expect-error test cleanup
+    delete global.chrome
   })
 
   it('returns an empty array for null/undefined/empty input', () => {
@@ -311,6 +332,31 @@ describe('groupRecordsByTimePeriod', () => {
       expect(idsByKey(sections, 'currentSite')).toEqual(['site'])
       expect(idsByKey(sections, 'favorites')).toEqual(['fav'])
       expect(idsByKey(sections, 'all')).toEqual(['rest'])
+    })
+
+    it('honors host URI match overrides from cache', async () => {
+      const records = [
+        buildRecord({
+          id: 'hostOnly',
+          updatedAt: NOW - 1 * 60 * 60 * 1000,
+          data: { title: 'Host', websites: ['https://example.com'] }
+        })
+      ]
+
+      await setUriMatchOverrides('hostOnly', {
+        'https://example.com': URI_MATCH_TYPES.HOST
+      })
+
+      const subdomainSections = groupRecordsByTimePeriod(records, undefined, {
+        currentSiteUrl: 'https://login.example.com'
+      })
+      expect(sectionKeys(subdomainSections)).toEqual(['today'])
+
+      const exactHostSections = groupRecordsByTimePeriod(records, undefined, {
+        currentSiteUrl: 'https://example.com/login'
+      })
+      expect(sectionKeys(exactHostSections)).toEqual(['currentSite'])
+      expect(idsByKey(exactHostSections, 'currentSite')).toEqual(['hostOnly'])
     })
   })
 })
