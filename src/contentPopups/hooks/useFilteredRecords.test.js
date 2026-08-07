@@ -93,4 +93,50 @@ describe('useFilteredRecords', () => {
     expect(result.current.isInitialized).toBe(false)
     expect(result.current.isLoading).toBe(true)
   })
+
+  it('matches login records whose website is stored without a protocol', () => {
+    useRouter.mockReturnValue({
+      state: { recordType: 'login', url: 'https://example.com/login' }
+    })
+    const bareHostRecord = {
+      data: { websites: ['example.com'] }
+    }
+    useRecords.mockReturnValue({
+      data: [bareHostRecord, { data: { websites: ['other.com'] } }],
+      isInitialized: true,
+      isLoading: false
+    })
+
+    const { result } = renderHook(() => useFilteredRecords())
+
+    expect(result.current.filteredRecords).toEqual([bareHostRecord])
+  })
+
+  it('matches login records across www and subdomain variations', () => {
+    useRouter.mockReturnValue({
+      state: { recordType: 'login', url: 'https://login.example.com/app' }
+    })
+    const parentDomainRecord = {
+      data: { websites: ['https://example.com'] }
+    }
+    const wwwRecord = {
+      data: { websites: ['www.example.com'] }
+    }
+    useRecords.mockReturnValue({
+      data: [
+        parentDomainRecord,
+        wwwRecord,
+        { data: { websites: ['https://evil-example.com'] } }
+      ],
+      isInitialized: true,
+      isLoading: false
+    })
+
+    const { result } = renderHook(() => useFilteredRecords())
+
+    expect(result.current.filteredRecords).toEqual([
+      parentDomainRecord,
+      wwwRecord
+    ])
+  })
 })
