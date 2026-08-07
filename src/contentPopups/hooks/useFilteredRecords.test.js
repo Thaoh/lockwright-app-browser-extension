@@ -1,8 +1,14 @@
-import { renderHook } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 import { useRecords } from '@tetherto/pearpass-lib-vault'
 
 import { useFilteredRecords } from './useFilteredRecords'
+import { URI_MATCH_TYPES } from '../../shared/constants/uriMatch'
 import { useRouter } from '../../shared/context/RouterContext'
+import {
+  __resetUriMatchSettingsCacheForTests,
+  setDefaultUriMatchType,
+  setUriMatchOverrides
+} from '../../shared/utils/uriMatchSetting'
 
 jest.mock('@tetherto/pearpass-lib-vault', () => ({
   useRecords: jest.fn()
@@ -11,6 +17,27 @@ jest.mock('@tetherto/pearpass-lib-vault', () => ({
 jest.mock('../../shared/context/RouterContext', () => ({
   useRouter: jest.fn()
 }))
+
+beforeEach(() => {
+  __resetUriMatchSettingsCacheForTests()
+  global.chrome = {
+    storage: {
+      local: {
+        get: jest.fn().mockResolvedValue({}),
+        set: jest.fn().mockResolvedValue(undefined)
+      },
+      onChanged: {
+        addListener: jest.fn(),
+        removeListener: jest.fn()
+      }
+    }
+  }
+})
+
+afterEach(() => {
+  __resetUriMatchSettingsCacheForTests()
+  delete global.chrome
+})
 
 describe('useFilteredRecords', () => {
   it('should return filtered records based on router state', () => {
@@ -21,11 +48,13 @@ describe('useFilteredRecords', () => {
 
     const mockRecordsData = [
       {
+        id: 'r1',
         data: {
           websites: ['https://example.com', 'https://another.com']
         }
       },
       {
+        id: 'r2',
         data: {
           websites: ['https://notexample.com']
         }
@@ -99,10 +128,14 @@ describe('useFilteredRecords', () => {
       state: { recordType: 'login', url: 'https://example.com/login' }
     })
     const bareHostRecord = {
+      id: 'bare',
       data: { websites: ['example.com'] }
     }
     useRecords.mockReturnValue({
-      data: [bareHostRecord, { data: { websites: ['other.com'] } }],
+      data: [
+        bareHostRecord,
+        { id: 'other', data: { websites: ['other.com'] } }
+      ],
       isInitialized: true,
       isLoading: false
     })
@@ -117,16 +150,18 @@ describe('useFilteredRecords', () => {
       state: { recordType: 'login', url: 'https://login.example.com/app' }
     })
     const parentDomainRecord = {
+      id: 'parent',
       data: { websites: ['https://example.com'] }
     }
     const wwwRecord = {
+      id: 'www',
       data: { websites: ['www.example.com'] }
     }
     useRecords.mockReturnValue({
       data: [
         parentDomainRecord,
         wwwRecord,
-        { data: { websites: ['https://evil-example.com'] } }
+        { id: 'evil', data: { websites: ['https://evil-example.com'] } }
       ],
       isInitialized: true,
       isLoading: false
@@ -138,5 +173,53 @@ describe('useFilteredRecords', () => {
       parentDomainRecord,
       wwwRecord
     ])
+  })
+
+  it('respects per-website host match overrides (subdomain does not match)', async () => {
+    useRouter.mockReturnValue({
+      state: { recordType: 'login', url: 'https://login.example.com/app' }
+    })
+    const hostOnlyRecord = {
+      id: 'host-only',
+      data: { websites: ['https://example.com'] }
+    }
+    useRecords.mockReturnValue({
+      data: [hostOnlyRecord],
+      isInitialized: true,
+      isLoading: false
+    })
+
+    await setUriMatchOverrides('host-only', {
+      'https://example.com': URI_MATCH_TYPES.HOST
+    })
+
+    const { result } = renderHook(() => useFilteredRecords())
+
+    await waitFor(() => {
+      expect(result.current.filteredRecords).toEqual([])
+    })
+  })
+
+  it('respects default match type host (subdomain does not match)', async () => {
+    useRouter.mockReturnValue({
+      state: { recordType: 'login', url: 'https://login.example.com/app' }
+    })
+    const record = {
+      id: 'r-default-host',
+      data: { websites: ['https://example.com'] }
+    }
+    useRecords.mockReturnValue({
+      data: [record],
+      isInitialized: true,
+      isLoading: false
+    })
+
+    await setDefaultUriMatchType(URI_MATCH_TYPES.HOST)
+
+    const { result } = renderHook(() => useFilteredRecords())
+
+    await waitFor(() => {
+      expect(result.current.filteredRecords).toEqual([])
+    })
   })
 })

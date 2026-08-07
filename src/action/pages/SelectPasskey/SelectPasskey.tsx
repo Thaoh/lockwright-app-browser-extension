@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { t } from '@lingui/core/macro'
 import { RECORD_TYPES, useRecords } from '@tetherto/pearpass-lib-vault'
@@ -15,7 +15,13 @@ import { CONTENT_MESSAGE_TYPES } from '../../../shared/constants/nativeMessaging
 import { useRouter } from '../../../shared/context/RouterContext'
 import { MESSAGE_TYPES } from '../../../shared/services/messageBridge'
 import { getHostname } from '../../../shared/utils/getHostname'
+import { doesWebsiteMatchPage } from '../../../shared/utils/doesWebsiteMatchPage'
 import { logger } from '../../../shared/utils/logger'
+import {
+  hydrateUriMatchSettings,
+  onUriMatchSettingsChanged,
+  resolveUriMatchType
+} from '../../../shared/utils/uriMatchSetting'
 import { PasskeyContainer } from '../../containers/PasskeyContainer/PasskeyContainer'
 import { RecordItemIcon } from '../../../shared/containers/RecordItemIcon'
 import { getRecordSubtitle } from '../../../shared/utils/getRecordSubtitle'
@@ -35,8 +41,23 @@ export const SelectPasskey = () => {
   const { state: routerState, navigate } = useRouter()
   const { data: records } = useRecords()
   const { theme } = useTheme()
+  const [uriMatchEpoch, setUriMatchEpoch] = useState(0)
 
   const { serializedPublicKey, requestId, requestOrigin, tabId } = routerState
+
+  useEffect(() => {
+    let alive = true
+    void hydrateUriMatchSettings().then(() => {
+      if (alive) setUriMatchEpoch((n) => n + 1)
+    })
+    const unsubscribe = onUriMatchSettingsChanged(() => {
+      setUriMatchEpoch((n) => n + 1)
+    })
+    return () => {
+      alive = false
+      unsubscribe()
+    }
+  }, [])
 
   const handleRecordSelect = (record: PasskeyRecord) => {
     chrome.runtime
@@ -110,25 +131,21 @@ export const SelectPasskey = () => {
 
   const recordsFiltered = useMemo(() => {
     if (!targetHostname) return [] as PasskeyRecord[]
-    const stripWww = (h: string) => h.replace(/^www\./i, '')
-    const target = stripWww(targetHostname)
+    const pageUrl = requestOrigin || `https://${targetHostname}`
 
     return (records as PasskeyRecord[]).filter((record) => {
       if (record.type !== RECORD_TYPES.LOGIN) return false
       if (!record.data?.credential) return false
       const websites = record.data?.websites ?? []
-      return websites.some((w) => {
-        const recordHost = getHostname(w)
-        if (!recordHost) return false
-        const candidate = stripWww(recordHost)
-        return (
-          candidate === target ||
-          candidate.endsWith(`.${target}`) ||
-          target.endsWith(`.${candidate}`)
+      return websites.some((website) =>
+        doesWebsiteMatchPage(
+          pageUrl,
+          website,
+          resolveUriMatchType(record.id, website)
         )
-      })
+      )
     })
-  }, [records, targetHostname])
+  }, [records, targetHostname, requestOrigin, uriMatchEpoch])
 
   const hasRecords = recordsFiltered.length > 0
 

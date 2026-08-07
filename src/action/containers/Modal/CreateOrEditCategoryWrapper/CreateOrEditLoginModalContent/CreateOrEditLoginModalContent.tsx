@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { t } from '@lingui/core/macro'
 import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
@@ -7,9 +7,11 @@ import { AUTHENTICATOR_ENABLED } from '@tetherto/pearpass-lib-constants'
 import {
   Button,
   Dialog,
+  Dropdown,
   Form,
   InputField,
   MultiSlotInput,
+  NavbarListItem,
   PasswordField,
   type PasswordIndicatorVariant,
   Text,
@@ -21,6 +23,7 @@ import {
   Add,
   ArrowBackOutined,
   Close,
+  KeyboardArrowBottom,
   SyncLock,
   TrashOutlined
 } from '@tetherto/pearpass-lib-ui-kit/icons'
@@ -31,15 +34,34 @@ import {
 } from '@tetherto/pearpass-lib-vault'
 
 import { FolderDropdown } from '../../../FolderDropdown'
+import {
+  URI_MATCH_TYPES,
+  type UriMatchType
+} from '../../../../../shared/constants/uriMatch'
 import { useGlobalLoading } from '../../../../../shared/context/LoadingContext'
 import { useModal } from '../../../../../shared/context/ModalContext'
 import { useToast } from '../../../../../shared/context/ToastContext'
 import { formatPasskeyDate } from '../../../../../shared/utils/formatPasskeyDate'
 import { normalizeUrl } from '../../../../../shared/utils/normalizeUrl'
+import {
+  getDefaultUriMatchTypeSync,
+  hydrateUriMatchSettings,
+  resolveUriMatchType,
+  setUriMatchOverrides
+} from '../../../../../shared/utils/uriMatchSetting'
 import { useCreateOrEditRecord } from '../../../../hooks/useCreateOrEditRecord'
 
-type Website = { website?: string; name?: string }
+type Website = { website?: string; name?: string; matchType?: UriMatchType }
 type CustomField = { type: string; name: string; note?: string }
+
+const URI_MATCH_OPTION_LABELS: Record<UriMatchType, () => string> = {
+  [URI_MATCH_TYPES.DOMAIN]: () => t`Domain`,
+  [URI_MATCH_TYPES.HOST]: () => t`Host`,
+  [URI_MATCH_TYPES.STARTS_WITH]: () => t`Starts with`,
+  [URI_MATCH_TYPES.EXACT]: () => t`Exact`
+}
+
+const URI_MATCH_OPTION_VALUES = Object.values(URI_MATCH_TYPES)
 
 const STRENGTH_MAP: Record<string, PasswordIndicatorVariant> = {
   error: 'vulnerable',
@@ -93,11 +115,23 @@ export const CreateOrEditLoginModalContent = ({
   const { handleCreateOrEditRecord } = useCreateOrEditRecord()
 
   const isEdit = !!initialRecord?.id
+  const pendingUriMatchOverridesRef = useRef<Record<
+    string,
+    UriMatchType
+  > | null>(null)
+  const [openMatchTypeIndex, setOpenMatchTypeIndex] = useState<number | null>(
+    null
+  )
 
   const { createRecord, isLoading: isCreateLoading } = useCreateRecord({
     onCompleted: (payload: unknown) => {
       const recordId = (payload as { record?: { id?: string } } | undefined)
         ?.record?.id
+      const overrides = pendingUriMatchOverridesRef.current
+      pendingUriMatchOverridesRef.current = null
+      if (recordId && overrides) {
+        void setUriMatchOverrides(recordId, overrides)
+      }
       onSaved?.(recordId)
       void closeModal()
       setToast({ message: t`Record created successfully`, icon: null })
@@ -128,7 +162,8 @@ export const CreateOrEditLoginModalContent = ({
     note: Validator.string(),
     websites: Validator.array().items(
       Validator.object({
-        website: Validator.string().website(t`Wrong format of website`)
+        website: Validator.string().website(t`Wrong format of website`),
+        matchType: Validator.string()
       })
     ),
     customFields: Validator.array().items(
@@ -148,8 +183,13 @@ export const CreateOrEditLoginModalContent = ({
         initialRecord?.data?.otpInput ?? initialRecord?.data?.otp?.secret ?? '',
       note: initialRecord?.data?.note ?? '',
       websites: initialRecord?.data?.websites?.length
-        ? initialRecord.data.websites.map((website: string) => ({ website }))
-        : [{ website: '' }],
+        ? initialRecord.data.websites.map((website: string) => ({
+            website,
+            matchType: initialRecord.id
+              ? resolveUriMatchType(initialRecord.id, website)
+              : getDefaultUriMatchTypeSync()
+          }))
+        : [{ website: '', matchType: getDefaultUriMatchTypeSync() }],
       customFields: initialRecord?.data?.customFields?.length
         ? initialRecord.data.customFields
         : [{ type: 'note', name: 'note', note: '' }],
@@ -181,6 +221,25 @@ export const CreateOrEditLoginModalContent = ({
   const otpSecretField = register('otpSecret')
   const noteField = register('note')
 
+  useEffect(() => {
+    let alive = true
+    void hydrateUriMatchSettings().then(() => {
+      if (!alive || !initialRecord?.id) return
+      const websites = initialRecord.data?.websites ?? []
+      if (!websites.length) return
+      setValue(
+        'websites',
+        websites.map((website: string) => ({
+          website,
+          matchType: resolveUriMatchType(initialRecord.id as string, website)
+        }))
+      )
+    })
+    return () => {
+      alive = false
+    }
+  }, [initialRecord?.id, initialRecord?.data?.websites, setValue])
+
   const passwordIndicator = useMemo<
     PasswordIndicatorVariant | undefined
   >(() => {
@@ -192,10 +251,32 @@ export const CreateOrEditLoginModalContent = ({
     return STRENGTH_MAP[result.strengthType]
   }, [passwordField.value])
 
+  const buildUriMatchOverrides = (
+    websiteRows: Website[]
+  ): Record<string, UriMatchType> => {
+    const overrides: Record<string, UriMatchType> = {}
+    for (const row of websiteRows) {
+      const normalized = normalizeUrl(row.website as string)
+      if (!normalized) continue
+      const matchType =
+        row.matchType &&
+        (Object.values(URI_MATCH_TYPES) as string[]).includes(row.matchType)
+          ? row.matchType
+          : getDefaultUriMatchTypeSync()
+      overrides[normalized] = matchType as UriMatchType
+    }
+    return overrides
+  }
+
   const onSubmit = (formValues: Record<string, unknown>) => {
     const otpInput = ((formValues.otpSecret as string)?.trim() || undefined) as
       | string
       | undefined
+
+    const websiteRows = ((formValues.websites as Website[]) ?? []).filter(
+      (website) => !!website?.website?.trim().length
+    )
+    const overrides = buildUriMatchOverrides(websiteRows)
 
     const data = {
       type: RECORD_TYPES.LOGIN,
@@ -207,9 +288,9 @@ export const CreateOrEditLoginModalContent = ({
         username: formValues.username,
         password: formValues.password,
         note: formValues.note,
-        websites: (formValues.websites as Website[])
-          .filter((website) => !!website?.website?.trim().length)
-          .map((website) => normalizeUrl(website.website as string)),
+        websites: websiteRows.map((website) =>
+          normalizeUrl(website.website as string)
+        ),
         customFields: ((formValues.customFields as CustomField[]) ?? []).filter(
           (f) => f.note?.trim().length
         ),
@@ -219,9 +300,11 @@ export const CreateOrEditLoginModalContent = ({
       }
     }
 
-    if (isEdit && initialRecord) {
+    if (isEdit && initialRecord?.id) {
+      void setUriMatchOverrides(initialRecord.id, overrides)
       updateRecords([{ ...initialRecord, ...data }], onError)
     } else {
+      pendingUriMatchOverridesRef.current = overrides
       createRecord(data, onError)
     }
   }
@@ -382,7 +465,13 @@ export const CreateOrEditLoginModalContent = ({
                   size="small"
                   type="button"
                   iconBefore={<Add width={16} height={16} />}
-                  onClick={() => addWebsite({ name: 'website' })}
+                  onClick={() =>
+                    addWebsite({
+                      name: 'website',
+                      website: '',
+                      matchType: getDefaultUriMatchTypeSync()
+                    })
+                  }
                   data-testid="createoredit-login-v2-add-website"
                 >
                   {t`Add Another Website`}
@@ -391,35 +480,81 @@ export const CreateOrEditLoginModalContent = ({
             >
               {(websitesList as Array<{ id: string }>).map((website, index) => {
                 const websiteField = registerWebsiteItem('website', index)
+                const matchTypeField = registerWebsiteItem('matchType', index)
+                const selectedMatchType = (matchTypeField.value ||
+                  getDefaultUriMatchTypeSync()) as UriMatchType
                 return (
-                  <InputField
+                  <div
                     key={website.id}
-                    label={t`Website`}
-                    placeholder={t`Enter Website`}
-                    value={websiteField.value as string}
-                    onChange={(e) => websiteField.onChange(e.target.value)}
-                    error={websiteField.error || undefined}
-                    testID={`createoredit-login-v2-website-${index}`}
-                    rightSlot={
-                      index > 0 ? (
-                        <Button
-                          variant="tertiaryAccent"
-                          size="small"
-                          type="button"
-                          aria-label={t`Remove website`}
-                          iconBefore={
-                            <TrashOutlined
-                              width={16}
-                              height={16}
-                              color={theme.colors.colorTextPrimary}
-                            />
-                          }
-                          onClick={() => removeWebsite(index)}
-                          data-testid={`createoredit-login-v2-remove-website-${index}`}
-                        />
-                      ) : undefined
-                    }
-                  />
+                    className="flex flex-col gap-[var(--spacing8)]"
+                  >
+                    <InputField
+                      label={t`Website`}
+                      placeholder={t`Enter Website`}
+                      value={websiteField.value as string}
+                      onChange={(e) => websiteField.onChange(e.target.value)}
+                      error={websiteField.error || undefined}
+                      testID={`createoredit-login-v2-website-${index}`}
+                      rightSlot={
+                        index > 0 ? (
+                          <Button
+                            variant="tertiaryAccent"
+                            size="small"
+                            type="button"
+                            aria-label={t`Remove website`}
+                            iconBefore={
+                              <TrashOutlined
+                                width={16}
+                                height={16}
+                                color={theme.colors.colorTextPrimary}
+                              />
+                            }
+                            onClick={() => removeWebsite(index)}
+                            data-testid={`createoredit-login-v2-remove-website-${index}`}
+                          />
+                        ) : undefined
+                      }
+                    />
+                    <div className="flex items-center justify-between gap-[var(--spacing12)]">
+                      <Text
+                        variant="caption"
+                        color={theme.colors.colorTextSecondary}
+                      >
+                        {t`URI match`}
+                      </Text>
+                      <Dropdown
+                        open={openMatchTypeIndex === index}
+                        onOpenChange={(open) =>
+                          setOpenMatchTypeIndex(open ? index : null)
+                        }
+                        trigger={
+                          <Button
+                            variant="secondary"
+                            size="small"
+                            type="button"
+                            iconAfter={<KeyboardArrowBottom />}
+                            data-testid={`createoredit-login-v2-website-match-${index}`}
+                          >
+                            {URI_MATCH_OPTION_LABELS[selectedMatchType]?.() ??
+                              t`Domain`}
+                          </Button>
+                        }
+                      >
+                        {URI_MATCH_OPTION_VALUES.map((value) => (
+                          <NavbarListItem
+                            key={value}
+                            testID={`createoredit-login-v2-website-match-${index}-${value}`}
+                            label={URI_MATCH_OPTION_LABELS[value]()}
+                            selected={selectedMatchType === value}
+                            onClick={() => {
+                              matchTypeField.onChange(value)
+                              setOpenMatchTypeIndex(null)
+                            }}
+                          />
+                        ))}
+                      </Dropdown>
+                    </div>
+                  </div>
                 )
               })}
             </MultiSlotInput>

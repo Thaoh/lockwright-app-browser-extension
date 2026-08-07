@@ -1,44 +1,122 @@
+import { getDomain } from 'tldts'
+
+import { URI_MATCH_TYPES, type UriMatchType } from '../constants/uriMatch'
 import { getHostname } from './getHostname'
+import { normalizeUrl } from './normalizeUrl'
+import { resolveUriMatchType } from './uriMatchSetting'
 
-const stripWww = (hostname: string): string => hostname.replace(/^www\./i, '')
+export { URI_MATCH_TYPES, type UriMatchType }
 
-/**
- * True when the current page hostname matches a stored website entry
- * (same host, www variants, or either side is a subdomain of the other).
- */
-export const doesWebsiteMatchPage = (
-  pageUrl: string,
-  website: string | null | undefined
-): boolean => {
-  if (!website) return false
+const isUriMatchType = (value: unknown): value is UriMatchType =>
+  value === URI_MATCH_TYPES.DOMAIN ||
+  value === URI_MATCH_TYPES.HOST ||
+  value === URI_MATCH_TYPES.STARTS_WITH ||
+  value === URI_MATCH_TYPES.EXACT
 
+/** Hostname + non-default port (Bitwarden host match key). */
+const getHostWithPort = (value: string): string | null => {
+  const normalized = normalizeUrl(value, true)
+  if (!normalized) return null
+  try {
+    const url = new URL(normalized)
+    const hostname = url.hostname.toLowerCase()
+    if (!hostname) return null
+    const port =
+      url.port && url.port !== '80' && url.port !== '443' ? `:${url.port}` : ''
+    return `${hostname}${port}`
+  } catch {
+    return null
+  }
+}
+
+const matchesDomain = (pageUrl: string, website: string): boolean => {
   const pageHost = getHostname(pageUrl)
   const recordHost = getHostname(website)
   if (!pageHost || !recordHost) return false
 
-  const page = stripWww(pageHost)
-  const record = stripWww(recordHost)
+  if (pageHost === recordHost) return true
 
-  return (
-    page === record ||
-    page.endsWith(`.${record}`) ||
-    record.endsWith(`.${page}`)
-  )
+  const pageDomain = getDomain(pageHost)
+  const recordDomain = getDomain(recordHost)
+  return Boolean(pageDomain && recordDomain && pageDomain === recordDomain)
+}
+
+const matchesHost = (pageUrl: string, website: string): boolean => {
+  const pageHost = getHostWithPort(pageUrl)
+  const recordHost = getHostWithPort(website)
+  if (!pageHost || !recordHost) return false
+  return pageHost === recordHost
+}
+
+const matchesStartsWith = (pageUrl: string, website: string): boolean => {
+  const pageNormalized = normalizeUrl(pageUrl, true)
+  const websiteNormalized = normalizeUrl(website, true)
+  if (!pageNormalized || !websiteNormalized) return false
+  return pageNormalized.startsWith(websiteNormalized)
+}
+
+const matchesExact = (pageUrl: string, website: string): boolean => {
+  const pageNormalized = normalizeUrl(pageUrl, true)
+  const websiteNormalized = normalizeUrl(website, true)
+  if (!pageNormalized || !websiteNormalized) return false
+  return pageNormalized === websiteNormalized
+}
+
+/**
+ * True when the current page URL matches a stored website entry
+ * under the given URI match type (Bitwarden-style).
+ */
+export const doesWebsiteMatchPage = (
+  pageUrl: string,
+  website: string | null | undefined,
+  matchType: UriMatchType = URI_MATCH_TYPES.DOMAIN
+): boolean => {
+  if (!website) return false
+
+  const type = isUriMatchType(matchType) ? matchType : URI_MATCH_TYPES.DOMAIN
+
+  switch (type) {
+    case URI_MATCH_TYPES.HOST:
+      return matchesHost(pageUrl, website)
+    case URI_MATCH_TYPES.STARTS_WITH:
+      return matchesStartsWith(pageUrl, website)
+    case URI_MATCH_TYPES.EXACT:
+      return matchesExact(pageUrl, website)
+    case URI_MATCH_TYPES.DOMAIN:
+    default:
+      return matchesDomain(pageUrl, website)
+  }
 }
 
 type RecordWithWebsites = {
+  id?: string
   data?: {
     websites?: string[] | null
     [key: string]: unknown
   } | null
 }
 
+export type RecordMatchOptions = {
+  defaultMatchType?: UriMatchType
+  getMatchTypeForWebsite?: (website: string) => UriMatchType
+}
+
 /** True when any of the record's website entries match the current page URL. */
 export const recordMatchesCurrentSite = (
   record: RecordWithWebsites | null | undefined,
-  pageUrl: string
+  pageUrl: string,
+  options?: RecordMatchOptions
 ): boolean => {
   const websites = record?.data?.websites
   if (!websites?.length) return false
-  return websites.some((website) => doesWebsiteMatchPage(pageUrl, website))
+
+  return websites.some((website) => {
+    const matchType =
+      options?.getMatchTypeForWebsite?.(website) ??
+      (record?.id ? resolveUriMatchType(record.id, website) : undefined) ??
+      options?.defaultMatchType ??
+      URI_MATCH_TYPES.DOMAIN
+
+    return doesWebsiteMatchPage(pageUrl, website, matchType)
+  })
 }
