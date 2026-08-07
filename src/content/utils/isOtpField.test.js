@@ -1,0 +1,69 @@
+import { isCreditCardField } from './isCreditCardField'
+import { isOtpField } from './isOtpField'
+
+describe('isOtpField', () => {
+  let inputElement
+
+  beforeEach(() => {
+    inputElement = document.createElement('input')
+    inputElement.type = 'text'
+  })
+
+  it('returns true for DigitalOcean-like one-time-code input', () => {
+    inputElement.name = 'code'
+    inputElement.id = 'code'
+    inputElement.setAttribute('autocomplete', 'one-time-code')
+    inputElement.placeholder = 'Enter 6-digit code'
+    inputElement.setAttribute('data-testid', 'code-input')
+
+    expect(isOtpField(inputElement)).toBe(true)
+  })
+
+  it('returns true when autocomplete is one-time-code alone', () => {
+    inputElement.setAttribute('autocomplete', 'one-time-code')
+
+    expect(isOtpField(inputElement)).toBe(true)
+  })
+
+  it('returns true for strong totp / verification field names', () => {
+    inputElement.name = 'totp'
+    expect(isOtpField(inputElement)).toBe(true)
+
+    inputElement.name = 'verificationCode'
+    expect(isOtpField(inputElement)).toBe(true)
+
+    inputElement.name = 'twoFactorCode'
+    expect(isOtpField(inputElement)).toBe(true)
+  })
+
+  it('returns false for plain username field', () => {
+    inputElement.name = 'username'
+    inputElement.id = 'username'
+    inputElement.placeholder = 'Username'
+
+    expect(isOtpField(inputElement)).toBe(false)
+  })
+
+  it('returns false for credit-card security_code / CVV (credit-card wins)', () => {
+    inputElement.name = 'security_code'
+    inputElement.placeholder = 'CVV'
+
+    expect(isCreditCardField(inputElement)).toBe(true)
+    expect(isOtpField(inputElement)).toBe(false)
+  })
+
+  it('returns false for recovery / backup code fields', () => {
+    inputElement.name = 'recovery_code'
+    expect(isOtpField(inputElement)).toBe(false)
+
+    inputElement.name = 'backupCode'
+    expect(isOtpField(inputElement)).toBe(false)
+  })
+
+  it('returns true for ambiguous name=code when placeholder signals digits', () => {
+    inputElement.name = 'code'
+    inputElement.placeholder = 'Enter 6-digit code'
+
+    expect(isOtpField(inputElement)).toBe(true)
+  })
+})

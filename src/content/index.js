@@ -14,6 +14,7 @@ import { getField, PASSWORD_MATCHERS } from './utils/getField'
 import { isContentScriptEnabled } from './utils/isContentScriptEnabled'
 import { isCreditCardField } from './utils/isCreditCardField'
 import { isIdentityField } from './utils/isIdentityField'
+import { isOtpField } from './utils/isOtpField'
 import { isPasswordField } from './utils/isPasswordField'
 import { isUsernameField } from './utils/isUsernameField'
 import { setInputValue } from './utils/setInputValue'
@@ -227,7 +228,7 @@ function handleInsertPassword({ password, iframeData }) {
 }
 
 // AutoFill
-function showAutofillPopup({ positions, recordType }) {
+function showAutofillPopup({ positions, recordType, fillMode }) {
   if (!isAutoFillEnabled) {
     return
   }
@@ -236,7 +237,8 @@ function showAutofillPopup({ positions, recordType }) {
   showIframe(IFRAME_TYPES.autofill, {
     data: {
       url: window.location.href,
-      recordType: recordType
+      recordType: recordType,
+      fillMode
     },
     styles: {
       top: `${top}px`,
@@ -248,8 +250,25 @@ function showAutofillPopup({ positions, recordType }) {
   })
 }
 
-function handleAutofillLogin({ username, password, preferredElement }) {
+function handleAutofillLogin({
+  username,
+  password,
+  otpCode,
+  preferredElement
+}) {
   if (!isAutoFillEnabled) {
+    return
+  }
+
+  // OTP / 2FA: fill only the focused one-time-code field
+  if (
+    otpCode !== undefined &&
+    otpCode !== null &&
+    preferredElement &&
+    isOtpField(preferredElement)
+  ) {
+    setInputValue(preferredElement, otpCode)
+    triggerInputEvents(preferredElement, ['blur'])
     return
   }
 
@@ -266,10 +285,16 @@ function handleAutofillLogin({ username, password, preferredElement }) {
   }
 }
 
-const handleAutoFillLoginFromPopup = ({ username, password, iframeData }) => {
+const handleAutoFillLoginFromPopup = ({
+  username,
+  password,
+  otpCode,
+  iframeData
+}) => {
   handleAutofillLogin({
     username,
     password,
+    otpCode,
     preferredElement: getIframeData(IFRAME_TYPES.logo)?.element
   })
 
@@ -642,7 +667,8 @@ function showLogoForField(field) {
     element: field,
     data: {
       url: window.location.href,
-      recordType: getRecordTypeByField(field)
+      recordType: getRecordTypeByField(field),
+      fillMode: isOtpField(field) ? 'otp' : undefined
     },
     styles: {
       top: `${rect.top + (rect.height - LOGO_SIZE) / 2}px`,
@@ -685,8 +711,14 @@ function getRecordTypeByField(field) {
     return 'login'
   }
 
+  // Credit card before OTP so security_code / CVV stay card fields
   if (isCreditCardField(field)) {
     return RECORD_TYPES.CREDIT_CARD
+  }
+
+  // Reuse login recordType so site-filtered login list (useFilteredRecords) works
+  if (isOtpField(field)) {
+    return 'login'
   }
 
   if (isIdentityField(field)) {
@@ -701,6 +733,7 @@ function isAcceptedField(field) {
     isUsernameField(field) ||
     isPasswordField(field) ||
     isCreditCardField(field) ||
+    isOtpField(field) ||
     isIdentityField(field)
   )
 }
@@ -868,6 +901,7 @@ const handleIframeEvent = (event) => {
 
     showAutofillPopup({
       recordType: logoIframeData?.data?.recordType,
+      fillMode: logoIframeData?.data?.fillMode,
       positions: {
         top: iframeRect.top + iframeRect.height + 5,
         left: iframeRect.left
@@ -877,11 +911,12 @@ const handleIframeEvent = (event) => {
   }
 
   if (eventType === 'autofillLogin') {
-    const { username, password } = msg.data
+    const { username, password, otpCode } = msg.data
 
     handleAutoFillLoginFromPopup({
       username,
       password,
+      otpCode,
       iframeData
     })
     return
