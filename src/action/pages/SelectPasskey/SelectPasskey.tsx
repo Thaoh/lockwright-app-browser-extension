@@ -141,7 +141,7 @@ export const SelectPasskey = () => {
         doesWebsiteMatchPage(
           pageUrl,
           website,
-          resolveUriMatchType(record.id, website)
+          resolveUriMatchType(record, website)
         )
       )
     })

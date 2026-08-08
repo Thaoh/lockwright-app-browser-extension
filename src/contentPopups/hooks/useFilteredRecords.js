@@ -47,7 +47,7 @@ export const useFilteredRecords = () => {
           doesWebsiteMatchPage(
             routerState.url,
             website,
-            resolveUriMatchType(record.id, website)
+            resolveUriMatchType(record, website)
           )
         )
       )

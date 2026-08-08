@@ -267,8 +267,8 @@ importers:
         specifier: git+https://github.com/tetherto/pearpass-lib-ui-react-native-components.git#3cae0a4b0f7961351b674be991371f0c643c00b0
         version: '@tetherto/pearpass-lib-ui-react-native-components@https://codeload.github.com/tetherto/pearpass-lib-ui-react-native-components/tar.gz/3cae0a4b0f7961351b674be991371f0c643c00b0(postcss@8.5.8)(react-dom@19.1.0(react@19.1.0))(react-native@0.79.5(@babel/core@7.26.10)(@types/react@19.0.0)(react@19.1.0))(react@19.1.0)'
       '@tetherto/pearpass-lib-vault':
-        specifier: git+https://github.com/tetherto/pearpass-lib-vault.git#7e58479a45f8f802d2e8cb8145d526e74495c3af
-        version: pearpass-lib-vault@https://codeload.github.com/tetherto/pearpass-lib-vault/tar.gz/7e58479a45f8f802d2e8cb8145d526e74495c3af(@types/react@19.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(redux@5.0.1)
+        specifier: file:../../External/pearpass-lib-vault
+        version: file:../../External/pearpass-lib-vault(@types/react@19.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(redux@5.0.1)
       '@tetherto/pearpass-utils-password-check':
         specifier: git+https://github.com/tetherto/pearpass-utils-password-check.git#a549e2b4c486e5f57eb28acd47652ea38154d9c8
         version: pearpass-utils-password-check@https://codeload.github.com/tetherto/pearpass-utils-password-check/tar.gz/a549e2b4c486e5f57eb28acd47652ea38154d9c8
@@ -2290,6 +2290,12 @@ packages:
         optional: true
       react-native-svg:
         optional: true
+
+  '@tetherto/pearpass-lib-vault@file:../../External/pearpass-lib-vault':
+    resolution: {directory: ../../External/pearpass-lib-vault, type: directory}
+    peerDependencies:
+      react: '>=18.3.1'
+      react-dom: '>=18.3.1'
 
   '@tetherto/tether-dev-docs@https://codeload.github.com/tetherto/tether-dev-docs/tar.gz/64c264c34e8255360ca6c805457119168c789583':
     resolution: {gitHosted: true, tarball: https://codeload.github.com/tetherto/tether-dev-docs/tar.gz/64c264c34e8255360ca6c805457119168c789583}
@@ -4625,13 +4631,6 @@ packages:
   pearpass-lib-constants@https://codeload.github.com/tetherto/pearpass-lib-constants/tar.gz/c651dc76d92b7c66501db2e5c143802cd056af98:
     resolution: {gitHosted: true, integrity: sha512-2wkELdUD459M4X34FE6GgRDH0AqJfdMmPncNojjFrdueZFOCKDGGPEhR13WjuLOWhvqytG+amN+wi+UhMqFZKA==, tarball: https://codeload.github.com/tetherto/pearpass-lib-constants/tar.gz/c651dc76d92b7c66501db2e5c143802cd056af98}
     version: 0.0.11
-
-  pearpass-lib-vault@https://codeload.github.com/tetherto/pearpass-lib-vault/tar.gz/7e58479a45f8f802d2e8cb8145d526e74495c3af:
-    resolution: {gitHosted: true, integrity: sha512-ytocSYDeLOd3j8EVJIen4PFdUcNR4ObiEzEglD0YYCiWXv5XSNE0Wp0YBccOOSSvZ/IQOvd+WIvoyLOQVLNd7Q==, tarball: https://codeload.github.com/tetherto/pearpass-lib-vault/tar.gz/7e58479a45f8f802d2e8cb8145d526e74495c3af}
-    version: 0.1.0
-    peerDependencies:
-      react: '>=18.3.1'
-      react-dom: '>=18.3.1'
 
   pearpass-utils-password-check@https://codeload.github.com/tetherto/pearpass-utils-password-check/tar.gz/a549e2b4c486e5f57eb28acd47652ea38154d9c8:
     resolution: {gitHosted: true, integrity: sha512-l+QbRZ6c6ZoJ+v35e5rZBR54sFHK98unNWioF/1XkRKxcUecbBuLyp2j5y7e7Ny9Fxe976f8T69Wa8yfHU28xw==, tarball: https://codeload.github.com/tetherto/pearpass-utils-password-check/tar.gz/a549e2b4c486e5f57eb28acd47652ea38154d9c8}
@@ -7665,6 +7664,16 @@ snapshots:
       - postcss
       - supports-color
 
+  '@tetherto/pearpass-lib-vault@file:../../External/pearpass-lib-vault(@types/react@19.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(redux@5.0.1)':
+    dependencies:
+      '@reduxjs/toolkit': 2.5.0(react-redux@9.1.2(@types/react@19.0.0)(react@19.1.0)(redux@5.0.1))(react@19.1.0)
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+      react-redux: 9.1.2(@types/react@19.0.0)(react@19.1.0)(redux@5.0.1)
+    transitivePeerDependencies:
+      - '@types/react'
+      - redux
+
   '@tetherto/tether-dev-docs@https://codeload.github.com/tetherto/tether-dev-docs/tar.gz/64c264c34e8255360ca6c805457119168c789583(jiti@2.7.0)(typescript@5.9.3)':
     dependencies:
       '@typescript-eslint/eslint-plugin': 8.59.4(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
@@ -10650,16 +10659,6 @@ snapshots:
       - react-native-b4a
 
   pearpass-lib-constants@https://codeload.github.com/tetherto/pearpass-lib-constants/tar.gz/c651dc76d92b7c66501db2e5c143802cd056af98: {}
-
-  pearpass-lib-vault@https://codeload.github.com/tetherto/pearpass-lib-vault/tar.gz/7e58479a45f8f802d2e8cb8145d526e74495c3af(@types/react@19.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(redux@5.0.1):
-    dependencies:
-      '@reduxjs/toolkit': 2.5.0(react-redux@9.1.2(@types/react@19.0.0)(react@19.1.0)(redux@5.0.1))(react@19.1.0)
-      react: 19.1.0
-      react-dom: 19.1.0(react@19.1.0)
-      react-redux: 9.1.2(@types/react@19.0.0)(react@19.1.0)(redux@5.0.1)
-    transitivePeerDependencies:
-      - '@types/react'
-      - redux
 
   pearpass-utils-password-check@https://codeload.github.com/tetherto/pearpass-utils-password-check/tar.gz/a549e2b4c486e5f57eb28acd47652ea38154d9c8: {}
 

@@ -92,6 +92,7 @@ type RecordWithWebsites = {
   id?: string
   data?: {
     websites?: string[] | null
+    uris?: Array<{ uri?: string; match?: string }> | null
     [key: string]: unknown
   } | null
 }
@@ -111,9 +112,14 @@ export const recordMatchesCurrentSite = (
   if (!websites?.length) return false
 
   return websites.some((website) => {
+    const hasVaultUris =
+      Array.isArray(record?.data?.uris) && record.data.uris.length > 0
+    const canResolveFromRecord = Boolean(record?.id || hasVaultUris)
     const matchType =
       options?.getMatchTypeForWebsite?.(website) ??
-      (record?.id ? resolveUriMatchType(record.id, website) : undefined) ??
+      (canResolveFromRecord && record
+        ? resolveUriMatchType(record, website)
+        : undefined) ??
       options?.defaultMatchType ??
       URI_MATCH_TYPES.DOMAIN
 

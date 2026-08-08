@@ -265,4 +265,32 @@ describe('recordMatchesCurrentSite', () => {
       )
     ).toBe(false)
   })
+
+  it('uses vault uris match via resolveUriMatchType when record has uris', () => {
+    expect(
+      recordMatchesCurrentSite(
+        {
+          id: 'r1',
+          data: {
+            websites: ['https://example.com'],
+            uris: [{ uri: 'https://example.com', match: 'host' }]
+          }
+        },
+        'https://login.example.com'
+      )
+    ).toBe(false)
+
+    expect(
+      recordMatchesCurrentSite(
+        {
+          id: 'r1',
+          data: {
+            websites: ['https://example.com'],
+            uris: [{ uri: 'https://example.com', match: 'baseDomain' }]
+          }
+        },
+        'https://login.example.com'
+      )
+    ).toBe(true)
+  })
 })

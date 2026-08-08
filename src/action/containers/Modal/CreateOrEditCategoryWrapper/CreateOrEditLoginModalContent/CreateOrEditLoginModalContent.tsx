@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { t } from '@lingui/core/macro'
 import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
@@ -44,10 +44,10 @@ import { useToast } from '../../../../../shared/context/ToastContext'
 import { formatPasskeyDate } from '../../../../../shared/utils/formatPasskeyDate'
 import { normalizeUrl } from '../../../../../shared/utils/normalizeUrl'
 import {
+  buildLoginUris,
   getDefaultUriMatchTypeSync,
   hydrateUriMatchSettings,
-  resolveUriMatchType,
-  setUriMatchOverrides
+  resolveUriMatchType
 } from '../../../../../shared/utils/uriMatchSetting'
 import { useCreateOrEditRecord } from '../../../../hooks/useCreateOrEditRecord'
 
@@ -81,6 +81,7 @@ export type CreateOrEditLoginModalContentProps = {
       password?: string
       note?: string
       websites?: string[]
+      uris?: Array<{ uri?: string; match?: string }>
       customFields?: CustomField[]
       otpInput?: string
       otp?: { secret?: string }
@@ -115,10 +116,6 @@ export const CreateOrEditLoginModalContent = ({
   const { handleCreateOrEditRecord } = useCreateOrEditRecord()
 
   const isEdit = !!initialRecord?.id
-  const pendingUriMatchOverridesRef = useRef<Record<
-    string,
-    UriMatchType
-  > | null>(null)
   const [openMatchTypeIndex, setOpenMatchTypeIndex] = useState<number | null>(
     null
   )
@@ -127,11 +124,6 @@ export const CreateOrEditLoginModalContent = ({
     onCompleted: (payload: unknown) => {
       const recordId = (payload as { record?: { id?: string } } | undefined)
         ?.record?.id
-      const overrides = pendingUriMatchOverridesRef.current
-      pendingUriMatchOverridesRef.current = null
-      if (recordId && overrides) {
-        void setUriMatchOverrides(recordId, overrides)
-      }
       onSaved?.(recordId)
       void closeModal()
       setToast({ message: t`Record created successfully`, icon: null })
@@ -185,8 +177,8 @@ export const CreateOrEditLoginModalContent = ({
       websites: initialRecord?.data?.websites?.length
         ? initialRecord.data.websites.map((website: string) => ({
             website,
-            matchType: initialRecord.id
-              ? resolveUriMatchType(initialRecord.id, website)
+            matchType: initialRecord
+              ? resolveUriMatchType(initialRecord, website)
               : getDefaultUriMatchTypeSync()
           }))
         : [{ website: '', matchType: getDefaultUriMatchTypeSync() }],
@@ -224,21 +216,27 @@ export const CreateOrEditLoginModalContent = ({
   useEffect(() => {
     let alive = true
     void hydrateUriMatchSettings().then(() => {
-      if (!alive || !initialRecord?.id) return
+      if (!alive || !initialRecord) return
       const websites = initialRecord.data?.websites ?? []
       if (!websites.length) return
       setValue(
         'websites',
         websites.map((website: string) => ({
           website,
-          matchType: resolveUriMatchType(initialRecord.id as string, website)
+          matchType: resolveUriMatchType(initialRecord, website)
         }))
       )
     })
     return () => {
       alive = false
     }
-  }, [initialRecord?.id, initialRecord?.data?.websites, setValue])
+  }, [
+    initialRecord,
+    initialRecord?.id,
+    initialRecord?.data?.websites,
+    initialRecord?.data?.uris,
+    setValue
+  ])
 
   const passwordIndicator = useMemo<
     PasswordIndicatorVariant | undefined
@@ -251,23 +249,6 @@ export const CreateOrEditLoginModalContent = ({
     return STRENGTH_MAP[result.strengthType]
   }, [passwordField.value])
 
-  const buildUriMatchOverrides = (
-    websiteRows: Website[]
-  ): Record<string, UriMatchType> => {
-    const overrides: Record<string, UriMatchType> = {}
-    for (const row of websiteRows) {
-      const normalized = normalizeUrl(row.website as string)
-      if (!normalized) continue
-      const matchType =
-        row.matchType &&
-        (Object.values(URI_MATCH_TYPES) as string[]).includes(row.matchType)
-          ? row.matchType
-          : getDefaultUriMatchTypeSync()
-      overrides[normalized] = matchType as UriMatchType
-    }
-    return overrides
-  }
-
   const onSubmit = (formValues: Record<string, unknown>) => {
     const otpInput = ((formValues.otpSecret as string)?.trim() || undefined) as
       | string
@@ -276,7 +257,10 @@ export const CreateOrEditLoginModalContent = ({
     const websiteRows = ((formValues.websites as Website[]) ?? []).filter(
       (website) => !!website?.website?.trim().length
     )
-    const overrides = buildUriMatchOverrides(websiteRows)
+    const websites = websiteRows.map((website) =>
+      normalizeUrl(website.website as string)
+    )
+    const uris = buildLoginUris(websiteRows)
 
     const data = {
       type: RECORD_TYPES.LOGIN,
@@ -288,9 +272,8 @@ export const CreateOrEditLoginModalContent = ({
         username: formValues.username,
         password: formValues.password,
         note: formValues.note,
-        websites: websiteRows.map((website) =>
-          normalizeUrl(website.website as string)
-        ),
+        websites,
+        uris,
         customFields: ((formValues.customFields as CustomField[]) ?? []).filter(
           (f) => f.note?.trim().length
         ),
@@ -301,10 +284,8 @@ export const CreateOrEditLoginModalContent = ({
     }
 
     if (isEdit && initialRecord?.id) {
-      void setUriMatchOverrides(initialRecord.id, overrides)
       updateRecords([{ ...initialRecord, ...data }], onError)
     } else {
-      pendingUriMatchOverridesRef.current = overrides
       createRecord(data, onError)
     }
   }

@@ -6,6 +6,10 @@ import {
   resolveUriMatchType,
   hydrateUriMatchSettings,
   onUriMatchSettingsChanged,
+  buildLoginUris,
+  fromVaultUriMatch,
+  toVaultUriMatch,
+  migrateUriMatchOverridesToVaultRecords,
   __resetUriMatchSettingsCacheForTests
 } from './uriMatchSetting'
 import { CHROME_STORAGE_KEYS } from '../constants/storage'
@@ -129,6 +133,103 @@ describe('uriMatchSetting', () => {
       expect(overrides).toEqual({
         'https://other.com': URI_MATCH_TYPES.EXACT
       })
+    })
+  })
+
+  describe('vault uris preference', () => {
+    it('maps domain ↔ baseDomain for vault storage', () => {
+      expect(toVaultUriMatch(URI_MATCH_TYPES.DOMAIN)).toBe('baseDomain')
+      expect(fromVaultUriMatch('baseDomain')).toBe(URI_MATCH_TYPES.DOMAIN)
+      expect(toVaultUriMatch(URI_MATCH_TYPES.HOST)).toBe(URI_MATCH_TYPES.HOST)
+      expect(fromVaultUriMatch('exact')).toBe(URI_MATCH_TYPES.EXACT)
+    })
+
+    it('resolveUriMatchType prefers record.data.uris over chrome.storage override', async () => {
+      await setDefaultUriMatchType(URI_MATCH_TYPES.HOST)
+      await setUriMatchOverrides('rec-1', {
+        'https://example.com': URI_MATCH_TYPES.EXACT
+      })
+
+      const record = {
+        id: 'rec-1',
+        data: {
+          websites: ['https://example.com'],
+          uris: [{ uri: 'https://example.com', match: 'baseDomain' }]
+        }
+      }
+
+      expect(resolveUriMatchType(record, 'https://example.com')).toBe(
+        URI_MATCH_TYPES.DOMAIN
+      )
+      // string id still uses chrome.storage override
+      expect(resolveUriMatchType('rec-1', 'https://example.com')).toBe(
+        URI_MATCH_TYPES.EXACT
+      )
+    })
+
+    it('falls back to chrome.storage when uris absent or website missing', async () => {
+      await setUriMatchOverrides('rec-1', {
+        'https://example.com': URI_MATCH_TYPES.STARTS_WITH
+      })
+
+      expect(
+        resolveUriMatchType(
+          { id: 'rec-1', data: { websites: ['https://example.com'] } },
+          'https://example.com'
+        )
+      ).toBe(URI_MATCH_TYPES.STARTS_WITH)
+
+      expect(
+        resolveUriMatchType(
+          {
+            id: 'rec-1',
+            data: {
+              uris: [{ uri: 'https://other.com', match: 'host' }]
+            }
+          },
+          'https://example.com'
+        )
+      ).toBe(URI_MATCH_TYPES.STARTS_WITH)
+    })
+
+    it('buildLoginUris writes vault match values', () => {
+      expect(
+        buildLoginUris([
+          { website: 'example.com', matchType: URI_MATCH_TYPES.DOMAIN },
+          { website: 'https://other.com/path', matchType: URI_MATCH_TYPES.HOST }
+        ])
+      ).toEqual([
+        { uri: 'https://example.com', match: 'baseDomain' },
+        { uri: 'https://other.com/path', match: 'host' }
+      ])
+    })
+
+    it('migrateUriMatchOverridesToVaultRecords writes uris and clears overrides', async () => {
+      await setUriMatchOverrides('rec-1', {
+        'https://example.com': URI_MATCH_TYPES.HOST
+      })
+
+      const updateRecords = jest.fn().mockResolvedValue(undefined)
+      const result = await migrateUriMatchOverridesToVaultRecords(
+        [
+          {
+            id: 'rec-1',
+            data: {
+              title: 'Login',
+              websites: ['https://example.com'],
+              uris: [{ uri: 'https://example.com', match: 'baseDomain' }]
+            }
+          }
+        ],
+        updateRecords
+      )
+
+      expect(result.migratedRecordIds).toEqual(['rec-1'])
+      expect(updateRecords).toHaveBeenCalledTimes(1)
+      expect(updateRecords.mock.calls[0][0][0].data.uris).toEqual([
+        { uri: 'https://example.com', match: 'host' }
+      ])
+      expect(await getUriMatchOverrides('rec-1')).toEqual({})
     })
   })
 
