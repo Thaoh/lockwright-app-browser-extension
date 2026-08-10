@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { PASSKEY_PAGES } from '../../../shared/constants/passkey'
 import {
@@ -6,6 +6,13 @@ import {
   passkeyWindowSize
 } from '../../../shared/constants/windowSizes'
 import { useRouter } from '../../../shared/context/RouterContext'
+import {
+  applyActionPopupDocumentSize,
+  clampActionPopupSize,
+  loadActionPopupSize,
+  saveActionPopupSize
+} from '../../../shared/utils/actionPopupSize'
+import { isFirefox } from '../../../shared/utils/isFirefox'
 
 /**
  * Resizes a Chrome window to the target inner dimensions.
@@ -75,22 +82,63 @@ const resizeWindow = (
 
 export const useWindowResize = () => {
   const { currentPage, state } = useRouter()
+  const isPasskeyFlow =
+    PASSKEY_PAGES.includes(currentPage) || state?.inPasskeyFlow === true
 
-  const targetSize = useMemo(() => {
-    const isPasskeyFlow =
-      PASSKEY_PAGES.includes(currentPage) || state?.inPasskeyFlow === true
-    return isPasskeyFlow ? passkeyWindowSize : mainExtensionWindowSize
-  }, [currentPage, state])
+  const [mainSize, setMainSize] = useState(mainExtensionWindowSize)
 
   useEffect(() => {
+    if (isPasskeyFlow) return
+
+    let cancelled = false
+    loadActionPopupSize().then((size) => {
+      if (cancelled) return
+      setMainSize(size)
+      applyActionPopupDocumentSize(size)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isPasskeyFlow])
+
+  const setSize = useCallback((nextSize) => {
+    const clamped = clampActionPopupSize(nextSize)
+    setMainSize(clamped)
+    applyActionPopupDocumentSize(clamped)
+    void saveActionPopupSize(clamped)
+    return clamped
+  }, [])
+
+  const targetSize = useMemo(() => {
+    if (isPasskeyFlow) {
+      return {
+        ...passkeyWindowSize,
+        isResizable: false,
+        setSize: undefined
+      }
+    }
+
+    return {
+      ...mainSize,
+      isResizable: true,
+      setSize
+    }
+  }, [isPasskeyFlow, mainSize, setSize])
+
+  useEffect(() => {
+    // Firefox/Zen browser-action panels are not Chrome popup windows;
+    // windows.update can misbehave — size comes from content CSS instead.
+    if (isFirefox() || isPasskeyFlow) return
+
     if (chrome?.windows?.getCurrent) {
       chrome.windows.getCurrent((currentWindow) => {
         if (currentWindow?.type === 'popup' && chrome?.windows?.update) {
-          resizeWindow(currentWindow.id, targetSize.width, targetSize.height)
+          resizeWindow(currentWindow.id, mainSize.width, mainSize.height)
         }
       })
     }
-  }, [targetSize])
+  }, [isPasskeyFlow, mainSize.height, mainSize.width])
 
   return targetSize
 }

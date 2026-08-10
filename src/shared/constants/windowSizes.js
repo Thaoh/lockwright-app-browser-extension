@@ -13,3 +13,9 @@ export const passkeyWindowSize = {
 }
 
 export const mainExtensionWindowSize = { width: 650, height: 500 }
+
+export const ACTION_POPUP_MIN_WIDTH = 650
+export const ACTION_POPUP_MIN_HEIGHT = 500
+export const ACTION_POPUP_MAX_WIDTH = 800
+export const ACTION_POPUP_MAX_HEIGHT = 600
+export const ACTION_POPUP_SIZE_STORAGE_KEY = 'actionPopupSize'

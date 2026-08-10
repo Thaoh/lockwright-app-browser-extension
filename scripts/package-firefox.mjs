@@ -55,6 +55,19 @@ export function transformFirefoxManifest(manifest) {
     })
   }
 
+  out.action = { ...(out.action ?? {}), default_area: 'navbar' }
+
+  return out
+}
+
+/** Strip crossorigin and rewrite root-absolute src/href for extension pages. */
+export function rewriteFirefoxHtml(html) {
+  let out = html.replace(
+    /\s+crossorigin(?:=(?:"[^"]*"|'[^']*'|[^\s>]*))?/gi,
+    ''
+  )
+  out = out.replace(/(\s(?:src|href))="\/(?!\/)/g, '$1="./')
+  out = out.replace(/(\s(?:src|href))='\/(?!\/)/g, "$1='./")
   return out
 }
 
@@ -185,6 +198,12 @@ export function packageFirefox({
     `${JSON.stringify(firefoxManifest, null, 2)}\n`,
     'utf8'
   )
+
+  for (const { full } of listFilesRecursive(outDir)) {
+    if (!full.endsWith('.html')) continue
+    const html = readFileSync(full, 'utf8')
+    writeFileSync(full, rewriteFirefoxHtml(html), 'utf8')
+  }
 
   rmSync(zipPath, { force: true })
   zipDirectory(outDir, zipPath)

@@ -6,7 +6,13 @@ import '@testing-library/jest-dom'
 jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
   rawTokens: { radius8: 8 },
   useTheme: () => ({
-    theme: { colors: { colorBorderTertiary: '#cccccc' } }
+    theme: {
+      colors: {
+        colorBorderTertiary: '#cccccc',
+        colorBorderPrimary: '#999999',
+        colorSurfaceSecondary: '#eeeeee'
+      }
+    }
   })
 }))
 
@@ -31,7 +37,11 @@ jest.mock('./hooks/useRedirect', () => ({
 }))
 
 jest.mock('./hooks/useWindowResize', () => ({
-  useWindowResize: jest.fn(() => ({ height: 600, width: 400 }))
+  useWindowResize: jest.fn(() => ({
+    height: 600,
+    width: 400,
+    isResizable: false
+  }))
 }))
 
 jest.mock('../../shared/context/BlockingStateContext', () => ({

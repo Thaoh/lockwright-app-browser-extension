@@ -52,6 +52,25 @@ describe('isOtpField', () => {
     expect(isOtpField(inputElement)).toBe(false)
   })
 
+  it('returns true for Affinity-like Security code OTP (one-time-code + label backup hint)', () => {
+    document.body.innerHTML = ''
+    const form = document.createElement('form')
+    const label = document.createElement('label')
+    label.htmlFor = 'otp'
+    label.innerHTML =
+      '<span>Security code</span><span>Enter your two-step verification security code. If you currently don’t have access to your device, you can enter one of your backup codes.</span>'
+    const input = document.createElement('input')
+    input.type = 'text'
+    input.id = 'otp'
+    input.name = 'otp'
+    input.setAttribute('autocomplete', 'one-time-code')
+    form.append(label, input)
+    document.body.appendChild(form)
+
+    expect(isCreditCardField(input)).toBe(false)
+    expect(isOtpField(input)).toBe(true)
+  })
+
   it('returns false for recovery / backup code fields', () => {
     inputElement.name = 'recovery_code'
     expect(isOtpField(inputElement)).toBe(false)

@@ -11,7 +11,11 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, it } from 'node:test'
 
-import { packageFirefox, transformFirefoxManifest } from './package-firefox.mjs'
+import {
+  packageFirefox,
+  rewriteFirefoxHtml,
+  transformFirefoxManifest
+} from './package-firefox.mjs'
 
 function makeFixtureDist(root) {
   const distDir = path.join(root, 'dist')
@@ -39,6 +43,13 @@ function makeFixtureDist(root) {
           service_worker: 'background.js',
           scripts: ['background.js']
         },
+        action: {
+          default_popup: 'index.html',
+          default_icon: {
+            '16': 'icons/icon16.png',
+            '32': 'icons/icon32.png'
+          }
+        },
         key: 'CHROME-ONLY-NIGHTLY-KEY',
         web_accessible_resources: [
           {
@@ -56,8 +67,41 @@ function makeFixtureDist(root) {
   writeFileSync(path.join(distDir, 'offscreen.html'), '<html></html>\n')
   writeFileSync(path.join(distDir, 'offscreen.js'), '// offscreen\n')
   writeFileSync(path.join(distDir, 'content.js'), '// content\n')
+  writeFileSync(
+    path.join(distDir, 'index.html'),
+    `<!doctype html>
+<html>
+  <head>
+    <script type="module" crossorigin src="/action.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/strict.css">
+  </head>
+</html>
+`
+  )
   return distDir
 }
+
+describe('rewriteFirefoxHtml', () => {
+  it('removes crossorigin and rewrites root-absolute src/href', () => {
+    const input = `<!doctype html>
+<html>
+  <head>
+    <script type="module" crossorigin src="/action.js"></script>
+    <link rel="modulepreload" crossorigin="anonymous" href="/assets/strict.js">
+    <link rel="stylesheet" crossorigin href="/assets/strict.css">
+  </head>
+</html>
+`
+    const out = rewriteFirefoxHtml(input)
+
+    assert.match(out, /src="\.\/action\.js"/)
+    assert.match(out, /href="\.\/assets\/strict\.js"/)
+    assert.match(out, /href="\.\/assets\/strict\.css"/)
+    assert.doesNotMatch(out, /crossorigin/i)
+    assert.doesNotMatch(out, /src="\/action\.js"/)
+    assert.doesNotMatch(out, /href="\/assets\//)
+  })
+})
 
 describe('transformFirefoxManifest', () => {
   it('strips Chrome-only fields and keeps gecko id + background scripts', () => {
@@ -70,6 +114,10 @@ describe('transformFirefoxManifest', () => {
       key: 'secret',
       browser_specific_settings: {
         gecko: { id: 'pass@pears.com', strict_min_version: '109.0' }
+      },
+      action: {
+        default_popup: 'index.html',
+        default_icon: { '16': 'icons/icon16.png' }
       },
       web_accessible_resources: [
         {
@@ -88,6 +136,9 @@ describe('transformFirefoxManifest', () => {
     assert.equal(out.browser_specific_settings.gecko.id, 'pass@pears.com')
     assert.equal(out.web_accessible_resources[0].use_dynamic_url, undefined)
     assert.deepEqual(out.web_accessible_resources[0].resources, ['inject.js'])
+    assert.equal(out.action.default_area, 'navbar')
+    assert.equal(out.action.default_popup, 'index.html')
+    assert.deepEqual(out.action.default_icon, { '16': 'icons/icon16.png' })
   })
 })
 
@@ -140,6 +191,12 @@ describe('packageFirefox', () => {
       manifest.browser_specific_settings.gecko.id,
       'pass@pears.com'
     )
+    assert.equal(manifest.action.default_area, 'navbar')
+    assert.equal(manifest.action.default_popup, 'index.html')
+
+    const indexHtml = readFileSync(path.join(outDir, 'index.html'), 'utf8')
+    assert.match(indexHtml, /src="\.\/action\.js"/)
+    assert.doesNotMatch(indexHtml, /crossorigin/i)
   })
 
   it('throws when distDir is missing', () => {

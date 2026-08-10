@@ -13,7 +13,11 @@ import { useBlockingStateContext } from '../../shared/context/BlockingStateConte
 import { useGlobalLoading } from '../../shared/context/LoadingContext'
 import { useRouter } from '../../shared/context/RouterContext'
 import { useVaultAccessRevoked } from '../../shared/hooks/useVaultAccessRevoked'
+import { applyActionPopupDocumentSize } from '../../shared/utils/actionPopupSize'
+import { isFirefox } from '../../shared/utils/isFirefox'
 import { AppHeaderContainer } from '../containers/AppHeaderContainer'
+
+const RESIZE_HANDLE_SIZE = 14
 
 export const App = () => {
   const { isChecking: isBlockingStateChecking } = useBlockingStateContext()
@@ -23,8 +27,10 @@ export const App = () => {
   const windowSize = useWindowResize()
   const containerRef = useRef(null)
   const observerRef = useRef(null)
+  const dragRef = useRef(null)
 
   const isLoading = isBlockingStateChecking || isRedirectLoading
+  const isResizable = windowSize.isResizable === true
 
   useGlobalLoading({ isLoading })
 
@@ -39,10 +45,33 @@ export const App = () => {
         ? { minHeight: `${windowSize.minHeight}px` }
         : {}
 
+  // Keep documentElement/body in sync so Firefox toolbar panels follow content size.
+  // Clear on passkey/dynamic so those flows keep content-driven sizing.
+  useEffect(() => {
+    if (!isResizable) {
+      if (typeof document === 'undefined') return
+      for (const el of [document.documentElement, document.body]) {
+        if (!el?.style) continue
+        el.style.width = ''
+        el.style.height = ''
+        el.style.minWidth = ''
+        el.style.minHeight = ''
+      }
+      return
+    }
+    if (windowSize.width === null || windowSize.width === undefined) return
+    if (windowSize.height === null || windowSize.height === undefined) return
+    applyActionPopupDocumentSize({
+      width: windowSize.width,
+      height: windowSize.height
+    })
+  }, [isResizable, windowSize.width, windowSize.height])
+
   // For dynamic-height pages (v2 passkey flow): measure the rendered content
   // height and keep the Chrome popup window in sync via ResizeObserver.
+  // Skip on Firefox/Zen — browser-action panels are not resizable popup windows.
   useEffect(() => {
-    if (!windowSize.dynamic) {
+    if (!windowSize.dynamic || isFirefox()) {
       observerRef.current?.disconnect()
       observerRef.current = null
       return
@@ -101,16 +130,96 @@ export const App = () => {
     }
   }, [windowSize.dynamic])
 
+  const handleResizePointerDown = (event) => {
+    if (!isResizable || typeof windowSize.setSize !== 'function') return
+    if (
+      event.button !== undefined &&
+      event.button !== null &&
+      event.button !== 0
+    )
+      return
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    const setSize = windowSize.setSize
+    const startX = event.clientX
+    const startY = event.clientY
+    const startWidth = windowSize.width
+    const startHeight = windowSize.height
+    const pointerId = event.pointerId
+    const target = event.currentTarget
+
+    dragRef.current = { pointerId, target }
+
+    if (typeof target.setPointerCapture === 'function') {
+      try {
+        target.setPointerCapture(pointerId)
+      } catch {
+        // Ignore capture failures (e.g. inactive pointer).
+      }
+    }
+
+    const onPointerMove = (moveEvent) => {
+      if (!dragRef.current) return
+      setSize({
+        width: startWidth + (moveEvent.clientX - startX),
+        height: startHeight + (moveEvent.clientY - startY)
+      })
+    }
+
+    const onPointerUp = () => {
+      const drag = dragRef.current
+      dragRef.current = null
+
+      if (
+        drag?.target &&
+        typeof drag.target.releasePointerCapture === 'function' &&
+        drag.pointerId !== undefined &&
+        drag.pointerId !== null
+      ) {
+        try {
+          drag.target.releasePointerCapture(drag.pointerId)
+        } catch {
+          // Pointer may already be released.
+        }
+      }
+
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', onPointerUp)
+      window.removeEventListener('pointercancel', onPointerUp)
+    }
+
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp)
+    window.addEventListener('pointercancel', onPointerUp)
+  }
+
   const containerStyle = {
     ...heightStyle,
-    // Cap to viewport so Zen/Firefox HiDPI panel scaling cannot spill the UI
-    width: `min(${windowSize.width}px, 100vw)`,
-    maxHeight: '100vh',
+    width: `${windowSize.width}px`,
     overflow: 'auto',
     padding: '4px',
     border: `1px solid ${theme.colors.colorBorderTertiary}`,
     borderRadius: `${rawTokens.radius8}px`,
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
+    position: 'relative'
+  }
+
+  const resizeHandleStyle = {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    width: `${RESIZE_HANDLE_SIZE}px`,
+    height: `${RESIZE_HANDLE_SIZE}px`,
+    cursor: 'nwse-resize',
+    touchAction: 'none',
+    zIndex: 20,
+    borderRight: `2px solid ${theme.colors.colorBorderPrimary}`,
+    borderBottom: `2px solid ${theme.colors.colorBorderPrimary}`,
+    backgroundColor: theme.colors.colorSurfaceSecondary,
+    boxSizing: 'border-box',
+    opacity: 0.85
   }
 
   return (
@@ -134,6 +243,16 @@ export const App = () => {
           </div>
         </>
       )}
+      {isResizable ? (
+        <div
+          role="separator"
+          aria-label="Resize popup"
+          aria-orientation="horizontal"
+          data-testid="action-popup-resize-handle"
+          style={resizeHandleStyle}
+          onPointerDown={handleResizePointerDown}
+        />
+      ) : null}
     </div>
   )
 }

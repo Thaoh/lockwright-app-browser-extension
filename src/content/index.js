@@ -711,14 +711,16 @@ function getRecordTypeByField(field) {
     return 'login'
   }
 
-  // Credit card before OTP so security_code / CVV stay card fields
-  if (isCreditCardField(field)) {
-    return RECORD_TYPES.CREDIT_CARD
-  }
-
+  // OTP before credit card: autocomplete=one-time-code / otp fields win over
+  // "Security code" label heuristics; isOtpField still vetoes real CVV via
+  // isCreditCardField for non-autocomplete cases.
   // Reuse login recordType so site-filtered login list (useFilteredRecords) works
   if (isOtpField(field)) {
     return 'login'
+  }
+
+  if (isCreditCardField(field)) {
+    return RECORD_TYPES.CREDIT_CARD
   }
 
   if (isIdentityField(field)) {

@@ -52,6 +52,39 @@ describe('isCreditCardField', () => {
     expect(isCreditCardField(inputElement)).toBe(true)
   })
 
+  it('should return false when autocomplete is one-time-code even if label says Security code', () => {
+    document.body.innerHTML = ''
+    const form = document.createElement('form')
+    const label = document.createElement('label')
+    label.htmlFor = 'otp'
+    label.textContent = 'Security code'
+    const input = document.createElement('input')
+    input.type = 'text'
+    input.id = 'otp'
+    input.name = 'otp'
+    input.setAttribute('autocomplete', 'one-time-code')
+    form.append(label, input)
+    document.body.appendChild(form)
+
+    expect(isCreditCardField(input)).toBe(false)
+  })
+
+  it('should return false for name/id otp even when label says Security code', () => {
+    document.body.innerHTML = ''
+    const form = document.createElement('form')
+    const label = document.createElement('label')
+    label.htmlFor = 'otp'
+    label.textContent = 'Security code'
+    const input = document.createElement('input')
+    input.type = 'text'
+    input.id = 'otp'
+    input.name = 'otp'
+    form.append(label, input)
+    document.body.appendChild(form)
+
+    expect(isCreditCardField(input)).toBe(false)
+  })
+
   it('should return true for an input with placeholder containing "expiration"', () => {
     inputElement.placeholder = 'Expiration date'
     expect(isCreditCardField(inputElement)).toBe(true)

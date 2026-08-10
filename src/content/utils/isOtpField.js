@@ -31,17 +31,14 @@ const EXCLUDE_PATTERNS = [
 
 /**
  * Detect OTP / 2FA / one-time-code inputs.
- * Credit-card CVV / security_code fields are excluded (isCreditCardField wins).
+ * Explicit autocomplete=one-time-code wins over credit-card heuristics.
+ * Credit-card CVV / security_code fields are excluded otherwise.
  *
  * @param {HTMLInputElement} element
  * @returns {boolean}
  */
 export const isOtpField = (element) => {
   if (!element || element.tagName !== 'INPUT') {
-    return false
-  }
-
-  if (isCreditCardField(element)) {
     return false
   }
 
@@ -60,6 +57,10 @@ export const isOtpField = (element) => {
     return true
   }
 
+  if (isCreditCardField(element)) {
+    return false
+  }
+
   const labelText = element.labels
     ? Array.from(element.labels)
         .map((label) => label.textContent)
@@ -73,9 +74,16 @@ export const isOtpField = (element) => {
     labelText
   ]
 
+  // Exclude recovery/backup fields by name/id/placeholder only — label hints
+  // often mention backup codes as an alternative (e.g. Affinity 2FA).
+  const excludeAttrs = [
+    element.name || '',
+    element.id || '',
+    element.placeholder || ''
+  ]
   if (
     EXCLUDE_PATTERNS.some((pattern) =>
-      attributes.some((attr) => pattern.test(attr))
+      excludeAttrs.some((attr) => pattern.test(attr))
     )
   ) {
     return false

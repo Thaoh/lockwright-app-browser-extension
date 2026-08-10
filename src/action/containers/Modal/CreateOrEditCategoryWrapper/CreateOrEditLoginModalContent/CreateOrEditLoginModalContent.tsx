@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 import { t } from '@lingui/core/macro'
 import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
@@ -6,8 +6,8 @@ import { Validator } from '@tetherto/pear-apps-utils-validator'
 import { AUTHENTICATOR_ENABLED } from '@tetherto/pearpass-lib-constants'
 import {
   Button,
+  ContextMenu,
   Dialog,
-  Dropdown,
   Form,
   InputField,
   MultiSlotInput,
@@ -116,9 +116,6 @@ export const CreateOrEditLoginModalContent = ({
   const { handleCreateOrEditRecord } = useCreateOrEditRecord()
 
   const isEdit = !!initialRecord?.id
-  const [openMatchTypeIndex, setOpenMatchTypeIndex] = useState<number | null>(
-    null
-  )
 
   const { createRecord, isLoading: isCreateLoading } = useCreateRecord({
     onCompleted: (payload: unknown) => {
@@ -193,6 +190,9 @@ export const CreateOrEditLoginModalContent = ({
       schema.validate(formValues)
   })
 
+  const setValueRef = useRef(setValue)
+  setValueRef.current = setValue
+
   const {
     value: websitesList,
     addItem: addWebsite,
@@ -216,10 +216,10 @@ export const CreateOrEditLoginModalContent = ({
   useEffect(() => {
     let alive = true
     void hydrateUriMatchSettings().then(() => {
-      if (!alive || !initialRecord) return
+      if (!alive || !initialRecord?.id) return
       const websites = initialRecord.data?.websites ?? []
       if (!websites.length) return
-      setValue(
+      setValueRef.current(
         'websites',
         websites.map((website: string) => ({
           website,
@@ -230,13 +230,7 @@ export const CreateOrEditLoginModalContent = ({
     return () => {
       alive = false
     }
-  }, [
-    initialRecord,
-    initialRecord?.id,
-    initialRecord?.data?.websites,
-    initialRecord?.data?.uris,
-    setValue
-  ])
+  }, [initialRecord?.id])
 
   const passwordIndicator = useMemo<
     PasswordIndicatorVariant | undefined
@@ -464,20 +458,19 @@ export const CreateOrEditLoginModalContent = ({
                 const matchTypeField = registerWebsiteItem('matchType', index)
                 const selectedMatchType = (matchTypeField.value ||
                   getDefaultUriMatchTypeSync()) as UriMatchType
+                const hasRightSlot = index > 0
                 return (
-                  <div
-                    key={website.id}
-                    className="flex flex-col gap-[var(--spacing8)]"
-                  >
+                  <div key={website.id} className="relative w-full">
                     <InputField
                       label={t`Website`}
                       placeholder={t`Enter Website`}
                       value={websiteField.value as string}
                       onChange={(e) => websiteField.onChange(e.target.value)}
                       error={websiteField.error || undefined}
+                      isGrouped
                       testID={`createoredit-login-v2-website-${index}`}
                       rightSlot={
-                        index > 0 ? (
+                        hasRightSlot ? (
                           <Button
                             variant="tertiaryAccent"
                             size="small"
@@ -496,28 +489,33 @@ export const CreateOrEditLoginModalContent = ({
                         ) : undefined
                       }
                     />
-                    <div className="flex items-center justify-between gap-[var(--spacing12)]">
-                      <Text
-                        variant="caption"
-                        color={theme.colors.colorTextSecondary}
-                      >
-                        {t`URI match`}
-                      </Text>
-                      <Dropdown
-                        open={openMatchTypeIndex === index}
-                        onOpenChange={(open) =>
-                          setOpenMatchTypeIndex(open ? index : null)
-                        }
+                    <div
+                      className={`pointer-events-auto absolute top-[var(--spacing12)] z-[1] flex items-center ${
+                        hasRightSlot
+                          ? 'right-[var(--spacing48)]'
+                          : 'right-[var(--spacing12)]'
+                      }`}
+                      onMouseDown={(e) => e.preventDefault()}
+                    >
+                      <ContextMenu
+                        menuPlacement="top"
+                        closeOnContentClick
+                        testID={`createoredit-login-v2-website-match-menu-${index}`}
                         trigger={
                           <Button
-                            variant="secondary"
+                            variant="tertiary"
                             size="small"
                             type="button"
-                            iconAfter={<KeyboardArrowBottom />}
+                            iconAfter={
+                              <KeyboardArrowBottom
+                                width={14}
+                                height={14}
+                                color={theme.colors.colorTextSecondary}
+                              />
+                            }
                             data-testid={`createoredit-login-v2-website-match-${index}`}
                           >
-                            {URI_MATCH_OPTION_LABELS[selectedMatchType]?.() ??
-                              t`Domain`}
+                            {`${t`URI match`}: ${URI_MATCH_OPTION_LABELS[selectedMatchType]?.() ?? t`Domain`}`}
                           </Button>
                         }
                       >
@@ -529,11 +527,10 @@ export const CreateOrEditLoginModalContent = ({
                             selected={selectedMatchType === value}
                             onClick={() => {
                               matchTypeField.onChange(value)
-                              setOpenMatchTypeIndex(null)
                             }}
                           />
                         ))}
-                      </Dropdown>
+                      </ContextMenu>
                     </div>
                   </div>
                 )
