@@ -98,9 +98,14 @@ This will watch for file changes and rebuild automatically.
 
 Zen is a Firefox fork. Use the **Firefox** package (`pnpm run build:firefox`), not the Chromium `dist/`.
 
-1. Run `pnpm run build:firefox`.
-2. Open `about:debugging#/runtime/this-firefox` (same as Firefox).
-3. Click **Load Temporary Add-on…** and select `dist-firefox/manifest.json`.
+**Recommended (permanent unsigned install — pairing survives restarts):**
+
+1. Run `pnpm run build:firefox` (produces `dist-firefox/` and `dist-firefox.zip`).
+2. In Zen, open `about:config` and set `xpinstall.signatures.required` to `false`.
+3. Open the Add-ons manager (`about:addons`) → gear menu → **Install Add-on From File…** → select `dist-firefox.zip`.
+4. Pair the extension with the PearPass desktop app once.
+
+Temporary load (`about:debugging` → **Load Temporary Add-on…** → `dist-firefox/manifest.json`) also works for quick checks, but the add-on is removed on browser restart and you must re-pair.
 
 ### Native messaging (desktop bridge) — Firefox / Zen / Flatpak
 
