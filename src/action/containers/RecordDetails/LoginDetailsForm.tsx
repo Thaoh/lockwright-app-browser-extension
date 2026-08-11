@@ -12,7 +12,7 @@ import {
   Text,
   useTheme
 } from '@tetherto/pearpass-lib-ui-kit'
-import { OpenInNew } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { ContentCopy, OpenInNew } from '@tetherto/pearpass-lib-ui-kit/icons'
 
 import {
   URI_MATCH_TYPES,
@@ -118,48 +118,80 @@ export const LoginDetailsForm = ({ initialRecord, selectedFolder }: Props) => {
 
   return (
     <div className="flex w-full flex-col gap-[var(--spacing16)]">
-      <div className="flex flex-col gap-[var(--spacing8)]">
+      <div className="flex w-full min-w-0 flex-col gap-[var(--spacing8)]">
         {(hasUsername || hasPassword || !!initialRecord?.otpPublic) && (
-          <MultiSlotInput testID="credentials-multi-slot-input">
-            {hasUsername && (
-              <InputField
-                label={t`Email / Username`}
-                placeholder={t`Email / Username`}
-                readOnly
-                copyable
-                onCopy={copyToClipboard}
-                isGrouped
-                testID="credentials-multi-slot-input-slot-0"
-                {...toReadOnlyFieldProps(register('username'))}
-              />
-            )}
+          <div className="w-full min-w-0">
+            <MultiSlotInput testID="credentials-multi-slot-input">
+              {hasUsername && (
+                <InputField
+                  label={t`Email / Username`}
+                  placeholder={t`Email / Username`}
+                  readOnly
+                  isGrouped
+                  testID="credentials-multi-slot-input-slot-0"
+                  rightSlot={
+                    <Button
+                      variant="tertiary"
+                      size="small"
+                      type="button"
+                      aria-label={t`Copy`}
+                      iconBefore={
+                        <ContentCopy
+                          width={16}
+                          height={16}
+                          color={theme.colors.colorTextPrimary}
+                        />
+                      }
+                      onClick={() => copyToClipboard(formValues.username)}
+                      data-testid="credentials-username-copy"
+                    />
+                  }
+                  {...toReadOnlyFieldProps(register('username'))}
+                />
+              )}
 
-            {hasPassword && (
-              <PasswordField
-                label={t`Password`}
-                placeholder={t`Password`}
-                readOnly
-                copyable
-                onCopy={copyToClipboard}
-                isGrouped
-                testID="credentials-multi-slot-input-slot-1"
-                {...toReadOnlyFieldProps(register('password'))}
-              />
-            )}
+              {hasPassword && (
+                <PasswordField
+                  label={t`Password`}
+                  placeholder={t`Password`}
+                  readOnly
+                  isGrouped
+                  testID="credentials-multi-slot-input-slot-1"
+                  rightSlot={
+                    <Button
+                      variant="tertiary"
+                      size="small"
+                      type="button"
+                      aria-label={t`Copy`}
+                      iconBefore={
+                        <ContentCopy
+                          width={16}
+                          height={16}
+                          color={theme.colors.colorTextPrimary}
+                        />
+                      }
+                      onClick={() => copyToClipboard(formValues.password)}
+                      data-testid="credentials-password-copy"
+                    />
+                  }
+                  {...toReadOnlyFieldProps(register('password'))}
+                />
+              )}
 
-            {!!initialRecord?.otpPublic && !!initialRecord?.id && (
-              <OtpCodeField
-                key={initialRecord.id}
-                recordId={initialRecord.id}
-                otpPublic={
-                  initialRecord.otpPublic as Parameters<
-                    typeof OtpCodeField
-                  >[0]['otpPublic']
-                }
-                isGrouped
-              />
-            )}
-          </MultiSlotInput>
+              {!!initialRecord?.otpPublic && !!initialRecord?.id && (
+                <OtpCodeField
+                  key={initialRecord.id}
+                  recordId={initialRecord.id}
+                  otpPublic={
+                    initialRecord.otpPublic as Parameters<
+                      typeof OtpCodeField
+                    >[0]['otpPublic']
+                  }
+                  isGrouped
+                />
+              )}
+            </MultiSlotInput>
+          </div>
         )}
 
         {hasWebsites &&
