@@ -1,7 +1,6 @@
 import './utils/contentI18n.js'
 
 import { generateUniqueId } from '@tetherto/pear-apps-utils-generate-unique-id'
-import { SAVE_CREDENTIALS_AFTER_LOGIN_ENABLED } from '@tetherto/pearpass-lib-constants'
 import { RECORD_TYPES } from '@tetherto/pearpass-lib-vault'
 
 import { IFRAME_TYPES } from './constants/iframe'
@@ -547,10 +546,8 @@ function hideAutofillOnOutsideClick(event) {
 // Login detection
 
 function onSubmit({ username, password }) {
-  if (!SAVE_CREDENTIALS_AFTER_LOGIN_ENABLED) {
-    return
-  }
-
+  // Locally enabled: capture save-after-login regardless of External
+  // SAVE_CREDENTIALS_AFTER_LOGIN_ENABLED flag.
   if (!username && !password) {
     return
   }
