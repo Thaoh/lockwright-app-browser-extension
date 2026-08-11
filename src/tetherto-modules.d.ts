@@ -335,6 +335,14 @@ declare module '@tetherto/pearpass-lib-vault/src/instances' {
   export const pearpassVaultClient: {
     on?: (event: string, handler: (...args: any[]) => void) => void
     off?: (event: string, handler: (...args: any[]) => void) => void
+    activeVaultGet?: (key: string) => Promise<unknown>
+    activeVaultAdd?: (key: string, data: unknown) => Promise<void>
+    recordFailedMasterPassword: () => Promise<unknown>
+    getMasterPasswordStatus: () => Promise<{
+      isLocked: boolean
+      lockoutRemainingMs: number
+      remainingAttempts: number
+    }>
   }
 }
 

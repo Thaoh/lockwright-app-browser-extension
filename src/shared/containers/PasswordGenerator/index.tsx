@@ -10,6 +10,7 @@ import {
   checkPasswordStrength
 } from '@tetherto/pearpass-utils-password-check'
 import {
+  Button,
   PasswordIndicator,
   type PasswordIndicatorVariant,
   Radio,
@@ -19,11 +20,27 @@ import {
   ToggleSwitch,
   useTheme
 } from '@tetherto/pearpass-lib-ui-kit'
+import { ContentCopy } from '@tetherto/pearpass-lib-ui-kit/icons'
+
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
+import {
+  appendHistory,
+  clearHistory,
+  loadHistory
+} from '../../utils/passwordGeneratorHistory'
 
 const MODE_MEMORABLE = 'memorable'
 const MODE_RANDOM = 'random'
 
 type Mode = typeof MODE_MEMORABLE | typeof MODE_RANDOM
+
+type HistoryEntry = {
+  id: string
+  value: string
+  createdAt: number
+}
+
+const HISTORY_DISPLAY_LIMIT = 20
 
 const STRENGTH_TO_INDICATOR: Record<string, PasswordIndicatorVariant> = {
   vulnerable: 'vulnerable',
@@ -71,15 +88,15 @@ export type PasswordGeneratorProps = {
 }
 
 /**
- * Chrome-less, context-agnostic body for the v2 password generator. Renders
- * three sections (Generated Password card with mode radios, Password Length
- * card with slider, Password settings card with toggles). Consumers provide
+ * Chrome-less, context-agnostic body for the password generator. Renders
+ * generated password, length, settings, and synced history. Consumers provide
  * the outer card / dialog header / footer buttons.
  */
 export const PasswordGenerator = ({
   onGeneratedChange
 }: PasswordGeneratorProps) => {
   const { theme } = useTheme()
+  const { copyToClipboard } = useCopyToClipboard()
 
   const [mode, setMode] = useState<Mode>(MODE_RANDOM)
   const [memorable, setMemorable] = useState({
@@ -89,9 +106,10 @@ export const PasswordGenerator = ({
     numbers: true
   })
   const [random, setRandom] = useState({
-    characters: 8,
+    characters: 20,
     specialCharacters: true
   })
+  const [history, setHistory] = useState<HistoryEntry[]>([])
 
   const generated = useMemo(() => {
     if (mode === MODE_MEMORABLE) {
@@ -113,6 +131,31 @@ export const PasswordGenerator = ({
   useEffect(() => {
     onGeneratedChange?.(generated)
   }, [generated, onGeneratedChange])
+
+  // appendHistory loads existing entries first, so this also hydrates history
+  // on mount (and refreshes after each regenerate). Failures leave the list usable.
+  useEffect(() => {
+    if (!generated) return
+    let cancelled = false
+    void appendHistory(generated)
+      .then((entries) => {
+        if (!cancelled) setHistory(entries)
+      })
+      .catch(() => {
+        if (!cancelled) {
+          void loadHistory()
+            .then((entries) => {
+              if (!cancelled) setHistory(entries)
+            })
+            .catch(() => {
+              if (!cancelled) setHistory([])
+            })
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [generated])
 
   const strength = useMemo(() => {
     if (mode === MODE_MEMORABLE) {
@@ -178,6 +221,14 @@ export const PasswordGenerator = ({
         setMemorable((r) => ({ ...r, numbers: next }))
     }
   ]
+
+  const visibleHistory = history.slice(0, HISTORY_DISPLAY_LIMIT)
+
+  const handleClearHistory = () => {
+    void clearHistory()
+      .then(setHistory)
+      .catch(() => setHistory([]))
+  }
 
   return (
     <div className="flex flex-col gap-[var(--spacing16)]">
@@ -249,7 +300,7 @@ export const PasswordGenerator = ({
           <div className="ms-1 min-w-0 flex-1">
             <Slider
               minimumValue={mode === MODE_MEMORABLE ? 6 : 4}
-              maximumValue={mode === MODE_MEMORABLE ? 36 : 32}
+              maximumValue={mode === MODE_MEMORABLE ? 36 : 50}
               step={1}
               value={
                 mode === MODE_MEMORABLE ? memorable.words : random.characters
@@ -317,6 +368,73 @@ export const PasswordGenerator = ({
             </div>
           )}
         </div>
+      </section>
+
+      <section className="flex flex-col gap-[var(--spacing12)]">
+        <div className="flex items-center justify-between gap-[var(--spacing8)]">
+          <Text variant="caption" color={theme.colors.colorTextSecondary}>
+            {t`History`}
+          </Text>
+          {history.length > 0 && (
+            <Button
+              variant="tertiary"
+              size="small"
+              type="button"
+              onClick={handleClearHistory}
+              data-testid="password-generator-clear-history"
+            >
+              {t`Clear history`}
+            </Button>
+          )}
+        </div>
+
+        {visibleHistory.length === 0 ? (
+          <Text variant="body" color={theme.colors.colorTextTertiary}>
+            {t`No generated passwords yet`}
+          </Text>
+        ) : (
+          <div className="border-border-primary flex max-h-[220px] flex-col overflow-y-auto rounded-[var(--radius8)] border">
+            {visibleHistory.map((entry, index) => (
+              <div
+                key={entry.id}
+                className={[
+                  'flex items-center justify-between gap-[var(--spacing8)] px-[var(--spacing12)] py-[var(--spacing8)]',
+                  index < visibleHistory.length - 1
+                    ? 'border-border-primary border-b'
+                    : ''
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              >
+                <div className="min-w-0 flex-1">
+                  <Text
+                    as="span"
+                    variant="bodyEmphasized"
+                    className="block truncate"
+                  >
+                    {entry.value}
+                  </Text>
+                  <Text
+                    as="span"
+                    variant="caption"
+                    color={theme.colors.colorTextTertiary}
+                  >
+                    {new Date(entry.createdAt).toLocaleString()}
+                  </Text>
+                </div>
+                <Button
+                  variant="tertiary"
+                  size="small"
+                  type="button"
+                  aria-label={t`Copy password`}
+                  iconBefore={<ContentCopy width={16} height={16} />}
+                  onClick={() => copyToClipboard(entry.value)}
+                  data-testid={`password-generator-history-copy-${entry.id}`}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   )
