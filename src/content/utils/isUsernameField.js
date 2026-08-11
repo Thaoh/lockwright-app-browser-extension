@@ -1,19 +1,40 @@
+const USERNAME_HINT_PATTERN = /user|email|login|username|account/i
+const EXCLUDED_TYPES = new Set(['password', 'hidden', 'checkbox'])
+
 /**
- *
  * @param {HTMLInputElement} element
  * @returns {boolean}
  */
 export const isUsernameField = (element) => {
-  if (element.type === 'email') {
-    return true
-  }
+  if (!element) return false
 
-  if (element.type === 'text') {
-    const name = (element.name || '').toLowerCase()
-    return (
-      name.includes('user') || name.includes('email') || name.includes('login')
-    )
-  }
+  const type = (element.type || '').toLowerCase()
+  if (EXCLUDED_TYPES.has(type)) return false
+  if (type && type !== 'text' && type !== 'email') return false
 
-  return false
+  // Explicit email inputs are username fields.
+  if (type === 'email') return true
+
+  const labelText = element.labels
+    ? Array.from(element.labels)
+        .map((label) => label.textContent || '')
+        .join(' ')
+    : ''
+
+  const autocomplete =
+    (typeof element.getAttribute === 'function'
+      ? element.getAttribute('autocomplete')
+      : null) ||
+    element.autocomplete ||
+    ''
+
+  const haystacks = [
+    element.name || '',
+    element.id || '',
+    autocomplete,
+    element.placeholder || '',
+    labelText
+  ]
+
+  return haystacks.some((value) => USERNAME_HINT_PATTERN.test(value))
 }

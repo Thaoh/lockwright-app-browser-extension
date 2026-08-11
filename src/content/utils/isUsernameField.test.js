@@ -21,14 +21,61 @@ describe('isUsernameField', () => {
     expect(isUsernameField(element)).toBe(true)
   })
 
+  it('should return true for Oracle-like cloud account name field', () => {
+    const element = {
+      type: 'text',
+      name: 'rc63input',
+      id: 'cloudAccountName'
+    }
+    expect(isUsernameField(element)).toBe(true)
+  })
+
+  it('should return true when autocomplete is username', () => {
+    const element = { type: 'text', autocomplete: 'username' }
+    expect(isUsernameField(element)).toBe(true)
+  })
+
+  it('should return true when autocomplete is email', () => {
+    const element = { type: 'text', autocomplete: 'email' }
+    expect(isUsernameField(element)).toBe(true)
+  })
+
+  it('should return true when placeholder matches username hint', () => {
+    const element = { type: 'text', placeholder: 'Enter your account' }
+    expect(isUsernameField(element)).toBe(true)
+  })
+
+  it('should return true when joined label text matches username hint', () => {
+    const element = {
+      type: 'text',
+      name: 'rc63input',
+      labels: [{ textContent: 'Account / Email' }]
+    }
+    expect(isUsernameField(element)).toBe(true)
+  })
+
+  it('should return false for unrelated text inputs', () => {
+    const element = { type: 'text', name: 'searchQuery', id: 'q' }
+    expect(isUsernameField(element)).toBe(false)
+  })
+
   it('should return false for input elements of type "text" with unrelated names', () => {
     const element = { type: 'text', name: 'password' }
     expect(isUsernameField(element)).toBe(false)
   })
 
-  it('should return false for input elements of other types', () => {
+  it('should return false for password type even with username-like name', () => {
     const element = { type: 'password', name: 'userPassword' }
     expect(isUsernameField(element)).toBe(false)
+  })
+
+  it('should return false for hidden and checkbox types', () => {
+    expect(
+      isUsernameField({ type: 'hidden', name: 'username', id: 'account' })
+    ).toBe(false)
+    expect(
+      isUsernameField({ type: 'checkbox', name: 'login', id: 'email' })
+    ).toBe(false)
   })
 
   it('should handle elements with no name property gracefully', () => {
