@@ -198,4 +198,129 @@ describe('NativeMessaging & integration', () => {
     // handleRequest never calls clearSession - secureChannel handles it
     expect(secureChannel.secureChannel.clearSession).not.toHaveBeenCalled()
   })
+
+  test('getMasterPasswordStatus falls back to plaintext when ensureSession fails with MasterPasswordRequired', async () => {
+    const secureChannel = require('./secureChannel')
+    const { nativeMessaging } = nativeModule
+    const status = { isLocked: false, remainingAttempts: 3 }
+
+    secureChannel.secureChannel.ensureSession = jest
+      .fn()
+      .mockRejectedValue(new Error('MasterPasswordRequired'))
+    secureChannel.secureChannel.secureRequest = jest.fn()
+    const sendRequestSpy = jest
+      .spyOn(nativeMessaging, 'sendRequest')
+      .mockResolvedValue(status)
+
+    const messageListener = runtime.onMessage.addListener.mock.calls[0][0]
+
+    const response = await new Promise((resolve) => {
+      messageListener(
+        {
+          type: NATIVE_MESSAGE_TYPES.REQUEST,
+          command: 'getMasterPasswordStatus',
+          params: {}
+        },
+        {},
+        resolve
+      )
+    })
+
+    expect(response.success).toBe(true)
+    expect(response.result).toEqual(status)
+    expect(sendRequestSpy).toHaveBeenCalledWith(
+      'getMasterPasswordStatus',
+      expect.objectContaining({}),
+      expect.any(Number)
+    )
+    expect(secureChannel.secureChannel.secureRequest).not.toHaveBeenCalled()
+  })
+
+  test('recordFailedMasterPassword does not fall back to plaintext on auth session failure', async () => {
+    const secureChannel = require('./secureChannel')
+    const { nativeMessaging } = nativeModule
+
+    secureChannel.secureChannel.ensureSession = jest
+      .fn()
+      .mockRejectedValue(new Error('MasterPasswordInvalid'))
+    secureChannel.secureChannel.secureRequest = jest.fn()
+    const sendRequestSpy = jest.spyOn(nativeMessaging, 'sendRequest')
+
+    const messageListener = runtime.onMessage.addListener.mock.calls[0][0]
+
+    const response = await new Promise((resolve) => {
+      messageListener(
+        {
+          type: NATIVE_MESSAGE_TYPES.REQUEST,
+          command: 'recordFailedMasterPassword',
+          params: {}
+        },
+        {},
+        resolve
+      )
+    })
+
+    expect(response.success).toBe(false)
+    expect(response.error).toContain('MasterPasswordInvalid')
+    expect(sendRequestSpy).not.toHaveBeenCalled()
+    expect(secureChannel.secureChannel.secureRequest).not.toHaveBeenCalled()
+  })
+
+  test('resetFailedAttempts does not fall back to plaintext on auth session failure', async () => {
+    const secureChannel = require('./secureChannel')
+    const { nativeMessaging } = nativeModule
+
+    secureChannel.secureChannel.ensureSession = jest
+      .fn()
+      .mockRejectedValue(new Error('MasterPasswordRequired'))
+    secureChannel.secureChannel.secureRequest = jest.fn()
+    const sendRequestSpy = jest.spyOn(nativeMessaging, 'sendRequest')
+
+    const messageListener = runtime.onMessage.addListener.mock.calls[0][0]
+
+    const response = await new Promise((resolve) => {
+      messageListener(
+        {
+          type: NATIVE_MESSAGE_TYPES.REQUEST,
+          command: 'resetFailedAttempts',
+          params: {}
+        },
+        {},
+        resolve
+      )
+    })
+
+    expect(response.success).toBe(false)
+    expect(response.error).toContain('MasterPasswordRequired')
+    expect(sendRequestSpy).not.toHaveBeenCalled()
+    expect(secureChannel.secureChannel.secureRequest).not.toHaveBeenCalled()
+  })
+
+  test('securedCommand still fails closed on auth session failure', async () => {
+    const secureChannel = require('./secureChannel')
+    const { nativeMessaging } = nativeModule
+
+    secureChannel.secureChannel.ensureSession = jest
+      .fn()
+      .mockRejectedValue(new Error('MasterPasswordRequired'))
+    secureChannel.secureChannel.secureRequest = jest.fn()
+    const sendRequestSpy = jest.spyOn(nativeMessaging, 'sendRequest')
+
+    const messageListener = runtime.onMessage.addListener.mock.calls[0][0]
+
+    const response = await new Promise((resolve) => {
+      messageListener(
+        {
+          type: NATIVE_MESSAGE_TYPES.REQUEST,
+          command: 'securedCommand',
+          params: {}
+        },
+        {},
+        resolve
+      )
+    })
+
+    expect(response.success).toBe(false)
+    expect(sendRequestSpy).not.toHaveBeenCalled()
+  })
 })

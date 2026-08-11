@@ -12,6 +12,22 @@ import { secureChannelMessages } from '../../../../shared/services/messageBridge
 import { logger } from '../../../../shared/utils/logger'
 import { sortByName } from '../../../../shared/utils/sortByName'
 
+type MasterPasswordStatus = {
+  isLocked?: boolean
+  remainingAttempts?: number
+} | null
+
+const getIncorrectPasswordError = (status: MasterPasswordStatus) => {
+  const remainingAttempts =
+    typeof status?.remainingAttempts === 'number'
+      ? status.remainingAttempts
+      : null
+
+  return remainingAttempts !== null
+    ? t`Incorrect password. You have ${remainingAttempts} ${remainingAttempts === 1 ? 'attempt' : 'attempts'} before the app will be temporarily locked.`
+    : t`Incorrect password. Please try again.`
+}
+
 export const EnterMasterPassword = () => {
   const { navigate, currentPage } = useRouter()
   const { logIn, refreshMasterPasswordStatus } = useUserData()
@@ -21,6 +37,26 @@ export const EnterMasterPassword = () => {
   const [error, setError] = useState<string>('')
 
   const { initVaults, refetch: refetchVaults } = useVaults()
+
+  const handleIncorrectPassword = useCallback(async () => {
+    let status: MasterPasswordStatus
+    try {
+      status = await refreshMasterPasswordStatus()
+    } catch (refreshError) {
+      logger.error('Error refreshing master password status:', refreshError)
+      setError(t`Incorrect password. Please try again.`)
+      return
+    }
+
+    if (status?.isLocked) {
+      navigate('welcome', {
+        params: { state: NAVIGATION_ROUTES.SCREEN_LOCKED }
+      })
+      return
+    }
+
+    setError(getIncorrectPasswordError(status))
+  }, [navigate, refreshMasterPasswordStatus])
 
   const handleSubmit = useCallback(
     async (password: string) => {
@@ -37,6 +73,14 @@ export const EnterMasterPassword = () => {
               'Error unlocking secure channel keystore:',
               keystoreErr
             )
+            return
+          }
+          if (message?.includes(AUTH_ERROR_PATTERNS.MASTER_PASSWORD_INVALID)) {
+            logger.error(
+              'Error unlocking secure channel keystore:',
+              keystoreErr
+            )
+            await handleIncorrectPassword()
             return
           }
           logger.error(
@@ -74,8 +118,21 @@ export const EnterMasterPassword = () => {
         await refetchVault(firstVault.id)
         navigateAfterVaultOpened()
       } catch (submitError) {
-        const status = await refreshMasterPasswordStatus()
-        const { isLocked, remainingAttempts } = status || {}
+        let status: MasterPasswordStatus
+        try {
+          status = await refreshMasterPasswordStatus()
+        } catch (refreshError) {
+          logger.error('Error refreshing master password status:', refreshError)
+          setError(
+            typeof submitError === 'string'
+              ? submitError
+              : t`Incorrect password. Please try again.`
+          )
+          logger.error('Error unlocking PearPass:', submitError)
+          return
+        }
+
+        const { isLocked } = status || {}
 
         if (isLocked) {
           navigate('welcome', {
@@ -87,7 +144,7 @@ export const EnterMasterPassword = () => {
         setError(
           typeof submitError === 'string'
             ? submitError
-            : t`Incorrect password. You have ${remainingAttempts} ${remainingAttempts === 1 ? 'attempt' : 'attempts'} before the app will be temporarily locked.`
+            : getIncorrectPasswordError(status)
         )
         logger.error('Error unlocking PearPass:', submitError)
       }
@@ -101,7 +158,8 @@ export const EnterMasterPassword = () => {
       navigateAfterVaultOpened,
       refreshMasterPasswordStatus,
       navigate,
-      currentPage
+      currentPage,
+      handleIncorrectPassword
     ]
   )
 

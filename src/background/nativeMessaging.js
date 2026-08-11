@@ -244,7 +244,18 @@ const SECURE_EXEMPT_COMMANDS = new Set([
   'nmCloseSession'
 ])
 
+// Read-only lockout status must work before the local keystore is unlocked
+// so wrong-password UX can still show remaining attempts.
+const RATE_LIMIT_PLAINTEXT_FALLBACK_COMMANDS = new Set([
+  'getMasterPasswordStatus'
+])
+
 const shouldSecure = (command) => !SECURE_EXEMPT_COMMANDS.has(command)
+
+const isAuthSessionError = (errorMessage) =>
+  !!errorMessage &&
+  (errorMessage.includes(AUTH_ERROR_PATTERNS.MASTER_PASSWORD_REQUIRED) ||
+    errorMessage.includes(AUTH_ERROR_PATTERNS.MASTER_PASSWORD_INVALID))
 
 /**
  * Determine the error code based on the error message
@@ -330,7 +341,19 @@ const handleRequest = async (msg, sendResponse) => {
     let result
     // Only secure if paired and command is not exempt
     if (shouldSecure(command)) {
-      await secureChannel.ensureSession()
+      try {
+        await secureChannel.ensureSession()
+      } catch (sessionError) {
+        if (
+          RATE_LIMIT_PLAINTEXT_FALLBACK_COMMANDS.has(command) &&
+          isAuthSessionError(sessionError.message)
+        ) {
+          result = await nativeMessaging.sendRequest(command, params, timeout)
+          sendResponse({ success: true, result })
+          return
+        }
+        throw sessionError
+      }
       result = await secureChannel.secureRequest({
         method: command,
         params,
