@@ -208,6 +208,9 @@ overrides:
   react-native>@types/react: 18.3.0
   react-native-windows>react: 19.1.0
 
+patchedDependencies:
+  pear-apps-utils-validator@0.0.10: 2101adc8996f6508d8daa3999a1509102041de68e63a74a37dc851ed1f3ccbe6
+
 importers:
 
   .:
@@ -259,7 +262,7 @@ importers:
         version: pear-apps-utils-qr@https://codeload.github.com/tetherto/pear-apps-utils-qr/tar.gz/0c3f32b3b3e9732aff190c5c7b60ed0f5beb02a7
       '@tetherto/pear-apps-utils-validator':
         specifier: git+https://github.com/tetherto/pear-apps-utils-validator.git#f92fbfb6ba61b3f4b17043276c826900064aba0e
-        version: pear-apps-utils-validator@https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/f92fbfb6ba61b3f4b17043276c826900064aba0e
+        version: pear-apps-utils-validator@https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/f92fbfb6ba61b3f4b17043276c826900064aba0e(patch_hash=2101adc8996f6508d8daa3999a1509102041de68e63a74a37dc851ed1f3ccbe6)
       '@tetherto/pearpass-lib-constants':
         specifier: git+https://github.com/tetherto/pearpass-lib-constants.git#c651dc76d92b7c66501db2e5c143802cd056af98
         version: pearpass-lib-constants@https://codeload.github.com/tetherto/pearpass-lib-constants/tar.gz/c651dc76d92b7c66501db2e5c143802cd056af98
@@ -10647,7 +10650,7 @@ snapshots:
     dependencies:
       qrcode: 1.5.4
 
-  pear-apps-utils-validator@https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/f92fbfb6ba61b3f4b17043276c826900064aba0e: {}
+  pear-apps-utils-validator@https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/f92fbfb6ba61b3f4b17043276c826900064aba0e(patch_hash=2101adc8996f6508d8daa3999a1509102041de68e63a74a37dc851ed1f3ccbe6): {}
 
   pear-interface@1.0.0:
     dependencies:
