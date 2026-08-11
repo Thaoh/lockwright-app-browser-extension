@@ -38,6 +38,7 @@ type RecordListViewProps = {
 type ActiveContextMenu = {
   record: VaultRecord
   position: { x: number; y: number }
+  isCurrentSite?: boolean
 }
 
 const sectionLabel = (key: string, fallback: string): string => {
@@ -132,12 +133,13 @@ export const RecordListView = ({
   )
 
   const handleRowContextMenu = useCallback(
-    (event: MouseEvent, record: VaultRecord) => {
+    (event: MouseEvent, record: VaultRecord, isCurrentSite?: boolean) => {
       if (isMultiSelectOn) return
       event.preventDefault()
       setActiveMenu({
         record,
-        position: { x: event.clientX, y: event.clientY }
+        position: { x: event.clientX, y: event.clientY },
+        isCurrentSite: !!isCurrentSite
       })
     },
     [isMultiSelectOn]
@@ -163,15 +165,24 @@ export const RecordListView = ({
       const next = recordId
         ? allRecords.find((r) => r.id === recordId)
         : undefined
+      const isCurrentSite = !!sections.some(
+        (section) =>
+          section.isCurrentSite &&
+          section.data.some((record) => record.id === recordId)
+      )
       setActiveMenu(
         next
-          ? { record: next, position: { x: event.clientX, y: event.clientY } }
+          ? {
+              record: next,
+              position: { x: event.clientX, y: event.clientY },
+              isCurrentSite
+            }
           : null
       )
     }
     document.addEventListener('contextmenu', handler, true)
     return () => document.removeEventListener('contextmenu', handler, true)
-  }, [activeMenu, allRecords])
+  }, [activeMenu, allRecords, sections])
 
   const iconColor = theme.colors.colorTextSecondary
   const alertColor = theme.colors.colorSurfaceDestructiveElevated
@@ -228,7 +239,11 @@ export const RecordListView = ({
                           key={record.id}
                           {...{ [ROW_RECORD_ID_ATTR]: record.id }}
                           onContextMenu={(event) =>
-                            handleRowContextMenu(event, record)
+                            handleRowContextMenu(
+                              event,
+                              record,
+                              section.isCurrentSite
+                            )
                           }
                         >
                           <ListItem
@@ -296,6 +311,7 @@ export const RecordListView = ({
           record={activeMenu.record}
           position={activeMenu.position}
           isOpen
+          isCurrentSite={activeMenu.isCurrentSite}
           onOpenChange={(open) => {
             if (!open) setActiveMenu(null)
           }}

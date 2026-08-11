@@ -16,6 +16,7 @@ import {
 } from '@tetherto/pearpass-lib-ui-kit'
 import {
   CheckBox,
+  ContentPaste,
   CopyAll,
   DriveFileMoveOutlined,
   EditOutlined,
@@ -23,13 +24,20 @@ import {
   StarOutlined,
   TrashOutlined
 } from '@tetherto/pearpass-lib-ui-kit/icons'
-import { useCreateRecord, vaultGetFile } from '@tetherto/pearpass-lib-vault'
+import {
+  RECORD_TYPES,
+  useCreateRecord,
+  useRecords,
+  vaultGetFile
+} from '@tetherto/pearpass-lib-vault'
 
 import { useModal } from '../../../shared/context/ModalContext'
 import { DeleteRecordsModalContent } from '../../../shared/containers/DeleteRecordsModalContent'
 import { MoveFolderModalContent } from '../../../shared/containers/MoveFolderModalContent'
 import { useRecordActionItems } from '../../../shared/hooks/useRecordActionItems'
+import { appendWebsiteToLoginRecord } from '../../../shared/utils/appendWebsiteToLoginRecord'
 import type { VaultRecord } from '../../../shared/utils/groupRecordsByTimePeriod'
+import { queryActiveTab } from '../../../shared/utils/tabs'
 import { useCreateOrEditRecord } from '../../hooks/useCreateOrEditRecord'
 
 export const RECORD_ROW_CONTEXT_MENU_WIDTH = 220
@@ -41,6 +49,7 @@ type RecordRowContextMenuProps = {
   position: { x: number; y: number }
   onOpenChange: (open: boolean) => void
   onSelectItem: () => void
+  isCurrentSite?: boolean
 }
 
 type RecordAction = {
@@ -55,7 +64,8 @@ export const RecordRowContextMenu = ({
   isOpen,
   position,
   onOpenChange,
-  onSelectItem
+  onSelectItem,
+  isCurrentSite = false
 }: RecordRowContextMenuProps) => {
   const { theme } = useTheme()
   const { setModal } = useModal()
@@ -63,11 +73,41 @@ export const RecordRowContextMenu = ({
     actions: RecordAction[]
   }
   const { createRecord } = useCreateRecord()
+  const { updateRecords } = useRecords()
   const { handleCreateOrEditRecord } = useCreateOrEditRecord()
 
   const close = useCallback(() => onOpenChange(false), [onOpenChange])
 
   const favoriteAction = actions.find((a) => a.type === 'favorite')
+  const showAutofillAndAddSite =
+    isCurrentSite && record.type === RECORD_TYPES.LOGIN
+
+  const handleAutofillAndAddSite = () => {
+    close()
+    void (async () => {
+      const tab = await queryActiveTab()
+      if (!tab?.id) return
+
+      try {
+        await chrome.tabs.sendMessage(tab.id, {
+          type: 'autofillFromAction',
+          recordType: record.type,
+          data: {
+            username: record.data?.username || '',
+            password: record.data?.password || ''
+          }
+        })
+      } catch {
+        // No content script (empty Zen workspace, restricted URL, etc.)
+      }
+
+      if (!tab.url) return
+      const updated = appendWebsiteToLoginRecord(record, tab.url)
+      if (updated) {
+        updateRecords([updated])
+      }
+    })()
+  }
 
   const handleEdit = () => {
     close()
@@ -221,6 +261,15 @@ export const RecordRowContextMenu = ({
           boxShadow: rawTokens.shadowMenu
         }}
       >
+        {showAutofillAndAddSite && (
+          <NavbarListItem
+            size="small"
+            icon={<ContentPaste color={iconPrimary} />}
+            label={t`Autofill and add site`}
+            testID={`record-row-menu-autofill-add-site-${record.id}`}
+            onClick={handleAutofillAndAddSite}
+          />
+        )}
         <NavbarListItem
           size="small"
           icon={<EditOutlined color={iconPrimary} />}
