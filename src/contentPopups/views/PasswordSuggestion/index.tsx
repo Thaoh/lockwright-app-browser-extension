@@ -9,9 +9,20 @@ import { Text, useTheme } from '@tetherto/pearpass-lib-ui-kit'
 import { Key, SyncLock } from '@tetherto/pearpass-lib-ui-kit/icons'
 
 import { useRouter } from '../../../shared/context/RouterContext'
+import { markHistoryUsed } from '../../../shared/utils/passwordGeneratorHistory'
 import { useFilteredRecords } from '../../hooks/useFilteredRecords'
 import { closeIframe } from '../../iframeApi/closeIframe'
 import { setIframeStyles } from '../../iframeApi/setIframeStyles'
+
+const hostnameFromUrl = (url: unknown): string | null => {
+  if (typeof url !== 'string' || !url) return null
+  try {
+    const hostname = new URL(url).hostname
+    return hostname || null
+  } catch {
+    return null
+  }
+}
 
 export const PasswordSuggestion = () => {
   const popupRef = useRef<HTMLDivElement>(null)
@@ -28,6 +39,13 @@ export const PasswordSuggestion = () => {
   const shouldShowSuggestion = isReady && !hasMatchingRecords
 
   const onPasswordInsert = (value: string) => {
+    const hostname = hostnameFromUrl(routerState?.url)
+    if (hostname) {
+      void markHistoryUsed(value, {
+        contextLabel: hostname,
+        contextKind: 'site'
+      })
+    }
     window.parent.postMessage(
       {
         type: 'insertPassword',

@@ -166,9 +166,11 @@ export const CreateOrEditWifiModalContent = ({
   }
 
   const handleGeneratePassword = () => {
+    const title = (values?.title as string | undefined)?.trim()
     handleCreateOrEditRecord({
       recordType: 'password',
-      setValue: (value: string) => setValue('password', value)
+      setValue: (value: string) => setValue('password', value),
+      ...(title ? { contextLabel: title } : {})
     })
   }
 

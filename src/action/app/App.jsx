@@ -235,6 +235,7 @@ export const App = () => {
           <AppHeaderContainer />
           <div className="flex min-h-0 flex-1 flex-col">
             {currentPage === 'vault' ||
+            currentPage === 'generator' ||
             (AUTHENTICATOR_ENABLED && currentPage === 'authenticator') ? (
               <LayoutWithSidebar mainView={<Routes />} />
             ) : (

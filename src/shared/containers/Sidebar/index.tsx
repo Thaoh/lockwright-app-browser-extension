@@ -30,6 +30,7 @@ import {
   SettingsOutlined,
   StarBorder,
   StarFilled,
+  SyncLock,
   TrashOutlined,
   TwoFactorAuthenticationFilled,
   TwoFactorAuthenticationOutlined
@@ -86,19 +87,21 @@ export const Sidebar = () => {
   const { categoriesItems } = useRecordMenuItems()
 
   const isAuthenticatorActive = currentPage === 'authenticator'
+  const isGeneratorActive = currentPage === 'generator'
+  const clearsVaultSelection = isAuthenticatorActive || isGeneratorActive
 
-  const activeCategory = isAuthenticatorActive
+  const activeCategory = clearsVaultSelection
     ? null
     : (routerState?.recordType ?? null)
   const isFavoritesActive =
-    !isAuthenticatorActive && routerState?.folder === FAVORITES_FOLDER_ID
+    !clearsVaultSelection && routerState?.folder === FAVORITES_FOLDER_ID
   const selectedFolderName =
-    !isAuthenticatorActive && routerState?.folder && !isFavoritesActive
+    !clearsVaultSelection && routerState?.folder && !isFavoritesActive
       ? routerState.folder
       : null
   const currentRecordType = routerState?.recordType ?? 'all'
   const currentFolder = routerState?.folder
-  const isAllFoldersActive = !isAuthenticatorActive && !routerState?.folder
+  const isAllFoldersActive = !clearsVaultSelection && !routerState?.folder
 
   const customFolders = useMemo(() => {
     const raw = Object.values(foldersData?.customFolders ?? {})
@@ -159,6 +162,10 @@ export const Sidebar = () => {
 
   const handleAuthenticatorClick = () => {
     navigate('authenticator', { params: {} })
+  }
+
+  const handleGeneratorClick = () => {
+    navigate('generator', { params: {} })
   }
 
   const handleSettingsClick = () => {
@@ -426,6 +433,23 @@ export const Sidebar = () => {
       )}
 
       <div style={styles.footerSection}>
+        <NavbarListItem
+          testID="sidebar-generator"
+          label={t`Generator`}
+          size="small"
+          selected={isGeneratorActive}
+          variant={isGeneratorActive ? 'default' : 'secondary'}
+          icon={
+            <SyncLock
+              color={
+                isGeneratorActive
+                  ? theme.colors.colorTextPrimary
+                  : theme.colors.colorTextSecondary
+              }
+            />
+          }
+          onClick={handleGeneratorClick}
+        />
         <NavbarListItem
           testID="sidebar-settings-button"
           label={t`Settings`}

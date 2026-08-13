@@ -8,15 +8,19 @@ import { PasswordGenerator } from '../../../../shared/containers/PasswordGenerat
 import { useModal } from '../../../../shared/context/ModalContext'
 import { useToast } from '../../../../shared/context/ToastContext'
 import { useCopyToClipboard } from '../../../../shared/hooks/useCopyToClipboard'
+import { markHistoryUsed } from '../../../../shared/utils/passwordGeneratorHistory'
 
 export type GeneratePasswordModalContentProps = {
   onPasswordInsert?: (value: string) => void
   primaryActionLabel?: string
+  /** Entry title when inserting into a create/edit form (kind `entry`). */
+  contextLabel?: string
 }
 
 export const GeneratePasswordModalContent = ({
   onPasswordInsert,
-  primaryActionLabel
+  primaryActionLabel,
+  contextLabel
 }: GeneratePasswordModalContentProps) => {
   const { closeModal } = useModal()
   const { setToast } = useToast()
@@ -30,6 +34,13 @@ export const GeneratePasswordModalContent = ({
 
   const handlePrimary = () => {
     if (onPasswordInsert) {
+      const label = contextLabel?.trim()
+      if (label) {
+        void markHistoryUsed(generated, {
+          contextLabel: label,
+          contextKind: 'entry'
+        })
+      }
       onPasswordInsert(generated)
     } else {
       copyToClipboard(generated)

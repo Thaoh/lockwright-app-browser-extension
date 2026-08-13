@@ -33,6 +33,8 @@ export type CreateOrEditRecordOptions = {
    * password and lets the caller (e.g. Login / Wi-Fi V2 modal) write it into
    * its own form state. */
   setValue?: (value: string) => void
+  /** Non-empty entry title to stamp on history when password is used. */
+  contextLabel?: string
 }
 
 export const useCreateOrEditRecord = () => {
@@ -48,11 +50,17 @@ export const useCreateOrEditRecord = () => {
       isFavorite,
       mode,
       onSaved,
-      setValue
+      setValue,
+      contextLabel
     } = options
 
     if (recordType === PASSWORD_TYPE) {
-      setModal(<GeneratePasswordModalContent onPasswordInsert={setValue} />)
+      setModal(
+        <GeneratePasswordModalContent
+          onPasswordInsert={setValue}
+          contextLabel={contextLabel}
+        />
+      )
       return
     }
 

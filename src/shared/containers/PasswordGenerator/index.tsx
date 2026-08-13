@@ -38,6 +38,9 @@ type HistoryEntry = {
   id: string
   value: string
   createdAt: number
+  contextLabel?: string
+  contextKind?: 'site' | 'entry'
+  usedAt?: number
 }
 
 const HISTORY_DISPLAY_LIMIT = 20
@@ -421,6 +424,16 @@ export const PasswordGenerator = ({
                   >
                     {new Date(entry.createdAt).toLocaleString()}
                   </Text>
+                  {entry.contextLabel ? (
+                    <Text
+                      as="span"
+                      variant="caption"
+                      color={theme.colors.colorTextTertiary}
+                      className="block truncate"
+                    >
+                      {entry.contextLabel}
+                    </Text>
+                  ) : null}
                 </div>
                 <Button
                   variant="tertiary"

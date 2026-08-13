@@ -6,8 +6,19 @@ import { useRecords, useVault } from '@tetherto/pearpass-lib-vault'
 
 import { useRouter } from '../../../shared/context/RouterContext'
 import { PasswordGenerator as PasswordGeneratorBody } from '../../../shared/containers/PasswordGenerator'
+import { markHistoryUsed } from '../../../shared/utils/passwordGeneratorHistory'
 import { closeIframe } from '../../iframeApi/closeIframe'
 import { setIframeStyles } from '../../iframeApi/setIframeStyles'
+
+const hostnameFromUrl = (url: unknown): string | null => {
+  if (typeof url !== 'string' || !url) return null
+  try {
+    const hostname = new URL(url).hostname
+    return hostname || null
+  } catch {
+    return null
+  }
+}
 
 export const PasswordGenerator = () => {
   const popupRef = useRef<HTMLDivElement>(null)
@@ -25,6 +36,13 @@ export const PasswordGenerator = () => {
   const [generated, setGenerated] = useState('')
 
   const onPasswordInsert = (value: string) => {
+    const hostname = hostnameFromUrl(routerState?.url)
+    if (hostname) {
+      void markHistoryUsed(value, {
+        contextLabel: hostname,
+        contextKind: 'site'
+      })
+    }
     window.parent.postMessage(
       {
         type: 'insertPassword',

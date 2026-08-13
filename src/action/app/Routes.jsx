@@ -17,6 +17,7 @@ import { CreateOrEditCategory } from '../../shared/pages/CreateOrEditCategory/Cr
 import { AddDevice } from '../pages/AddDevice'
 import { AuthenticatorView } from '../pages/AuthenticatorView'
 import { CreatePasskey } from '../pages/CreatePasskey/CreatePasskey'
+import { Generator } from '../pages/Generator'
 import { NonSecureWarning } from '../pages/NonSecureWarning/NonSecureWarning'
 import { PasskeyLoginCreate } from '../pages/PasskeyLoginCreate'
 import { RecordDetails } from '../pages/RecordDetails'
@@ -77,6 +78,12 @@ export const Routes = () => {
         return (
           <FadeInWrapper key="authenticator">
             <AuthenticatorView />
+          </FadeInWrapper>
+        )
+      case 'generator':
+        return (
+          <FadeInWrapper key="generator">
+            <Generator />
           </FadeInWrapper>
         )
       case 'recordDetails':
