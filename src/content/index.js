@@ -545,6 +545,28 @@ function hideAutofillOnOutsideClick(event) {
 
 // Login detection
 
+const wiredLoginForms = new WeakSet()
+let loginSubmitDebounceTimer = null
+const LOGIN_SUBMIT_DEBOUNCE_MS = 450
+
+function showLoginIframe(data) {
+  const existing = getIframeData(IFRAME_TYPES.login)
+  if (existing) {
+    removeIframe(existing)
+  }
+
+  showIframe(IFRAME_TYPES.login, {
+    data,
+    styles: {
+      top: '20px',
+      right: '20px',
+      width: '0px',
+      height: '0px',
+      borderRadius: '12px'
+    }
+  })
+}
+
 function onSubmit({ username, password }) {
   // Locally enabled: capture save-after-login regardless of External
   // SAVE_CREDENTIALS_AFTER_LOGIN_ENABLED flag.
@@ -552,32 +574,39 @@ function onSubmit({ username, password }) {
     return
   }
 
-  const data = { url: window.location.href, username, password }
-
-  runtime.sendMessage({
-    type: IFRAME_TYPES.login,
-    data: data
-  })
-
-  if (username && password) {
-    showIframe(IFRAME_TYPES.login, {
-      data,
-      styles: {
-        top: '20px',
-        right: '20px'
-      }
-    })
+  if (loginSubmitDebounceTimer) {
+    clearTimeout(loginSubmitDebounceTimer)
   }
+
+  loginSubmitDebounceTimer = setTimeout(() => {
+    loginSubmitDebounceTimer = null
+
+    const data = { url: window.location.href, username, password }
+
+    runtime.sendMessage({
+      type: IFRAME_TYPES.login,
+      data: data
+    })
+
+    if (username && password) {
+      showLoginIframe(data)
+    }
+  }, LOGIN_SUBMIT_DEBOUNCE_MS)
 }
 
 function initFormListener(form) {
+  if (wiredLoginForms.has(form)) {
+    return
+  }
+  wiredLoginForms.add(form)
+
   form.addEventListener('submit', async () => {
     if (!(await isContentScriptEnabled())) {
       return
     }
 
     const username = form.querySelector(
-      'input[type="text"], input[type="email"]'
+      'input[type="text"], input[type="email"], input[type="tel"]'
     )?.value
 
     const password = form.querySelector('input[type="password"]')?.value
@@ -638,12 +667,9 @@ runtime
       msg.data?.username &&
       msg.data?.password
     ) {
-      showIframe(IFRAME_TYPES.login, {
-        data: msg.data,
-        styles: {
-          top: '20px',
-          right: '20px'
-        }
+      showLoginIframe({
+        ...msg.data,
+        url: window.location.href
       })
       return
     }

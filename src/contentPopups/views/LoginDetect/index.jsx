@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 
 import { t } from '@lingui/core/macro'
 import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
@@ -59,13 +59,7 @@ export const LoginDetect = () => {
     updateRecords,
     data: recordsData,
     isLoading: isUpdateLoading
-  } = useRecords({
-    onCompleted: () =>
-      closeIframe({
-        iframeId: routerState?.iframeId,
-        iframeType: routerState?.iframeType
-      })
-  })
+  } = useRecords()
 
   const { action, existingRecord } = useMemo(
     () =>
@@ -110,7 +104,14 @@ export const LoginDetect = () => {
         updated = withWebsite
       }
 
-      updateRecords([updated])
+      void updateRecords([updated])
+        .then(() => {
+          closeIframe({
+            iframeId: routerState?.iframeId,
+            iframeType: routerState?.iframeType
+          })
+        })
+        .catch(() => {})
       return
     }
 
@@ -125,27 +126,22 @@ export const LoginDetect = () => {
     })
   }
 
+  // Mount-once vault refresh; empty deps intentional (avoid refetch loop).
   useEffect(() => {
+    void refetchVault()
+  }, [])
+
+  useLayoutEffect(() => {
     setIframeStyles({
       iframeId: routerState?.iframeId,
       iframeType: routerState?.iframeType,
       style: {
-        width: `${popupRef.current?.offsetWidth}px`,
-        height: `${popupRef.current?.offsetHeight}px`,
+        width: `${popupRef.current?.offsetWidth || 460}px`,
+        height: `${popupRef.current?.offsetHeight || 280}px`,
         borderRadius: '12px'
       }
     })
-
-    refetchVault()
-  }, [
-    action,
-    pageUrl,
-    username,
-    password,
-    routerState?.iframeId,
-    routerState?.iframeType,
-    refetchVault
-  ])
+  }, [action, routerState?.iframeId, routerState?.iframeType])
 
   const isBusy = isCreateLoading || isUpdateLoading
 
