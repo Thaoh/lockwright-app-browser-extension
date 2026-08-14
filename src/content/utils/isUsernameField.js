@@ -10,7 +10,9 @@ export const isUsernameField = (element) => {
 
   const type = (element.type || '').toLowerCase()
   if (EXCLUDED_TYPES.has(type)) return false
-  if (type && type !== 'text' && type !== 'email') return false
+  // text/email/tel — tel covers mobile-number logins (e.g. OneCall).
+  if (type && type !== 'text' && type !== 'email' && type !== 'tel')
+    return false
 
   // Explicit email inputs are username fields.
   if (type === 'email') return true

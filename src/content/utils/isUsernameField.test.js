@@ -83,8 +83,23 @@ describe('isUsernameField', () => {
     expect(isUsernameField(element)).toBe(false)
   })
 
-  it('should handle elements with an empty name property gracefully', () => {
-    const element = { type: 'text', name: '' }
+  it('should return true for tel inputs with username name (mobile login)', () => {
+    const element = {
+      type: 'tel',
+      name: 'username',
+      id: 'login-username',
+      placeholder: 'Skriv ditt mobilnummer',
+      labels: [{ textContent: 'Mobilnummer' }]
+    }
+    expect(isUsernameField(element)).toBe(true)
+  })
+
+  it('should return false for tel inputs without username hints', () => {
+    const element = {
+      type: 'tel',
+      name: 'callbackPhone',
+      id: 'phone'
+    }
     expect(isUsernameField(element)).toBe(false)
   })
 })
