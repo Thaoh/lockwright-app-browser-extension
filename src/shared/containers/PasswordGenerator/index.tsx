@@ -11,6 +11,7 @@ import {
 } from '@tetherto/pearpass-utils-password-check'
 import {
   Button,
+  InputField,
   PasswordIndicator,
   type PasswordIndicatorVariant,
   Radio,
@@ -34,6 +35,28 @@ const MODE_RANDOM = 'random'
 
 type Mode = typeof MODE_MEMORABLE | typeof MODE_RANDOM
 
+const PASSWORD_CHARSET_KEYS = [
+  'capitalLetters',
+  'lowercaseLetters',
+  'numbers',
+  'specialCharacters'
+] as const
+
+type PasswordCharsetKey = (typeof PASSWORD_CHARSET_KEYS)[number]
+
+type RandomRules = {
+  characters: number
+  capitalLetters: boolean
+  lowercaseLetters: boolean
+  numbers: boolean
+  specialCharacters: boolean
+}
+
+const MEMORABLE_MIN = 6
+const MEMORABLE_MAX = 36
+const RANDOM_MIN = 4
+const RANDOM_MAX = 128
+
 type HistoryEntry = {
   id: string
   value: string
@@ -44,6 +67,12 @@ type HistoryEntry = {
 }
 
 const HISTORY_DISPLAY_LIMIT = 20
+
+const formatHistoryDateTime = (timestamp: number) => {
+  const date = new Date(timestamp)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+}
 
 const STRENGTH_TO_INDICATOR: Record<string, PasswordIndicatorVariant> = {
   vulnerable: 'vulnerable',
@@ -108,11 +137,22 @@ export const PasswordGenerator = ({
     symbols: true,
     numbers: true
   })
-  const [random, setRandom] = useState({
+  const [random, setRandom] = useState<RandomRules>({
     characters: 20,
+    capitalLetters: true,
+    lowercaseLetters: true,
+    numbers: true,
     specialCharacters: true
   })
   const [history, setHistory] = useState<HistoryEntry[]>([])
+
+  const lengthValue =
+    mode === MODE_MEMORABLE ? memorable.words : random.characters
+  const [lengthDraft, setLengthDraft] = useState(String(lengthValue))
+
+  useEffect(() => {
+    setLengthDraft(String(lengthValue))
+  }, [lengthValue])
 
   const generated = useMemo(() => {
     if (mode === MODE_MEMORABLE) {
@@ -125,9 +165,9 @@ export const PasswordGenerator = ({
     }
     return generatePassword(random.characters, {
       includeSpecialChars: random.specialCharacters,
-      lowerCase: true,
-      upperCase: true,
-      numbers: true
+      lowerCase: random.lowercaseLetters,
+      upperCase: random.capitalLetters,
+      numbers: random.numbers
     })
   }, [mode, memorable, random])
 
@@ -182,6 +222,43 @@ export const PasswordGenerator = ({
     }))
   }
 
+  const handlePasswordRuleChange = (
+    key: keyof RandomRules,
+    value: boolean | number
+  ) => {
+    setRandom((prev) => {
+      if (
+        value === false &&
+        PASSWORD_CHARSET_KEYS.includes(key as PasswordCharsetKey)
+      ) {
+        const othersOn = PASSWORD_CHARSET_KEYS.some(
+          (charsetKey) => charsetKey !== key && prev[charsetKey]
+        )
+        if (!othersOn) return prev
+      }
+
+      return { ...prev, [key]: value }
+    })
+  }
+
+  const lengthMin = mode === MODE_MEMORABLE ? MEMORABLE_MIN : RANDOM_MIN
+  const lengthMax = mode === MODE_MEMORABLE ? MEMORABLE_MAX : RANDOM_MAX
+
+  const commitLengthDraft = () => {
+    const parsed = parseInt(lengthDraft, 10)
+    if (Number.isNaN(parsed)) {
+      setLengthDraft(String(lengthValue))
+      return
+    }
+    const clamped = Math.min(lengthMax, Math.max(lengthMin, parsed))
+    if (mode === MODE_MEMORABLE) {
+      setMemorable((r) => ({ ...r, words: clamped }))
+    } else {
+      handlePasswordRuleChange('characters', clamped)
+    }
+    setLengthDraft(String(clamped))
+  }
+
   const modeOptions: { key: Mode; label: string; description: string }[] = [
     {
       key: MODE_MEMORABLE,
@@ -222,6 +299,33 @@ export const PasswordGenerator = ({
       checked: memorable.numbers,
       onChange: (next: boolean) =>
         setMemorable((r) => ({ ...r, numbers: next }))
+    }
+  ]
+
+  const passwordCharsetRules: {
+    key: PasswordCharsetKey
+    label: string
+    value: boolean
+  }[] = [
+    {
+      key: 'capitalLetters',
+      label: t`Capital letters`,
+      value: random.capitalLetters
+    },
+    {
+      key: 'lowercaseLetters',
+      label: t`Lowercase letters`,
+      value: random.lowercaseLetters
+    },
+    {
+      key: 'numbers',
+      label: t`Numbers`,
+      value: random.numbers
+    },
+    {
+      key: 'specialCharacters',
+      label: t`Special character (!&*)`,
+      value: random.specialCharacters
     }
   ]
 
@@ -295,28 +399,46 @@ export const PasswordGenerator = ({
         </Text>
 
         <div className="border-border-primary flex min-h-[41px] items-center justify-between gap-[var(--spacing12)] rounded-[var(--radius8)] border px-[var(--spacing12)] py-[var(--spacing8)]">
-          <Text as="span" variant="labelEmphasized">
-            {mode === MODE_MEMORABLE
-              ? `${memorable.words} ${t`Words`}`
-              : `${random.characters} ${t`Chars`}`}
-          </Text>
+          <div
+            className="flex shrink-0 items-center gap-[var(--spacing8)]"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                commitLengthDraft()
+                ;(e.target as HTMLElement).blur?.()
+              }
+            }}
+          >
+            <div className="w-[64px]">
+              <InputField
+                value={lengthDraft}
+                onChange={(e) => {
+                  const next = e.target.value
+                  if (next === '' || /^\d+$/.test(next)) {
+                    setLengthDraft(next)
+                  }
+                }}
+                onBlur={commitLengthDraft}
+                testID="password-generator-length-input"
+              />
+            </div>
+            <Text as="span" variant="labelEmphasized">
+              {mode === MODE_MEMORABLE ? t`Words` : t`Chars`}
+            </Text>
+          </div>
           <div className="ms-1 min-w-0 flex-1">
             <Slider
-              minimumValue={mode === MODE_MEMORABLE ? 6 : 4}
-              maximumValue={mode === MODE_MEMORABLE ? 36 : 50}
+              minimumValue={lengthMin}
+              maximumValue={lengthMax}
               step={1}
-              value={
-                mode === MODE_MEMORABLE ? memorable.words : random.characters
-              }
+              value={lengthValue}
               onValueChange={(value: number) => {
+                const next = Math.round(value)
                 if (mode === MODE_MEMORABLE) {
-                  setMemorable((r) => ({ ...r, words: Math.round(value) }))
+                  setMemorable((r) => ({ ...r, words: next }))
                   return
                 }
-                setRandom((r) => ({
-                  ...r,
-                  characters: Math.round(value)
-                }))
+                handlePasswordRuleChange('characters', next)
               }}
               thumbTintColor={theme.colors.colorPrimary}
               aria-label={
@@ -337,39 +459,49 @@ export const PasswordGenerator = ({
         </Text>
 
         <div className="border-border-primary flex flex-col overflow-hidden rounded-[var(--radius8)] border">
-          {mode === MODE_MEMORABLE ? (
-            memorableSettings.map((setting, index) => (
-              <div
-                key={setting.key}
-                className={[
-                  'flex items-center justify-between px-[var(--spacing16)] py-[var(--spacing12)]',
-                  index < memorableSettings.length - 1
-                    ? 'border-border-primary border-b'
-                    : ''
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-              >
-                <Text variant="bodyEmphasized">{setting.label}</Text>
-                <ToggleSwitch
-                  checked={setting.checked}
-                  onChange={setting.onChange}
-                  aria-label={setting.label}
-                />
-              </div>
-            ))
-          ) : (
-            <div className="flex items-center justify-between px-[var(--spacing16)] py-[var(--spacing12)]">
-              <Text variant="bodyEmphasized">{t`Special character (!&*)`}</Text>
-              <ToggleSwitch
-                checked={random.specialCharacters}
-                onChange={(next) =>
-                  setRandom((r) => ({ ...r, specialCharacters: next }))
-                }
-                aria-label={t`Special character (!&*)`}
-              />
-            </div>
-          )}
+          {mode === MODE_MEMORABLE
+            ? memorableSettings.map((setting, index) => (
+                <div
+                  key={setting.key}
+                  className={[
+                    'flex items-center justify-between px-[var(--spacing16)] py-[var(--spacing12)]',
+                    index < memorableSettings.length - 1
+                      ? 'border-border-primary border-b'
+                      : ''
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                >
+                  <Text variant="bodyEmphasized">{setting.label}</Text>
+                  <ToggleSwitch
+                    checked={setting.checked}
+                    onChange={setting.onChange}
+                    aria-label={setting.label}
+                  />
+                </div>
+              ))
+            : passwordCharsetRules.map((rule, index) => (
+                <div
+                  key={rule.key}
+                  className={[
+                    'flex items-center justify-between px-[var(--spacing16)] py-[var(--spacing12)]',
+                    index < passwordCharsetRules.length - 1
+                      ? 'border-border-primary border-b'
+                      : ''
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                >
+                  <Text variant="bodyEmphasized">{rule.label}</Text>
+                  <ToggleSwitch
+                    checked={rule.value}
+                    onChange={(next) =>
+                      handlePasswordRuleChange(rule.key, next)
+                    }
+                    aria-label={rule.label}
+                  />
+                </div>
+              ))}
         </div>
       </section>
 
@@ -421,8 +553,9 @@ export const PasswordGenerator = ({
                     as="span"
                     variant="caption"
                     color={theme.colors.colorTextTertiary}
+                    className="block"
                   >
-                    {new Date(entry.createdAt).toLocaleString()}
+                    {formatHistoryDateTime(entry.createdAt)}
                   </Text>
                   {entry.contextLabel ? (
                     <Text
