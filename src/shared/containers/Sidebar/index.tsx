@@ -450,6 +450,9 @@ export const Sidebar = () => {
           }
           onClick={handleGeneratorClick}
         />
+      </div>
+
+      <div style={styles.footerSection}>
         <NavbarListItem
           testID="sidebar-settings-button"
           label={t`Settings`}
