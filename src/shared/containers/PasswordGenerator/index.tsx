@@ -145,6 +145,8 @@ export const PasswordGenerator = ({
     specialCharacters: true
   })
   const [history, setHistory] = useState<HistoryEntry[]>([])
+  // Kit Slider has no onSlidingComplete — suppress history until mouse/touch release.
+  const [isSlidingLength, setIsSlidingLength] = useState(false)
 
   const lengthValue =
     mode === MODE_MEMORABLE ? memorable.words : random.characters
@@ -153,6 +155,17 @@ export const PasswordGenerator = ({
   useEffect(() => {
     setLengthDraft(String(lengthValue))
   }, [lengthValue])
+
+  useEffect(() => {
+    if (!isSlidingLength) return
+    const endSlide = () => setIsSlidingLength(false)
+    window.addEventListener('mouseup', endSlide)
+    window.addEventListener('touchend', endSlide)
+    return () => {
+      window.removeEventListener('mouseup', endSlide)
+      window.removeEventListener('touchend', endSlide)
+    }
+  }, [isSlidingLength])
 
   const generated = useMemo(() => {
     if (mode === MODE_MEMORABLE) {
@@ -177,8 +190,9 @@ export const PasswordGenerator = ({
 
   // appendHistory loads existing entries first, so this also hydrates history
   // on mount (and refreshes after each regenerate). Failures leave the list usable.
+  // Skip while the length slider is dragging — commit once on release.
   useEffect(() => {
-    if (!generated) return
+    if (!generated || isSlidingLength) return
     let cancelled = false
     void appendHistory(generated)
       .then((entries) => {
@@ -198,7 +212,7 @@ export const PasswordGenerator = ({
     return () => {
       cancelled = true
     }
-  }, [generated])
+  }, [generated, isSlidingLength])
 
   const strength = useMemo(() => {
     if (mode === MODE_MEMORABLE) {
@@ -426,7 +440,11 @@ export const PasswordGenerator = ({
               {mode === MODE_MEMORABLE ? t`Words` : t`Chars`}
             </Text>
           </div>
-          <div className="ms-1 min-w-0 flex-1">
+          <div
+            className="ms-1 min-w-0 flex-1"
+            onMouseDown={() => setIsSlidingLength(true)}
+            onTouchStart={() => setIsSlidingLength(true)}
+          >
             <Slider
               minimumValue={lengthMin}
               maximumValue={lengthMax}
@@ -448,6 +466,7 @@ export const PasswordGenerator = ({
               }
               maximumTrackTintColor={theme.colors.colorBorderPrimary}
               minimumTrackTintColor={theme.colors.colorPrimary}
+              testID="password-generator-length-slider"
             />
           </div>
         </div>

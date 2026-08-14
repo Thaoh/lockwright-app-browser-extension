@@ -111,7 +111,25 @@ jest.mock('@tetherto/pearpass-lib-ui-kit', () => {
           )
         )
       ),
-    Slider: () => React.createElement('input', { type: 'range' }),
+    Slider: ({
+      value,
+      onValueChange,
+      testID,
+      'aria-label': ariaLabel
+    }: {
+      value?: number
+      onValueChange?: (value: number) => void
+      testID?: string
+      'aria-label'?: string
+    }) =>
+      React.createElement('input', {
+        type: 'range',
+        'data-testid': testID,
+        'aria-label': ariaLabel,
+        value: value ?? 0,
+        onChange: (e: { target: { value: string } }) =>
+          onValueChange?.(Number(e.target.value))
+      }),
     InputField: ({
       value,
       onChange,
@@ -261,5 +279,31 @@ describe('PasswordGenerator', () => {
         includeSpecialChars: true
       })
     )
+  })
+
+  it('does not append history for intermediate slider values until release', async () => {
+    render(<PasswordGenerator />)
+
+    await waitFor(() => {
+      expect(mockAppendHistory).toHaveBeenCalledTimes(1)
+    })
+
+    const slider = screen.getByTestId('password-generator-length-slider')
+    fireEvent.mouseDown(slider)
+    mockAppendHistory.mockClear()
+
+    mockGeneratePassword.mockReturnValueOnce('slide-25')
+    fireEvent.change(slider, { target: { value: '25' } })
+    mockGeneratePassword.mockReturnValueOnce('slide-30')
+    fireEvent.change(slider, { target: { value: '30' } })
+
+    expect(mockAppendHistory).not.toHaveBeenCalled()
+
+    fireEvent.mouseUp(window)
+
+    await waitFor(() => {
+      expect(mockAppendHistory).toHaveBeenCalledTimes(1)
+    })
+    expect(mockAppendHistory).toHaveBeenCalledWith('slide-30')
   })
 })
