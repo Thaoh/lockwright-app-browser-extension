@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { useVault } from '@tetherto/pearpass-lib-vault'
 
 import { useRouter } from '../../../shared/context/RouterContext'
+import { isExpectedQuietError } from '../../../shared/utils/isExpectedQuietError'
 import { logger } from '../../../shared/utils/logger'
 
 export const useVaultSync = (): void => {
@@ -14,7 +15,9 @@ export const useVaultSync = (): void => {
       try {
         await syncVault()
       } catch (error) {
-        logger.error('Error syncing vault:', error)
+        if (!isExpectedQuietError(error)) {
+          logger.error('Error syncing vault:', error)
+        }
       }
     }
 

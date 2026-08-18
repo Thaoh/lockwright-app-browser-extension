@@ -27,10 +27,6 @@ export type CreateOrEditVaultModalContentProps = {
   vault?: Vault
 }
 
-const nameSchema = Validator.object({
-  name: Validator.string().required(t`Name is required`)
-})
-
 export const CreateOrEditVaultModalContent = ({
   onClose,
   onSuccess,
@@ -44,6 +40,14 @@ export const CreateOrEditVaultModalContent = ({
   const isRename = Boolean(vault?.id)
 
   const [submitError, setSubmitError] = useState<string | null>(null)
+
+  const nameSchema = useMemo(
+    () =>
+      Validator.object({
+        name: Validator.string().required(t`Name is required`)
+      }),
+    []
+  )
 
   const { register, handleSubmit, setValue, setErrors } = useForm({
     initialValues: {

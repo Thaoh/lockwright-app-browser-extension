@@ -140,6 +140,14 @@ describe('transformFirefoxManifest', () => {
     assert.equal(out.action.default_popup, 'index.html')
     assert.deepEqual(out.action.default_icon, { '16': 'icons/icon16.png' })
   })
+
+  it('derives background.scripts from service_worker when scripts missing', () => {
+    const out = transformFirefoxManifest({
+      background: { service_worker: 'background.js' }
+    })
+
+    assert.deepEqual(out.background, { scripts: ['background.js'] })
+  })
 })
 
 describe('packageFirefox', () => {

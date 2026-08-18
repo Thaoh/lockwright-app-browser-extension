@@ -1,0 +1,25 @@
+const QUIET_PATTERNS = [
+  'masterpasswordrequired',
+  'favicon not found',
+  'invalid_url'
+]
+
+/**
+ * @param {unknown} error
+ * @returns {boolean}
+ */
+export const isExpectedQuietError = (error) => {
+  if (error === null || error === undefined || error === '') return false
+
+  const message =
+    typeof error === 'string'
+      ? error
+      : error instanceof Error
+        ? error.message
+        : String(error)
+
+  if (!message) return false
+
+  const lower = message.toLowerCase()
+  return QUIET_PATTERNS.some((pattern) => lower.includes(pattern))
+}

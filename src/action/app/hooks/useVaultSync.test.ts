@@ -53,6 +53,19 @@ describe('useVaultSync', () => {
     })
   })
 
+  it('should not log expected quiet MasterPasswordRequired errors', async () => {
+    const error = new Error('MasterPasswordRequired')
+    mockSyncVault.mockRejectedValueOnce(error)
+
+    renderHook(() => useVaultSync())
+
+    await waitFor(() => {
+      expect(mockSyncVault).toHaveBeenCalledTimes(1)
+    })
+
+    expect(logger.error).not.toHaveBeenCalled()
+  })
+
   it('should re-sync if dependencies change', async () => {
     const { rerender } = renderHook(() => useVaultSync())
 

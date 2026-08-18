@@ -1,4 +1,6 @@
 import { PearpassVaultClient } from './index'
+import { NATIVE_MESSAGE_TYPES } from '../shared/constants/nativeMessaging'
+import { logger } from '../shared/utils/logger'
 import { runtime } from '../shared/utils/runtime'
 
 jest.mock('../shared/utils/runtime', () => ({
@@ -11,9 +13,23 @@ jest.mock('../shared/utils/runtime', () => ({
   }
 }))
 
+jest.mock('../shared/utils/logger', () => ({
+  logger: {
+    log: jest.fn(),
+    error: jest.fn()
+  }
+}))
+
 // Mock command definitions
 jest.mock('../shared/commandDefinitions', () => ({
-  COMMAND_NAMES: ['vaultsInit', 'vaultsClose', 'checkAvailability'],
+  COMMAND_NAMES: [
+    'vaultsInit',
+    'vaultsClose',
+    'checkAvailability',
+    'vaultsGetStatus',
+    'activeVaultGetStatus',
+    'fetchFavicon'
+  ],
   getCommandParams: jest.fn((commandName, args) => {
     switch (commandName) {
       case 'vaultsInit':
@@ -29,9 +45,38 @@ const createMockClient = () =>
     debugMode: true
   })
 
+/** CONNECT + checkAvailability succeed; named command fails with error message. */
+const mockSendMessageUntilCommandFails = (failCommand, errorMessage) => {
+  runtime.sendMessage.mockImplementation((message, callback) => {
+    if (message.type === NATIVE_MESSAGE_TYPES.CONNECT) {
+      callback({ success: true })
+      return
+    }
+    if (
+      message.type === NATIVE_MESSAGE_TYPES.REQUEST &&
+      message.command === 'checkAvailability'
+    ) {
+      callback({
+        success: true,
+        result: { available: true, status: 'connected', message: 'ok' }
+      })
+      return
+    }
+    if (
+      message.type === NATIVE_MESSAGE_TYPES.REQUEST &&
+      message.command === failCommand
+    ) {
+      callback({ success: false, error: errorMessage })
+      return
+    }
+    callback({ success: true, result: {} })
+  })
+}
+
 describe('PearpassVaultClient', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    runtime.lastError = null
   })
 
   describe('constructor', () => {
@@ -86,6 +131,43 @@ describe('PearpassVaultClient', () => {
 
       client.disconnect()
       expect(client.connected).toBe(false)
+    })
+  })
+
+  describe('expected quiet errors', () => {
+    it('vaultsGetStatus MasterPasswordRequired resolves { status: null } without logger.error', async () => {
+      const client = createMockClient()
+      mockSendMessageUntilCommandFails(
+        'vaultsGetStatus',
+        'MasterPasswordRequired'
+      )
+
+      await expect(client.vaultsGetStatus()).resolves.toEqual({ status: null })
+      expect(logger.error).not.toHaveBeenCalled()
+    })
+
+    it('fetchFavicon Favicon not found resolves { favicon: null } without logger.error', async () => {
+      const client = createMockClient()
+      mockSendMessageUntilCommandFails('fetchFavicon', 'Favicon not found')
+
+      await expect(client.fetchFavicon()).resolves.toEqual({ favicon: null })
+      expect(logger.error).not.toHaveBeenCalled()
+    })
+
+    it('fetchFavicon INVALID_URL resolves { favicon: null } without logger.error', async () => {
+      const client = createMockClient()
+      mockSendMessageUntilCommandFails('fetchFavicon', 'INVALID_URL')
+
+      await expect(client.fetchFavicon()).resolves.toEqual({ favicon: null })
+      expect(logger.error).not.toHaveBeenCalled()
+    })
+
+    it('unrelated error still logs and throws', async () => {
+      const client = createMockClient()
+      mockSendMessageUntilCommandFails('vaultsGetStatus', 'boom')
+
+      await expect(client.vaultsGetStatus()).rejects.toThrow('boom')
+      expect(logger.error).toHaveBeenCalled()
     })
   })
 })

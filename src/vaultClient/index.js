@@ -13,6 +13,7 @@ import {
   VAULT_CLIENT_ERRORS,
   VAULT_CLIENT_EVENTS
 } from '../shared/constants/nativeMessaging'
+import { isExpectedQuietError } from '../shared/utils/isExpectedQuietError'
 import { logger } from '../shared/utils/logger'
 import { runtime } from '../shared/utils/runtime'
 
@@ -152,7 +153,20 @@ export class PearpassVaultClient extends EventEmitter {
         throw error
       }
     } catch (error) {
-      this._logError(`Error in ${command}:`, error)
+      if (command === 'fetchFavicon' && isExpectedQuietError(error)) {
+        return { favicon: null }
+      }
+
+      if (
+        (command === 'vaultsGetStatus' || command === 'activeVaultGetStatus') &&
+        isExpectedQuietError(error)
+      ) {
+        return { status: null }
+      }
+
+      if (!isExpectedQuietError(error)) {
+        this._logError(`Error in ${command}:`, error)
+      }
 
       // Handle specific error types based on code
       switch (error.code) {
@@ -279,7 +293,21 @@ export class PearpassVaultClient extends EventEmitter {
 
           return result
         } catch (error) {
-          this._logError(`Error in ${commandName}:`, error)
+          if (commandName === 'fetchFavicon' && isExpectedQuietError(error)) {
+            return { favicon: null }
+          }
+
+          if (
+            (commandName === 'vaultsGetStatus' ||
+              commandName === 'activeVaultGetStatus') &&
+            isExpectedQuietError(error)
+          ) {
+            return { status: null }
+          }
+
+          if (!isExpectedQuietError(error)) {
+            this._logError(`Error in ${commandName}:`, error)
+          }
 
           // Session errors are handled by background script which triggers pairing modal
           // We just propagate the error with its code

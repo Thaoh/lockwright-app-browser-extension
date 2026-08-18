@@ -6,7 +6,7 @@ import {
   VaultProvider
 } from '@tetherto/pearpass-lib-vault'
 
-import { messages } from '../../../locales/en/messages'
+import { messages } from '../../../locales/en/messages.mjs'
 import { PearpassVaultClient } from '../../../vaultClient'
 import { LoadingProvider } from '../../context/LoadingContext'
 import { RouterProvider } from '../../context/RouterContext'

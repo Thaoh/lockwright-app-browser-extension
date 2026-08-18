@@ -4,6 +4,7 @@ import { useFavicon } from '@tetherto/pearpass-lib-vault'
 
 import { createStyles } from './RecordItemIcon.styles'
 import { RECORD_COLOR_BY_TYPE } from '../../constants/recordColorByType'
+import { isFetchableFaviconUrl } from '../../utils/isFetchableFaviconUrl'
 
 type RecordLike = {
   type: string
@@ -29,7 +30,9 @@ export const RecordItemIcon = ({
 
   const websiteDomain =
     record.type === 'login' ? record.data?.websites?.[0] : undefined
-  const { faviconSrc, isLoading } = useFavicon({ url: websiteDomain ?? '' })
+  const { faviconSrc, isLoading } = useFavicon({
+    url: isFetchableFaviconUrl(websiteDomain) ? (websiteDomain ?? '') : ''
+  })
 
   const showFavicon = !!faviconSrc && !isLoading
   const initials = generateAvatarInitials(record.data?.title ?? '')

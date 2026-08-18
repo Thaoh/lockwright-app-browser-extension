@@ -5,6 +5,7 @@ import { useTheme } from '@tetherto/pearpass-lib-ui-kit'
 import { CheckIcon } from '../../../shared/icons/CheckIcon'
 import { StarIcon } from '../../../shared/icons/StarIcon'
 import { useFavicon } from '@tetherto/pearpass-lib-vault'
+import { isFetchableFaviconUrl } from '../../utils/isFetchableFaviconUrl'
 
 interface RecordAvatarProps {
   websiteDomain: string
@@ -25,7 +26,9 @@ export const RecordAvatar: React.FC<RecordAvatarProps> = ({
 }) => {
   const { theme } = useTheme()
   const isSmall = size === 'sm'
-  const { faviconSrc } = useFavicon({ url: websiteDomain })
+  const { faviconSrc } = useFavicon({
+    url: isFetchableFaviconUrl(websiteDomain) ? websiteDomain : ''
+  })
 
   const avatarSrc = faviconSrc
 
