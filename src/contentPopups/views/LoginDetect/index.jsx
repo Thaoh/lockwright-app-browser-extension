@@ -1,9 +1,15 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 
 import { t } from '@lingui/core/macro'
 import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
 import { Validator } from '@tetherto/pear-apps-utils-validator'
-import { Button, Text } from '@tetherto/pearpass-lib-ui-kit'
+import { Button } from '@tetherto/pearpass-lib-ui-kit'
 import {
   RECORD_TYPES,
   useCreateRecord,
@@ -28,6 +34,7 @@ export const LoginDetect = () => {
   const { state: routerState } = useRouter()
 
   const popupRef = useRef(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const recordTitle = extractNameFromDomain(routerState?.url)
   const pageUrl = routerState?.url ?? ''
@@ -55,11 +62,11 @@ export const LoginDetect = () => {
 
   const { refetch: refetchVault } = useVault()
 
-  const {
-    updateRecords,
-    data: recordsData,
-    isLoading: isUpdateLoading
-  } = useRecords()
+  const { updateRecords, data: recordsData, isInitialized } = useRecords()
+
+  // Ready once we have a records snapshot (including []). Do not gate on
+  // isLoading — vault refetch would hide/show the card and flicker buttons.
+  const isReady = isInitialized && Array.isArray(recordsData)
 
   const { action, existingRecord } = useMemo(
     () =>
@@ -72,14 +79,25 @@ export const LoginDetect = () => {
     [recordsData, pageUrl, username, password]
   )
 
-  const { register, handleSubmit } = useForm({
+  const resolvedTitle =
+    (typeof existingRecord?.data?.title === 'string' &&
+      existingRecord.data.title.trim()) ||
+    recordTitle ||
+    ''
+
+  const { register, handleSubmit, setValue } = useForm({
     initialValues: {
-      title: recordTitle,
+      title: resolvedTitle,
       username,
       password
     },
     validate: (values) => schema.validate(values)
   })
+
+  useEffect(() => {
+    if (!resolvedTitle || typeof setValue !== 'function') return
+    setValue('title', resolvedTitle)
+  }, [resolvedTitle, setValue])
 
   const dismiss = () =>
     closeIframe({
@@ -104,6 +122,7 @@ export const LoginDetect = () => {
         updated = withWebsite
       }
 
+      setIsSubmitting(true)
       void updateRecords([updated])
         .then(() => {
           closeIframe({
@@ -112,6 +131,7 @@ export const LoginDetect = () => {
           })
         })
         .catch(() => {})
+        .finally(() => setIsSubmitting(false))
       return
     }
 
@@ -131,41 +151,36 @@ export const LoginDetect = () => {
     void refetchVault()
   }, [])
 
+  // Unchanged password: close immediately — no UI.
+  useEffect(() => {
+    if (!isReady || action !== 'noop') return
+    dismiss()
+  }, [isReady, action])
+
   useLayoutEffect(() => {
+    const shouldShow = isReady && (action === 'save' || action === 'update')
     setIframeStyles({
       iframeId: routerState?.iframeId,
       iframeType: routerState?.iframeType,
-      style: {
-        width: `${popupRef.current?.offsetWidth || 460}px`,
-        height: `${popupRef.current?.offsetHeight || 280}px`,
-        borderRadius: '12px'
-      }
+      style: shouldShow
+        ? {
+            width: `${popupRef.current?.offsetWidth || 460}px`,
+            height: `${popupRef.current?.offsetHeight || 280}px`,
+            borderRadius: '12px'
+          }
+        : {
+            width: '0px',
+            height: '0px',
+            borderRadius: '12px'
+          }
     })
-  }, [action, routerState?.iframeId, routerState?.iframeType])
+  }, [isReady, action, routerState?.iframeId, routerState?.iframeType])
 
-  const isBusy = isCreateLoading || isUpdateLoading
+  // Only treat explicit create/update as busy — not vault record loading.
+  const isBusy = isCreateLoading || isSubmitting
 
-  if (action === 'noop') {
-    return (
-      <PopupCard
-        className="flex w-[460px] flex-col gap-4 overflow-auto"
-        ref={popupRef}
-      >
-        <Text variant="body">{t`Password already saved`}</Text>
-        <div className="flex justify-end">
-          <Button
-            variant="secondary"
-            size="small"
-            type="button"
-            onClick={dismiss}
-            disabled={isBusy}
-            data-testid="login-detect-not-now"
-          >
-            {t`Not now`}
-          </Button>
-        </div>
-      </PopupCard>
-    )
+  if (!isReady || action === 'noop') {
+    return null
   }
 
   return (
