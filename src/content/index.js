@@ -10,7 +10,10 @@ import { findLoginFields } from './utils/findLoginFields'
 import { findLoginForms } from './utils/findLoginForms'
 import { findSelectOptionValue } from './utils/findSelectOptionValue'
 import { getField, PASSWORD_MATCHERS } from './utils/getField'
-import { isContentScriptEnabled } from './utils/isContentScriptEnabled'
+import {
+  isContentScriptEnabled,
+  isExtensionContextValid
+} from './utils/isContentScriptEnabled'
 import { isCreditCardField } from './utils/isCreditCardField'
 import { isIdentityField } from './utils/isIdentityField'
 import { isOtpField } from './utils/isOtpField'
@@ -547,7 +550,26 @@ function hideAutofillOnOutsideClick(event) {
 
 const wiredLoginForms = new WeakSet()
 let loginSubmitDebounceTimer = null
+let pendingLoginCapture = null
 const LOGIN_SUBMIT_DEBOUNCE_MS = 450
+const STALE_CS_RELOAD_KEY = '__pearpass_cs_reload__'
+
+/**
+ * MV3 cannot hot-swap an invalidated content script. Reload the tab once so
+ * the browser injects the new script. Gated to avoid reload loops.
+ */
+function reloadForStaleExtensionContext() {
+  try {
+    if (sessionStorage.getItem(STALE_CS_RELOAD_KEY)) {
+      sessionStorage.removeItem(STALE_CS_RELOAD_KEY)
+      return
+    }
+    sessionStorage.setItem(STALE_CS_RELOAD_KEY, '1')
+    window.location.reload()
+  } catch {
+    // sessionStorage may be unavailable
+  }
+}
 
 function showLoginIframe(data) {
   const existing = getIframeData(IFRAME_TYPES.login)
@@ -574,21 +596,36 @@ function onSubmit({ username, password }) {
     return
   }
 
+  // Prefer non-empty fields if click+submit both fire in the debounce window.
+  pendingLoginCapture = {
+    username: username || pendingLoginCapture?.username || '',
+    password: password || pendingLoginCapture?.password || ''
+  }
+
   if (loginSubmitDebounceTimer) {
     clearTimeout(loginSubmitDebounceTimer)
   }
 
   loginSubmitDebounceTimer = setTimeout(() => {
     loginSubmitDebounceTimer = null
+    const capture = pendingLoginCapture
+    pendingLoginCapture = null
+    if (!capture?.username && !capture?.password) {
+      return
+    }
 
-    const data = { url: window.location.href, username, password }
+    const data = {
+      url: window.location.href,
+      username: capture.username,
+      password: capture.password
+    }
 
     runtime.sendMessage({
       type: IFRAME_TYPES.login,
       data: data
     })
 
-    if (username && password) {
+    if (capture.username && capture.password) {
       showLoginIframe(data)
     }
   }, LOGIN_SUBMIT_DEBOUNCE_MS)
@@ -644,11 +681,34 @@ function detectSubmitClick(event) {
 }
 
 const observer = new MutationObserver(async () => {
-  if (!(await isContentScriptEnabled())) {
+  if (!isExtensionContextValid()) {
+    observer.disconnect()
+    reloadForStaleExtensionContext()
     return
   }
 
-  findLoginForms().forEach(initFormListener)
+  try {
+    if (!(await isContentScriptEnabled())) {
+      if (!isExtensionContextValid()) {
+        observer.disconnect()
+        reloadForStaleExtensionContext()
+      }
+      return
+    }
+
+    findLoginForms().forEach(initFormListener)
+    cleanupOrphanedFieldIframes()
+  } catch (error) {
+    if (
+      error?.message?.includes('Extension context invalidated') ||
+      !isExtensionContextValid()
+    ) {
+      observer.disconnect()
+      reloadForStaleExtensionContext()
+      return
+    }
+    throw error
+  }
 })
 
 observer.observe(document, { childList: true, subtree: true })
@@ -680,8 +740,52 @@ runtime
 
 // Display Pearpass logo
 
+function isFieldElementUsable(element) {
+  if (!element || element.isConnected === false) {
+    return false
+  }
+
+  if (
+    typeof element.getClientRects === 'function' &&
+    element.getClientRects().length === 0
+  ) {
+    return false
+  }
+
+  const rect = element.getBoundingClientRect()
+  if (rect.width < 1 || rect.height < 1) {
+    return false
+  }
+
+  const style = window.getComputedStyle(element)
+  if (
+    style.display === 'none' ||
+    style.visibility === 'hidden' ||
+    style.opacity === '0'
+  ) {
+    return false
+  }
+
+  return true
+}
+
+function cleanupOrphanedFieldIframes() {
+  for (const type of [IFRAME_TYPES.logo, IFRAME_TYPES.passwordSuggestion]) {
+    const iframeData = getIframeData(type)
+    if (!iframeData?.element) {
+      continue
+    }
+    if (!isFieldElementUsable(iframeData.element)) {
+      removeIframe(iframeData)
+    }
+  }
+}
+
 function showLogoForField(field) {
   if (!isAutoFillEnabled) {
+    return
+  }
+  if (!isFieldElementUsable(field)) {
     return
   }
   const rect = field.getBoundingClientRect()

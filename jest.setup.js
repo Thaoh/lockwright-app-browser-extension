@@ -105,6 +105,7 @@ if (typeof global.chrome === 'undefined') {
   }
   global.chrome = {
     runtime: {
+      id: 'test-extension-id',
       onMessage: {
         addListener: jest.fn()
       },

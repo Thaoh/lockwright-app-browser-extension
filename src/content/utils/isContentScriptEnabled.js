@@ -1,4 +1,19 @@
 import { getAllowHttpFromStorage } from '../../shared/utils/allowHttpStorage'
+import { runtime } from '../../shared/utils/runtime'
+
+/**
+ * True when this content-script instance can still talk to the extension.
+ * Becomes false after reload/update until the tab is refreshed.
+ *
+ * @returns {boolean}
+ */
+export const isExtensionContextValid = () => {
+  try {
+    return Boolean(runtime?.id)
+  } catch {
+    return false
+  }
+}
 
 /**
  * Checks if the content script should be enabled for the current page.
@@ -11,8 +26,23 @@ import { getAllowHttpFromStorage } from '../../shared/utils/allowHttpStorage'
  * @returns {Promise<boolean>} A promise that resolves to true if the content script is enabled, false otherwise.
  */
 export const isContentScriptEnabled = async () => {
-  const isSecure = window.location.protocol === 'https:'
-  const isAllowHttpEnabled = await getAllowHttpFromStorage()
+  if (!isExtensionContextValid()) {
+    return false
+  }
 
-  return isSecure || isAllowHttpEnabled
+  try {
+    const isSecure = window.location.protocol === 'https:'
+    const isAllowHttpEnabled = await getAllowHttpFromStorage()
+
+    return isSecure || isAllowHttpEnabled
+  } catch (error) {
+    // Extension reloaded/updated while this page's old content script is alive.
+    if (
+      error?.message?.includes('Extension context invalidated') ||
+      !isExtensionContextValid()
+    ) {
+      return false
+    }
+    throw error
+  }
 }

@@ -17,6 +17,12 @@ describe('isContentScriptEnabled', () => {
     window.location = originalLocation
   })
 
+  beforeEach(() => {
+    if (global.chrome?.runtime) {
+      global.chrome.runtime.id = 'test-extension-id'
+    }
+  })
+
   it('should return true when protocol is https: regardless of storage setting', async () => {
     window.location.protocol = 'https:'
 
@@ -41,5 +47,21 @@ describe('isContentScriptEnabled', () => {
 
     const result = await isContentScriptEnabled()
     expect(result).toBe(false)
+  })
+
+  it('should return false when storage throws extension context invalidated', async () => {
+    window.location.protocol = 'http:'
+    getAllowHttpFromStorage.mockRejectedValue(
+      new Error('Extension context invalidated.')
+    )
+
+    await expect(isContentScriptEnabled()).resolves.toBe(false)
+  })
+
+  it('should return false when extension runtime id is missing', async () => {
+    window.location.protocol = 'https:'
+    global.chrome.runtime.id = undefined
+
+    await expect(isContentScriptEnabled()).resolves.toBe(false)
   })
 })
