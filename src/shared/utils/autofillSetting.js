@@ -6,11 +6,15 @@ import { CHROME_STORAGE_KEYS } from '../constants/storage'
  */
 export const getAutofillEnabled = async () => {
   if (!chrome?.storage?.local?.get) return true
-  const res = await chrome.storage.local.get(
-    CHROME_STORAGE_KEYS.AUTOFILL_ENABLED
-  )
-  const enabled = res?.[CHROME_STORAGE_KEYS.AUTOFILL_ENABLED]
-  return enabled !== false
+  try {
+    const res = await chrome.storage.local.get(
+      CHROME_STORAGE_KEYS.AUTOFILL_ENABLED
+    )
+    const enabled = res?.[CHROME_STORAGE_KEYS.AUTOFILL_ENABLED]
+    return enabled !== false
+  } catch {
+    return true
+  }
 }
 
 /**

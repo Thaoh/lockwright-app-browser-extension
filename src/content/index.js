@@ -21,6 +21,7 @@ import { isPasswordField } from './utils/isPasswordField'
 import { isUsernameField } from './utils/isUsernameField'
 import { setInputValue } from './utils/setInputValue'
 import { showPasswordStrengthNearField } from './utils/showPasswordStrengthNearField'
+import { swallowInvalidatedContextErrors } from './utils/swallowInvalidatedContext'
 import { triggerInputEvents } from './utils/triggerInputEvents'
 import { CONTENT_MESSAGE_TYPES } from '../shared/constants/nativeMessaging'
 import { MESSAGE_TYPES } from '../shared/services/messageBridge'
@@ -35,9 +36,13 @@ const activeIframes = new Set()
 
 let isAutoFillEnabled = true
 
-getAutofillEnabled().then((isEnabled) => {
-  isAutoFillEnabled = isEnabled
-})
+swallowInvalidatedContextErrors()
+
+getAutofillEnabled()
+  .then((isEnabled) => {
+    isAutoFillEnabled = isEnabled
+  })
+  .catch(() => {})
 
 onAutofillEnabledChanged((isEnabled) => {
   isAutoFillEnabled = isEnabled
@@ -47,7 +52,11 @@ window.addEventListener('scroll', removeIframesOnScrollOrResize)
 window.addEventListener('resize', removeIframesOnScrollOrResize)
 
 window.addEventListener('focusin', async (event) => {
-  if (!(await isContentScriptEnabled())) {
+  try {
+    if (!(await isContentScriptEnabled())) {
+      return
+    }
+  } catch {
     return
   }
 
@@ -59,7 +68,11 @@ window.addEventListener('focusin', async (event) => {
 })
 
 window.addEventListener('click', async (event) => {
-  if (!(await isContentScriptEnabled())) {
+  try {
+    if (!(await isContentScriptEnabled())) {
+      return
+    }
+  } catch {
     return
   }
 
@@ -72,7 +85,11 @@ window.addEventListener('click', async (event) => {
 })
 
 window.addEventListener('message', async (event) => {
-  if (!(await isContentScriptEnabled())) {
+  try {
+    if (!(await isContentScriptEnabled())) {
+      return
+    }
+  } catch {
     return
   }
 
@@ -85,7 +102,11 @@ window.addEventListener('message', async (event) => {
 })
 
 runtime.onMessage.addListener(async (msg) => {
-  if (!(await isContentScriptEnabled())) {
+  try {
+    if (!(await isContentScriptEnabled())) {
+      return
+    }
+  } catch {
     return
   }
 
@@ -552,24 +573,6 @@ const wiredLoginForms = new WeakSet()
 let loginSubmitDebounceTimer = null
 let pendingLoginCapture = null
 const LOGIN_SUBMIT_DEBOUNCE_MS = 450
-const STALE_CS_RELOAD_KEY = '__pearpass_cs_reload__'
-
-/**
- * MV3 cannot hot-swap an invalidated content script. Reload the tab once so
- * the browser injects the new script. Gated to avoid reload loops.
- */
-function reloadForStaleExtensionContext() {
-  try {
-    if (sessionStorage.getItem(STALE_CS_RELOAD_KEY)) {
-      sessionStorage.removeItem(STALE_CS_RELOAD_KEY)
-      return
-    }
-    sessionStorage.setItem(STALE_CS_RELOAD_KEY, '1')
-    window.location.reload()
-  } catch {
-    // sessionStorage may be unavailable
-  }
-}
 
 function showLoginIframe(data) {
   const existing = getIframeData(IFRAME_TYPES.login)
@@ -620,10 +623,14 @@ function onSubmit({ username, password }) {
       password: capture.password
     }
 
-    runtime.sendMessage({
-      type: IFRAME_TYPES.login,
-      data: data
-    })
+    try {
+      runtime.sendMessage({
+        type: IFRAME_TYPES.login,
+        data: data
+      })
+    } catch {
+      return
+    }
 
     if (capture.username && capture.password) {
       showLoginIframe(data)
@@ -638,7 +645,11 @@ function initFormListener(form) {
   wiredLoginForms.add(form)
 
   form.addEventListener('submit', async () => {
-    if (!(await isContentScriptEnabled())) {
+    try {
+      if (!(await isContentScriptEnabled())) {
+        return
+      }
+    } catch {
       return
     }
 
@@ -683,7 +694,6 @@ function detectSubmitClick(event) {
 const observer = new MutationObserver(async () => {
   if (!isExtensionContextValid()) {
     observer.disconnect()
-    reloadForStaleExtensionContext()
     return
   }
 
@@ -691,23 +701,14 @@ const observer = new MutationObserver(async () => {
     if (!(await isContentScriptEnabled())) {
       if (!isExtensionContextValid()) {
         observer.disconnect()
-        reloadForStaleExtensionContext()
       }
       return
     }
 
     findLoginForms().forEach(initFormListener)
     cleanupOrphanedFieldIframes()
-  } catch (error) {
-    if (
-      error?.message?.includes('Extension context invalidated') ||
-      !isExtensionContextValid()
-    ) {
-      observer.disconnect()
-      reloadForStaleExtensionContext()
-      return
-    }
-    throw error
+  } catch {
+    observer.disconnect()
   }
 })
 
@@ -718,7 +719,11 @@ runtime
     type: 'getPendingLogin'
   })
   .then(async (msg) => {
-    if (!(await isContentScriptEnabled())) {
+    try {
+      if (!(await isContentScriptEnabled())) {
+        return
+      }
+    } catch {
       return
     }
 
@@ -886,7 +891,11 @@ function toggleLogoOnFocus(event) {
 }
 
 document.querySelectorAll('input').forEach(async (input) => {
-  if (!(await isContentScriptEnabled())) {
+  try {
+    if (!(await isContentScriptEnabled())) {
+      return
+    }
+  } catch {
     return
   }
 

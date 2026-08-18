@@ -44,6 +44,13 @@ describe('allowHttpStorage', () => {
       delete global.chrome.storage
       expect(await getAllowHttpFromStorage()).toBe(false)
     })
+
+    it('should return false when storage throws invalidated context', async () => {
+      chrome.storage.local.get.mockRejectedValue(
+        new Error('Extension context invalidated.')
+      )
+      expect(await getAllowHttpFromStorage()).toBe(false)
+    })
   })
 
   describe('setAllowHttpInStorage', () => {
