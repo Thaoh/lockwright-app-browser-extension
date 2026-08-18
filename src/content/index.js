@@ -20,6 +20,7 @@ import { isOtpField } from './utils/isOtpField'
 import { isPasswordField } from './utils/isPasswordField'
 import { isUsernameField } from './utils/isUsernameField'
 import { setInputValue } from './utils/setInputValue'
+import { shouldSkipLoginDetect } from './utils/shouldSkipLoginDetect'
 import { showPasswordStrengthNearField } from './utils/showPasswordStrengthNearField'
 import { swallowInvalidatedContextErrors } from './utils/swallowInvalidatedContext'
 import { triggerInputEvents } from './utils/triggerInputEvents'
@@ -273,6 +274,9 @@ function showAutofillPopup({ positions, recordType, fillMode }) {
   })
 }
 
+/** Creds last filled via autofill (not generator). Used to skip LoginDetect. */
+let lastAutofill = null
+
 function handleAutofillLogin({
   username,
   password,
@@ -305,6 +309,17 @@ function handleAutofillLogin({
   if (passwordField && password !== undefined && password !== null) {
     setInputValue(passwordField, password)
     triggerInputEvents(passwordField, ['blur'])
+  }
+
+  // Remember autofilled login creds so submit can skip a redundant Save card.
+  // Do not set on otp-only path (returned above). Generator does not call this.
+  if (
+    username !== undefined &&
+    username !== null &&
+    password !== undefined &&
+    password !== null
+  ) {
+    lastAutofill = { username, password }
   }
 }
 
@@ -614,6 +629,16 @@ function onSubmit({ username, password }) {
     const capture = pendingLoginCapture
     pendingLoginCapture = null
     if (!capture?.username && !capture?.password) {
+      return
+    }
+
+    if (
+      shouldSkipLoginDetect({
+        username: capture.username,
+        password: capture.password,
+        lastAutofill
+      })
+    ) {
       return
     }
 

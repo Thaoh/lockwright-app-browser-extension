@@ -17,6 +17,7 @@ import {
   useVault
 } from '@tetherto/pearpass-lib-vault'
 
+import { isLoginDetectReady } from './isLoginDetectReady'
 import { FormGroup } from '../../../shared/components/FormGroup'
 import { InputField } from '../../../shared/components/InputField'
 import { InputFieldPassword } from '../../../shared/components/InputFieldPassword'
@@ -62,11 +63,20 @@ export const LoginDetect = () => {
 
   const { refetch: refetchVault } = useVault()
 
-  const { updateRecords, data: recordsData, isInitialized } = useRecords()
+  const {
+    updateRecords,
+    data: recordsData,
+    isInitialized,
+    isLoading
+  } = useRecords()
 
-  // Ready once we have a records snapshot (including []). Do not gate on
-  // isLoading — vault refetch would hide/show the card and flicker buttons.
-  const isReady = isInitialized && Array.isArray(recordsData)
+  // Wait out loading-empty snapshots so classify does not false-save; keep
+  // ready for non-empty data during refetch so buttons do not flicker.
+  const isReady = isLoginDetectReady({
+    isInitialized,
+    isLoading,
+    recordsData
+  })
 
   const { action, existingRecord } = useMemo(
     () =>

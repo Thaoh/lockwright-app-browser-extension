@@ -138,6 +138,22 @@ describe('classifyLoginDetectAction', () => {
     expect(result.existingRecord).toBe(existing)
   })
 
+  it('noops for IP host when websites match via hostname equality', () => {
+    const existing = loginRecord({
+      websites: ['http://10.0.12.54'],
+      password: 'secret'
+    })
+    const result = classifyLoginDetectAction({
+      records: [existing],
+      pageUrl: 'http://10.0.12.54/login',
+      username: 'alice',
+      password: 'secret'
+    })
+
+    expect(result.action).toBe('noop')
+    expect(result.existingRecord).toBe(existing)
+  })
+
   it('prefers the more specific URI match when multiple logins match', () => {
     const domainOnly = loginRecord({
       id: 'domain',
