@@ -9,6 +9,7 @@ import {
   onUriMatchSettingsChanged,
   resolveUriMatchType
 } from '../../shared/utils/uriMatchSetting'
+import { getRecordSiteMatchRank } from '../../shared/utils/uriMatchSpecificity'
 
 export const useFilteredRecords = () => {
   const { state: routerState } = useRouter()
@@ -42,14 +43,22 @@ export const useFilteredRecords = () => {
 
   const filteredRecords = useMemo(() => {
     if (routerState.recordType === 'login' && routerState?.url) {
-      return recordsData?.filter((record) =>
-        record?.data?.websites?.some((website) =>
-          doesWebsiteMatchPage(
-            routerState.url,
-            website,
-            resolveUriMatchType(record, website)
+      const pageUrl = routerState.url
+      const matched =
+        recordsData?.filter((record) =>
+          record?.data?.websites?.some((website) =>
+            doesWebsiteMatchPage(
+              pageUrl,
+              website,
+              resolveUriMatchType(record, website)
+            )
           )
-        )
+        ) ?? []
+
+      return [...matched].sort(
+        (a, b) =>
+          getRecordSiteMatchRank(b, pageUrl) -
+          getRecordSiteMatchRank(a, pageUrl)
       )
     }
 

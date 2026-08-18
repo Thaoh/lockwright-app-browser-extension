@@ -108,4 +108,68 @@ describe('classifyLoginDetectAction', () => {
       })
     ).toEqual({ action: 'save', existingRecord: null })
   })
+
+  it('trims passwords when comparing for noop', () => {
+    const existing = loginRecord({ password: 'secret' })
+    const result = classifyLoginDetectAction({
+      records: [existing],
+      pageUrl: 'https://example.com/login',
+      username: 'alice',
+      password: '  secret  '
+    })
+
+    expect(result.action).toBe('noop')
+    expect(result.existingRecord).toBe(existing)
+  })
+
+  it('noops for localhost when password is unchanged', () => {
+    const existing = loginRecord({
+      websites: ['http://localhost:8080'],
+      password: 'secret'
+    })
+    const result = classifyLoginDetectAction({
+      records: [existing],
+      pageUrl: 'http://localhost:8080/dashboard',
+      username: 'alice',
+      password: 'secret'
+    })
+
+    expect(result.action).toBe('noop')
+    expect(result.existingRecord).toBe(existing)
+  })
+
+  it('prefers the more specific URI match when multiple logins match', () => {
+    const domainOnly = loginRecord({
+      id: 'domain',
+      password: 'old',
+      websites: ['https://example.com']
+      // force domain via missing uris → default domain
+    })
+    const startsWith = {
+      id: 'starts',
+      type: 'login',
+      data: {
+        username: 'alice',
+        password: 'secret',
+        title: 'App',
+        websites: ['https://example.com/app'],
+        uris: [
+          {
+            uri: 'https://example.com/app',
+            match: 'startsWith'
+          }
+        ]
+      }
+    }
+
+    const result = classifyLoginDetectAction({
+      records: [domainOnly, startsWith],
+      pageUrl: 'https://example.com/app/dashboard',
+      username: 'alice',
+      password: 'secret'
+    })
+
+    expect(result.action).toBe('noop')
+    expect(result.existingRecord).toBe(startsWith)
+  })
 })

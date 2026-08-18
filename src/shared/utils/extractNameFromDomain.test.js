@@ -30,4 +30,10 @@ describe('extractNameFromDomain', () => {
     const result = extractNameFromDomain(url)
     expect(result).toBe('Example')
   })
+
+  it('should return capitalized hostname for localhost', () => {
+    expect(extractNameFromDomain('http://localhost:8080/dashboard')).toBe(
+      'Localhost'
+    )
+  })
 })

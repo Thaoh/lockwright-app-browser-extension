@@ -19,10 +19,15 @@ export function extractNameFromDomain(url) {
     return ''
   }
 
+  if (!hostname) {
+    return ''
+  }
+
   const parts = hostname.split('.')
 
-  if (parts.length < 2) {
-    return ''
+  // localhost, intranet hosts, raw IPs — use the hostname itself.
+  if (parts.length < 2 || /^\d+$/.test(parts[parts.length - 1])) {
+    return hostname.charAt(0).toUpperCase() + hostname.slice(1)
   }
 
   const labels = parts.slice(0, -1)
