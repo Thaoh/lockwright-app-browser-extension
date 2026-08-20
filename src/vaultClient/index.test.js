@@ -28,6 +28,7 @@ jest.mock('../shared/commandDefinitions', () => ({
     'checkAvailability',
     'vaultsGetStatus',
     'activeVaultGetStatus',
+    'getMasterPasswordStatus',
     'fetchFavicon'
   ],
   getCommandParams: jest.fn((commandName, args) => {
@@ -143,6 +144,19 @@ describe('PearpassVaultClient', () => {
       )
 
       await expect(client.vaultsGetStatus()).resolves.toEqual({ status: null })
+      expect(logger.error).not.toHaveBeenCalled()
+    })
+
+    it('getMasterPasswordStatus MasterPasswordRequired resolves { isLocked: false } without logger.error', async () => {
+      const client = createMockClient()
+      mockSendMessageUntilCommandFails(
+        'getMasterPasswordStatus',
+        'MasterPasswordRequired'
+      )
+
+      await expect(client.getMasterPasswordStatus()).resolves.toEqual({
+        isLocked: false
+      })
       expect(logger.error).not.toHaveBeenCalled()
     })
 

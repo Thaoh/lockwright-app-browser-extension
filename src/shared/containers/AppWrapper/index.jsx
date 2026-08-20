@@ -5,13 +5,17 @@ import {
   setPearpassVaultClient,
   VaultProvider
 } from '@tetherto/pearpass-lib-vault'
+import { logger as vaultLibLogger } from '@tetherto/pearpass-lib-vault/src/utils/logger.js'
 
 import { messages } from '../../../locales/en/messages.mjs'
 import { PearpassVaultClient } from '../../../vaultClient'
 import { LoadingProvider } from '../../context/LoadingContext'
 import { RouterProvider } from '../../context/RouterContext'
 import { initCurrentDeviceName } from '../../utils/initCurrentDeviceName'
+import { silenceVaultLibLogger } from '../../utils/silenceVaultLibLogger'
 import '../../../index.css'
+
+silenceVaultLibLogger(vaultLibLogger)
 
 // const client = new PearpassVaultClient({
 //   debugMode: MODE === 'development'

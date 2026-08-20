@@ -4,6 +4,7 @@ import { i18n } from '@lingui/core'
 import { I18nProvider } from '@lingui/react'
 import { ThemeProvider as UIKitProvider } from '@tetherto/pearpass-lib-ui-kit'
 import { VaultProvider } from '@tetherto/pearpass-lib-vault'
+import { logger as vaultLibLogger } from '@tetherto/pearpass-lib-vault/src/utils/logger.js'
 import { createRoot } from 'react-dom/client'
 
 import { AutoLockProvider } from '../hooks/useAutoLockPreferences'
@@ -17,8 +18,11 @@ import { RouterProvider } from '../shared/context/RouterContext'
 import { ToastProvider } from '../shared/context/ToastContext'
 import { getLocaleFromStorage } from '../shared/utils/localeStorage'
 import { logger } from '../shared/utils/logger'
+import { silenceVaultLibLogger } from '../shared/utils/silenceVaultLibLogger'
 import '../index.css'
 import '../strict.css'
+
+silenceVaultLibLogger(vaultLibLogger)
 
 i18n.load('en', messages)
 i18n.activate('en')

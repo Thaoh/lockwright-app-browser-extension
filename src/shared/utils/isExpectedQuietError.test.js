@@ -5,6 +5,12 @@ describe('isExpectedQuietError', () => {
     expect(isExpectedQuietError(new Error('MasterPasswordRequired'))).toBe(true)
   })
 
+  it('returns true for RTK SerializedError with MasterPasswordRequired message', () => {
+    expect(
+      isExpectedQuietError({ name: 'Error', message: 'MasterPasswordRequired' })
+    ).toBe(true)
+  })
+
   it('returns true for Favicon not found (case-insensitive)', () => {
     expect(isExpectedQuietError(new Error('favicon not found'))).toBe(true)
   })

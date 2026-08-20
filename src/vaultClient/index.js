@@ -164,6 +164,13 @@ export class PearpassVaultClient extends EventEmitter {
         return { status: null }
       }
 
+      if (
+        command === 'getMasterPasswordStatus' &&
+        isExpectedQuietError(error)
+      ) {
+        return { isLocked: false }
+      }
+
       if (!isExpectedQuietError(error)) {
         this._logError(`Error in ${command}:`, error)
       }
@@ -303,6 +310,13 @@ export class PearpassVaultClient extends EventEmitter {
             isExpectedQuietError(error)
           ) {
             return { status: null }
+          }
+
+          if (
+            commandName === 'getMasterPasswordStatus' &&
+            isExpectedQuietError(error)
+          ) {
+            return { isLocked: false }
           }
 
           if (!isExpectedQuietError(error)) {

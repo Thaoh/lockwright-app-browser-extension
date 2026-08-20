@@ -16,7 +16,12 @@ export const isExpectedQuietError = (error) => {
       ? error
       : error instanceof Error
         ? error.message
-        : String(error)
+        : typeof error === 'object' &&
+            error !== null &&
+            typeof error.message === 'string' &&
+            error.message !== ''
+          ? error.message
+          : String(error)
 
   if (!message) return false
 
