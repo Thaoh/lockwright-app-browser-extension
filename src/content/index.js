@@ -5,6 +5,7 @@ import { RECORD_TYPES } from '@tetherto/pearpass-lib-vault'
 
 import { IFRAME_TYPES } from './constants/iframe'
 import { LOGO_PADDING, LOGO_SIZE } from './constants/styles'
+import { clampPopupPosition } from './utils/clampPopupPosition'
 import { createIframe } from './utils/createIframe'
 import { findLoginFields } from './utils/findLoginFields'
 import { findLoginForms } from './utils/findLoginForms'
@@ -200,6 +201,14 @@ function handlePasswordSuggestionPopup(event) {
   }
 
   const rect = element.getBoundingClientRect()
+  const { top, left } = clampPopupPosition({
+    top: rect.top + rect.height + 5,
+    left: rect.left + rect.width / 2,
+    width: 280,
+    height: 180,
+    viewportWidth: window.innerWidth,
+    viewportHeight: window.innerHeight
+  })
 
   showIframe(IFRAME_TYPES.passwordSuggestion, {
     element: element,
@@ -208,8 +217,8 @@ function handlePasswordSuggestionPopup(event) {
       recordType: getRecordTypeByField(element)
     },
     styles: {
-      top: `${rect.top + rect.height + 5}px`,
-      left: `${rect.left + rect.width / 2}px`,
+      top: `${top}px`,
+      left: `${left}px`,
       width: '0px',
       height: '0px',
       borderRadius: '12px'
@@ -256,7 +265,14 @@ function showAutofillPopup({ positions, recordType, fillMode }) {
   if (!isAutoFillEnabled) {
     return
   }
-  const { top, left } = positions
+  const { top, left } = clampPopupPosition({
+    top: positions.top,
+    left: positions.left,
+    width: 300,
+    height: 200,
+    viewportWidth: window.innerWidth,
+    viewportHeight: window.innerHeight
+  })
 
   showIframe(IFRAME_TYPES.autofill, {
     data: {
@@ -993,6 +1009,31 @@ function updateIframeStyles({ msg, iframeData }) {
   Object.entries(msg?.data.style).forEach(([key, value]) => {
     iframeData.iframe.style[key] = value
   })
+
+  const style = iframeData.iframe.style
+  const width = parseFloat(style.width)
+  const height = parseFloat(style.height)
+  if (!Number.isFinite(width) || !Number.isFinite(height)) {
+    return
+  }
+
+  const top = parseFloat(style.top)
+  const left = parseFloat(style.left)
+  if (!Number.isFinite(top) || !Number.isFinite(left)) {
+    return
+  }
+
+  const clamped = clampPopupPosition({
+    top,
+    left,
+    width,
+    height,
+    viewportWidth: window.innerWidth,
+    viewportHeight: window.innerHeight
+  })
+
+  style.top = `${clamped.top}px`
+  style.left = `${clamped.left}px`
 }
 
 function handleWindowEvent(event) {
