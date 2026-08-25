@@ -57,6 +57,19 @@ describe('createIframe', () => {
     expect(iframe.src).toBe(expectedUrl)
   })
 
+  it('prevents mousedown default so a page focus-lock does not steal the click', () => {
+    const iframe = createIframe({ options: { id: 'logo', type: 'logo' } })
+    const event = new MouseEvent('mousedown', {
+      cancelable: true,
+      bubbles: true
+    })
+
+    iframe.dispatchEvent(event)
+
+    expect(event.defaultPrevented).toBe(true)
+    expect(iframe.tabIndex).toBe(-1)
+  })
+
   it('should handle missing options gracefully', () => {
     const iframe = createIframe()
     const expectedUrl = chrome.runtime.getURL('content-popups.html?id=&type=')

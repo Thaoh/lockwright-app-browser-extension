@@ -20,6 +20,8 @@ import { isIdentityField } from './utils/isIdentityField'
 import { isOtpField } from './utils/isOtpField'
 import { isPasswordField } from './utils/isPasswordField'
 import { isUsernameField } from './utils/isUsernameField'
+import { positionPopupFromLogo } from './utils/positionPopupFromLogo'
+import { scheduleShowLogoForField } from './utils/scheduleShowLogoForField'
 import { setInputValue } from './utils/setInputValue'
 import { shouldSkipLoginDetect } from './utils/shouldSkipLoginDetect'
 import { showPasswordStrengthNearField } from './utils/showPasswordStrengthNearField'
@@ -748,6 +750,7 @@ const observer = new MutationObserver(async () => {
 
     findLoginForms().forEach(initFormListener)
     cleanupOrphanedFieldIframes()
+    attachLogoToActiveField()
   } catch {
     observer.disconnect()
   }
@@ -927,8 +930,39 @@ function toggleLogoOnFocus(event) {
   }
 
   if (isAcceptedField(element)) {
-    showLogoForField(element)
+    scheduleShowLogoForField(element, {
+      isUsable: isFieldElementUsable,
+      show: attachLogoForField
+    })
   }
+}
+
+function attachLogoForField(field) {
+  if (document.activeElement !== field) {
+    return
+  }
+  const existing = getIframeData(IFRAME_TYPES.logo)
+  if (existing?.element?.isSameNode?.(field)) {
+    return
+  }
+  if (existing) {
+    removeIframe(existing)
+  }
+  showLogoForField(field)
+}
+
+function attachLogoToActiveField() {
+  const active = document.activeElement
+  if (!(active instanceof HTMLInputElement)) {
+    return
+  }
+  if (!isAcceptedField(active)) {
+    return
+  }
+  scheduleShowLogoForField(active, {
+    isUsable: isFieldElementUsable,
+    show: attachLogoForField
+  })
 }
 
 document.querySelectorAll('input').forEach(async (input) => {
@@ -1106,10 +1140,16 @@ const handleIframeEvent = (event) => {
     showAutofillPopup({
       recordType: logoIframeData?.data?.recordType,
       fillMode: logoIframeData?.data?.fillMode,
-      positions: {
-        top: iframeRect.top + iframeRect.height + 5,
-        left: iframeRect.left
-      }
+      positions: positionPopupFromLogo({
+        logoTop: iframeRect.top,
+        logoLeft: iframeRect.left,
+        logoWidth: iframeRect.width,
+        logoHeight: iframeRect.height,
+        popupWidth: 300,
+        popupHeight: 200,
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight
+      })
     })
     return
   }

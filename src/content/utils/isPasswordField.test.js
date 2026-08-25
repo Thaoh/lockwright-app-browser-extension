@@ -24,4 +24,35 @@ describe('isPasswordField', () => {
     inputElement.removeAttribute('type')
     expect(isPasswordField(inputElement)).toBe(false)
   })
+
+  it('detects Nextcloud admin password confirmation field', () => {
+    document.body.innerHTML = `
+      <form class="dialog">
+        <div class="input-field input-field--trailing-icon">
+          <input visible="false" required id="nc-vue-12"
+            class="input-field__input" placeholder="" type="password" value="">
+          <label class="input-field__label" for="nc-vue-12">Password</label>
+        </div>
+        <button type="submit" aria-label="Confirm">Confirm</button>
+      </form>
+    `
+
+    expect(isPasswordField(document.getElementById('nc-vue-12'))).toBe(true)
+    document.body.innerHTML = ''
+  })
+
+  it('detects Nextcloud password field rendered as text (as-text / visible toggle)', () => {
+    document.body.innerHTML = `
+      <form class="dialog">
+        <div class="input-field input-field--trailing-icon">
+          <input visible="false" required id="nc-vue-12"
+            class="input-field__input" placeholder="" type="text" value="">
+          <label class="input-field__label" for="nc-vue-12">Password</label>
+        </div>
+      </form>
+    `
+
+    expect(isPasswordField(document.getElementById('nc-vue-12'))).toBe(true)
+    document.body.innerHTML = ''
+  })
 })

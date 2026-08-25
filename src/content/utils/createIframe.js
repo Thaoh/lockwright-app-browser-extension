@@ -30,6 +30,10 @@ export const createIframe = ({ styles, options } = {}) => {
   )
   const iframe = document.createElement('iframe')
   iframe.src = uiUrl
+  iframe.tabIndex = -1
+  iframe.addEventListener('mousedown', (event) => {
+    event.preventDefault()
+  })
 
   iframe.style.cssText = `
     position: fixed;
