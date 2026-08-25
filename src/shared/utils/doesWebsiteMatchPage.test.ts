@@ -266,6 +266,36 @@ describe('recordMatchesCurrentSite', () => {
     ).toBe(false)
   })
 
+  it('matches a host written only on data.uris when websites is empty', () => {
+    expect(
+      recordMatchesCurrentSite(
+        {
+          id: 'r1',
+          data: {
+            websites: [],
+            uris: [{ uri: 'https://dashboard.stripe.com', match: 'host' }]
+          }
+        },
+        'https://dashboard.stripe.com/login'
+      )
+    ).toBe(true)
+  })
+
+  it('matches a host written on data.uris even when websites is a different stale list', () => {
+    expect(
+      recordMatchesCurrentSite(
+        {
+          id: 'r1',
+          data: {
+            websites: ['https://other.com'],
+            uris: [{ uri: 'https://dashboard.stripe.com', match: 'host' }]
+          }
+        },
+        'https://dashboard.stripe.com/2fa'
+      )
+    ).toBe(true)
+  })
+
   it('uses vault uris match via resolveUriMatchType when record has uris', () => {
     expect(
       recordMatchesCurrentSite(

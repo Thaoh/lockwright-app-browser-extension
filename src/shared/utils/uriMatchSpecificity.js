@@ -1,5 +1,6 @@
 import {
   doesWebsiteMatchPage,
+  getRecordWebsiteValues,
   recordMatchesCurrentSite
 } from './doesWebsiteMatchPage'
 import { resolveUriMatchType } from './uriMatchSetting'
@@ -35,8 +36,8 @@ export const getUriMatchSpecificityRank = (matchType) => {
  * @returns {number} 0 when nothing matches
  */
 export const getRecordSiteMatchRank = (record, pageUrl, options) => {
-  const websites = record?.data?.websites
-  if (!Array.isArray(websites) || websites.length === 0) {
+  const websites = getRecordWebsiteValues(record)
+  if (websites.length === 0) {
     return 0
   }
 

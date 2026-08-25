@@ -82,8 +82,6 @@ export const Autofill = () => {
 
   const regularLogins = useMemo(() => {
     if (isOtpFillMode) {
-      // Site-matched logins for OTP fields — include passkey-only / no otpPublic.
-      // Fill still gated on otpCode in handleAutofillLogin.
       return filteredRecords || []
     }
 

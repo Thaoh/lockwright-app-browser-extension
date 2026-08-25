@@ -222,4 +222,63 @@ describe('useFilteredRecords', () => {
       expect(result.current.filteredRecords).toEqual([])
     })
   })
+
+  it('matches a host stored only on data.uris', () => {
+    const stripeUriOnly = {
+      id: 'stripe-uri',
+      data: {
+        websites: [],
+        uris: [{ uri: 'https://dashboard.stripe.com', match: 'host' }]
+      }
+    }
+
+    useRouter.mockReturnValue({
+      state: {
+        recordType: 'login',
+        url: 'https://dashboard.stripe.com/login'
+      }
+    })
+    useRecords.mockReturnValue({
+      data: [stripeUriOnly],
+      isInitialized: true,
+      isLoading: false
+    })
+
+    const { result } = renderHook(() => useFilteredRecords())
+
+    expect(result.current.filteredRecords).toEqual([stripeUriOnly])
+  })
+
+  it('in otp fillMode excludes site-matched logins that have no authenticator', () => {
+    const stripeLogin = {
+      id: 'stripe-login',
+      data: {
+        username: 'ada',
+        password: 'secret',
+        websites: ['https://dashboard.stripe.com']
+      }
+    }
+    const stripeTotp = {
+      id: 'stripe-totp',
+      otpPublic: { type: 'TOTP', currentCode: '123456' },
+      data: { websites: ['https://dashboard.stripe.com'] }
+    }
+
+    useRouter.mockReturnValue({
+      state: {
+        recordType: 'login',
+        fillMode: 'otp',
+        url: 'https://dashboard.stripe.com/login'
+      }
+    })
+    useRecords.mockReturnValue({
+      data: [stripeLogin, stripeTotp],
+      isInitialized: true,
+      isLoading: false
+    })
+
+    const { result } = renderHook(() => useFilteredRecords())
+
+    expect(result.current.filteredRecords).toEqual([stripeTotp])
+  })
 })

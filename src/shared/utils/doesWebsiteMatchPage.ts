@@ -97,6 +97,44 @@ type RecordWithWebsites = {
   } | null
 }
 
+/**
+ * Website strings used for page matching. Prefer `data.websites`, and
+ * always include `data.uris[].uri` so a host stored only on the v2 URI
+ * list is still detected.
+ */
+export const getRecordWebsiteValues = (
+  record: RecordWithWebsites | null | undefined
+): string[] => {
+  const websites = Array.isArray(record?.data?.websites)
+    ? record.data.websites.filter(
+        (website): website is string =>
+          typeof website === 'string' && website.trim() !== ''
+      )
+    : []
+  const fromUris = Array.isArray(record?.data?.uris)
+    ? record.data.uris
+        .map((entry) =>
+          entry && typeof entry.uri === 'string' && entry.uri.trim() !== ''
+            ? entry.uri
+            : null
+        )
+        .filter((uri): uri is string => uri !== null)
+    : []
+
+  if (fromUris.length === 0) return websites
+  if (websites.length === 0) return fromUris
+
+  const seen = new Set<string>()
+  const merged: string[] = []
+  for (const website of [...websites, ...fromUris]) {
+    const key = normalizeUrl(website, true) || website.trim().toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    merged.push(website)
+  }
+  return merged
+}
+
 export type RecordMatchOptions = {
   defaultMatchType?: UriMatchType
   getMatchTypeForWebsite?: (website: string) => UriMatchType
@@ -108,8 +146,8 @@ export const recordMatchesCurrentSite = (
   pageUrl: string,
   options?: RecordMatchOptions
 ): boolean => {
-  const websites = record?.data?.websites
-  if (!websites?.length) return false
+  const websites = getRecordWebsiteValues(record)
+  if (!websites.length) return false
 
   return websites.some((website) => {
     const hasVaultUris =

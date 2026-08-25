@@ -3,13 +3,17 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRecords } from '@tetherto/pearpass-lib-vault'
 
 import { useRouter } from '../../shared/context/RouterContext'
-import { doesWebsiteMatchPage } from '../../shared/utils/doesWebsiteMatchPage'
+import {
+  doesWebsiteMatchPage,
+  getRecordWebsiteValues
+} from '../../shared/utils/doesWebsiteMatchPage'
 import {
   hydrateUriMatchSettings,
   onUriMatchSettingsChanged,
   resolveUriMatchType
 } from '../../shared/utils/uriMatchSetting'
 import { getRecordSiteMatchRank } from '../../shared/utils/uriMatchSpecificity'
+import { isOtpAutofillRecord } from '../utils/isOtpAutofillRecord'
 
 export const useFilteredRecords = () => {
   const { state: routerState } = useRouter()
@@ -46,7 +50,7 @@ export const useFilteredRecords = () => {
       const pageUrl = routerState.url
       const matched =
         recordsData?.filter((record) =>
-          record?.data?.websites?.some((website) =>
+          getRecordWebsiteValues(record).some((website) =>
             doesWebsiteMatchPage(
               pageUrl,
               website,
@@ -55,15 +59,27 @@ export const useFilteredRecords = () => {
           )
         ) ?? []
 
-      return [...matched].sort(
+      const sorted = [...matched].sort(
         (a, b) =>
           getRecordSiteMatchRank(b, pageUrl) -
           getRecordSiteMatchRank(a, pageUrl)
       )
+
+      if (routerState.fillMode === 'otp') {
+        return sorted.filter(isOtpAutofillRecord)
+      }
+
+      return sorted
     }
 
     return recordsData
-  }, [recordsData, routerState?.url, routerState?.recordType, uriMatchEpoch])
+  }, [
+    recordsData,
+    routerState?.url,
+    routerState?.recordType,
+    routerState?.fillMode,
+    uriMatchEpoch
+  ])
 
   return {
     filteredRecords,
