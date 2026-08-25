@@ -31,7 +31,7 @@ allowBuilds:
   "pearpass-utils-password-check@https://codeload.github.com/tetherto/pearpass-utils-password-check/tar.gz/a549e2b4c486e5f57eb28acd47652ea38154d9c8": true
   "pearpass-utils-password-generator@https://codeload.github.com/tetherto/pearpass-utils-password-generator/tar.gz/ce69cd540a232550de361752d04450f0e600ca8a": true
   "@tetherto/pearpass-lib-ui-react-native-components@https://codeload.github.com/tetherto/pearpass-lib-ui-react-native-components/tar.gz/3cae0a4b0f7961351b674be991371f0c643c00b0": true
-  "@tetherto/pearpass-lib-vault@file:../../External/pearpass-lib-vault": true
+  "@tetherto/pearpass-lib-vault@file:../lockwright-lib-vault": true
 
 patchedDependencies:
   pear-apps-utils-validator@0.0.10: patches/pear-apps-utils-validator@0.0.10.patch
