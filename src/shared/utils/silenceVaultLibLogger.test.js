@@ -1,3 +1,7 @@
+import { initializeUser } from '@tetherto/pearpass-lib-vault/src/actions/initializeUser'
+import userReducer from '@tetherto/pearpass-lib-vault/src/slices/userSlice'
+import { Logger } from '@tetherto/pearpass-lib-vault/src/utils/logger.js'
+
 import { silenceVaultLibLogger } from './silenceVaultLibLogger'
 
 describe('silenceVaultLibLogger', () => {
@@ -12,15 +16,43 @@ describe('silenceVaultLibLogger', () => {
     expect(originalError).not.toHaveBeenCalled()
   })
 
-  it('forwards non-quiet args to original.error unchanged', () => {
+  it('forwards a non-quiet SerializedError as its message', () => {
     const originalError = jest.fn()
     const vaultLogger = { error: originalError }
-    const boom = { message: 'boom' }
 
     silenceVaultLibLogger(vaultLogger)
 
-    vaultLogger.error(boom)
+    vaultLogger.error({ message: 'boom' })
 
-    expect(originalError).toHaveBeenCalledWith(boom)
+    expect(originalError).toHaveBeenCalledWith('boom')
+  })
+
+  it('does not let Chrome stringify vault Logger.error(SerializedError) as [object Object]', () => {
+    const vaultLogger = new Logger({ debugMode: false })
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+    silenceVaultLibLogger(vaultLogger)
+    vaultLogger.error({ name: 'Error', message: 'Rejected' })
+
+    const chromeMessages = spy.mock.calls.map((call) => String(call[0]))
+    expect(chromeMessages).not.toContain('[object Object]')
+    expect(chromeMessages.some((message) => message.includes('Rejected'))).toBe(
+      true
+    )
+
+    spy.mockRestore()
+  })
+
+  it('userSlice initializeUser.rejected does not console.error', () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+    userReducer(undefined, {
+      type: initializeUser.rejected.type,
+      error: { name: 'Error', message: 'Rejected' }
+    })
+
+    expect(spy).not.toHaveBeenCalled()
+
+    spy.mockRestore()
   })
 })

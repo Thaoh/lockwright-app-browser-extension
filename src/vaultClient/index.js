@@ -158,7 +158,9 @@ export class PearpassVaultClient extends EventEmitter {
       }
 
       if (
-        (command === 'vaultsGetStatus' || command === 'activeVaultGetStatus') &&
+        (command === 'vaultsGetStatus' ||
+          command === 'activeVaultGetStatus' ||
+          command === 'encryptionGetStatus') &&
         isExpectedQuietError(error)
       ) {
         return { status: null }
@@ -169,6 +171,14 @@ export class PearpassVaultClient extends EventEmitter {
         isExpectedQuietError(error)
       ) {
         return { isLocked: false }
+      }
+
+      if (command === 'encryptionInit' && isExpectedQuietError(error)) {
+        return
+      }
+
+      if (command === 'encryptionGet' && isExpectedQuietError(error)) {
+        return null
       }
 
       if (!isExpectedQuietError(error)) {
@@ -306,7 +316,8 @@ export class PearpassVaultClient extends EventEmitter {
 
           if (
             (commandName === 'vaultsGetStatus' ||
-              commandName === 'activeVaultGetStatus') &&
+              commandName === 'activeVaultGetStatus' ||
+              commandName === 'encryptionGetStatus') &&
             isExpectedQuietError(error)
           ) {
             return { status: null }
@@ -317,6 +328,14 @@ export class PearpassVaultClient extends EventEmitter {
             isExpectedQuietError(error)
           ) {
             return { isLocked: false }
+          }
+
+          if (commandName === 'encryptionInit' && isExpectedQuietError(error)) {
+            return
+          }
+
+          if (commandName === 'encryptionGet' && isExpectedQuietError(error)) {
+            return null
           }
 
           if (!isExpectedQuietError(error)) {

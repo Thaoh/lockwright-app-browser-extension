@@ -1,3 +1,4 @@
+import { isClientKeypairUnlocked } from './clientKeyStore'
 import {
   isWrappedMessage,
   unwrapMessage,
@@ -250,6 +251,16 @@ const RATE_LIMIT_PLAINTEXT_FALLBACK_COMMANDS = new Set([
   'getMasterPasswordStatus'
 ])
 
+// Boot probes. Locked keystore has no session. Return empty so
+// ensureSession never throws MasterPasswordRequired.
+const LOCKED_BOOT_RESULTS = {
+  vaultsGetStatus: { status: null },
+  activeVaultGetStatus: { status: null },
+  encryptionGetStatus: { status: null },
+  encryptionInit: undefined,
+  encryptionGet: null
+}
+
 const shouldSecure = (command) => !SECURE_EXEMPT_COMMANDS.has(command)
 
 const isAuthSessionError = (errorMessage) =>
@@ -341,6 +352,17 @@ const handleRequest = async (msg, sendResponse) => {
     let result
     // Only secure if paired and command is not exempt
     if (shouldSecure(command)) {
+      if (
+        Object.hasOwn(LOCKED_BOOT_RESULTS, command) &&
+        !isClientKeypairUnlocked()
+      ) {
+        sendResponse({
+          success: true,
+          result: LOCKED_BOOT_RESULTS[command]
+        })
+        return
+      }
+
       try {
         await secureChannel.ensureSession()
       } catch (sessionError) {

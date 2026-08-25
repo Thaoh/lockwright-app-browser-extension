@@ -29,6 +29,9 @@ jest.mock('../shared/commandDefinitions', () => ({
     'vaultsGetStatus',
     'activeVaultGetStatus',
     'getMasterPasswordStatus',
+    'encryptionGetStatus',
+    'encryptionInit',
+    'encryptionGet',
     'fetchFavicon'
   ],
   getCommandParams: jest.fn((commandName, args) => {
@@ -144,6 +147,41 @@ describe('PearpassVaultClient', () => {
       )
 
       await expect(client.vaultsGetStatus()).resolves.toEqual({ status: null })
+      expect(logger.error).not.toHaveBeenCalled()
+    })
+
+    it('encryptionGetStatus MasterPasswordRequired resolves { status: null } without logger.error', async () => {
+      const client = createMockClient()
+      mockSendMessageUntilCommandFails(
+        'encryptionGetStatus',
+        'MasterPasswordRequired'
+      )
+
+      await expect(client.encryptionGetStatus()).resolves.toEqual({
+        status: null
+      })
+      expect(logger.error).not.toHaveBeenCalled()
+    })
+
+    it('encryptionInit MasterPasswordRequired resolves without logger.error', async () => {
+      const client = createMockClient()
+      mockSendMessageUntilCommandFails(
+        'encryptionInit',
+        'MasterPasswordRequired'
+      )
+
+      await expect(client.encryptionInit()).resolves.toBeUndefined()
+      expect(logger.error).not.toHaveBeenCalled()
+    })
+
+    it('encryptionGet MasterPasswordRequired resolves null without logger.error', async () => {
+      const client = createMockClient()
+      mockSendMessageUntilCommandFails(
+        'encryptionGet',
+        'MasterPasswordRequired'
+      )
+
+      await expect(client.encryptionGet('masterPassword')).resolves.toBeNull()
       expect(logger.error).not.toHaveBeenCalled()
     })
 

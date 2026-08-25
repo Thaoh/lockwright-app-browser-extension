@@ -199,6 +199,42 @@ describe('NativeMessaging & integration', () => {
     expect(secureChannel.secureChannel.clearSession).not.toHaveBeenCalled()
   })
 
+  test.each([
+    ['vaultsGetStatus', { status: null }],
+    ['activeVaultGetStatus', { status: null }],
+    ['encryptionGetStatus', { status: null }],
+    ['encryptionInit', undefined],
+    ['encryptionGet', null]
+  ])(
+    '%s returns empty success when client keypair is locked, without ensureSession',
+    async (command, result) => {
+      const secureChannel = require('./secureChannel')
+      const { nativeMessaging } = nativeModule
+
+      secureChannel.secureChannel.ensureSession = jest.fn()
+      secureChannel.secureChannel.secureRequest = jest.fn()
+      const sendRequestSpy = jest.spyOn(nativeMessaging, 'sendRequest')
+
+      const messageListener = runtime.onMessage.addListener.mock.calls[0][0]
+      const response = await new Promise((resolve) => {
+        messageListener(
+          {
+            type: NATIVE_MESSAGE_TYPES.REQUEST,
+            command,
+            params: {}
+          },
+          {},
+          resolve
+        )
+      })
+
+      expect(response).toEqual({ success: true, result })
+      expect(secureChannel.secureChannel.ensureSession).not.toHaveBeenCalled()
+      expect(secureChannel.secureChannel.secureRequest).not.toHaveBeenCalled()
+      expect(sendRequestSpy).not.toHaveBeenCalled()
+    }
+  )
+
   test('getMasterPasswordStatus falls back to plaintext when ensureSession fails with MasterPasswordRequired', async () => {
     const secureChannel = require('./secureChannel')
     const { nativeMessaging } = nativeModule

@@ -182,6 +182,9 @@ export const ensureClientKeypairGeneratedForPairing = async () => {
   return pendingKeypair
 }
 
+/** @returns {boolean} */
+export const isClientKeypairUnlocked = () => !!inMemoryKeypair
+
 /**
  * Ensure the client Ed25519 keypair is available in memory and protected at rest
  * with the master password. Private key is stored encrypted in IndexedDB and
