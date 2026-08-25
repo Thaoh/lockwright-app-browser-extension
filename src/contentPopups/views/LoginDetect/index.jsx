@@ -9,15 +9,16 @@ import React, {
 import { t } from '@lingui/core/macro'
 import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
 import { Validator } from '@tetherto/pear-apps-utils-validator'
-import { Button } from '@tetherto/pearpass-lib-ui-kit'
+import { AlertMessage, Button } from '@tetherto/pearpass-lib-ui-kit'
 import {
-  RECORD_TYPES,
   useCreateRecord,
   useRecords,
   useVault
 } from '@tetherto/pearpass-lib-vault'
 
+import { buildLoginDetectCreatePayload } from './buildLoginDetectCreatePayload'
 import { isLoginDetectReady } from './isLoginDetectReady'
+import { shouldDismissAfterSaveError } from './shouldDismissAfterSaveError'
 import { FormGroup } from '../../../shared/components/FormGroup'
 import { InputField } from '../../../shared/components/InputField'
 import { InputFieldPassword } from '../../../shared/components/InputFieldPassword'
@@ -28,6 +29,10 @@ import { UserIcon } from '../../../shared/icons/UserIcon'
 import { appendWebsiteToLoginRecord } from '../../../shared/utils/appendWebsiteToLoginRecord'
 import { classifyLoginDetectAction } from '../../../shared/utils/classifyLoginDetectAction'
 import { extractNameFromDomain } from '../../../shared/utils/extractNameFromDomain'
+import {
+  hydrateUriMatchSettings,
+  onUriMatchSettingsChanged
+} from '../../../shared/utils/uriMatchSetting'
 import { closeIframe } from '../../iframeApi/closeIframe'
 import { setIframeStyles } from '../../iframeApi/setIframeStyles'
 
@@ -36,6 +41,22 @@ export const LoginDetect = () => {
 
   const popupRef = useRef(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [uriMatchEpoch, setUriMatchEpoch] = useState(0)
+
+  useEffect(() => {
+    let alive = true
+    void hydrateUriMatchSettings().then(() => {
+      if (alive) setUriMatchEpoch((n) => n + 1)
+    })
+    const unsubscribe = onUriMatchSettingsChanged(() => {
+      setUriMatchEpoch((n) => n + 1)
+    })
+    return () => {
+      alive = false
+      unsubscribe()
+    }
+  }, [])
 
   const recordTitle = extractNameFromDomain(routerState?.url)
   const pageUrl = routerState?.url ?? ''
@@ -53,15 +74,9 @@ export const LoginDetect = () => {
     )
   })
 
-  const { createRecord, isLoading: isCreateLoading } = useCreateRecord({
-    onCompleted: () =>
-      closeIframe({
-        iframeId: routerState?.iframeId,
-        iframeType: routerState?.iframeType
-      })
-  })
+  const { createRecord } = useCreateRecord()
 
-  const { refetch: refetchVault } = useVault()
+  const { refetch: refetchVault, data: vaultData } = useVault()
 
   const {
     updateRecords,
@@ -86,7 +101,7 @@ export const LoginDetect = () => {
         username,
         password
       }),
-    [recordsData, pageUrl, username, password]
+    [recordsData, pageUrl, username, password, uriMatchEpoch]
   )
 
   const resolvedTitle =
@@ -115,45 +130,55 @@ export const LoginDetect = () => {
       iframeType: routerState?.iframeType
     })
 
-  const onSubmit = (values) => {
-    if (action === 'update' && existingRecord) {
-      let updated = {
-        ...existingRecord,
-        data: {
-          ...existingRecord.data,
-          title: values.title || existingRecord.data?.title,
-          username: values.username,
-          password: values.password
+  const onSubmit = async (values) => {
+    setSubmitError('')
+    setIsSubmitting(true)
+
+    try {
+      if (action === 'update' && existingRecord) {
+        let updated = {
+          ...existingRecord,
+          data: {
+            ...existingRecord.data,
+            title: values.title || existingRecord.data?.title,
+            username: values.username,
+            password: values.password
+          }
         }
-      }
 
-      const withWebsite = appendWebsiteToLoginRecord(updated, pageUrl)
-      if (withWebsite) {
-        updated = withWebsite
-      }
+        const withWebsite = appendWebsiteToLoginRecord(updated, pageUrl)
+        if (withWebsite) {
+          updated = withWebsite
+        }
 
-      setIsSubmitting(true)
-      void updateRecords([updated])
-        .then(() => {
-          closeIframe({
-            iframeId: routerState?.iframeId,
-            iframeType: routerState?.iframeType
+        await updateRecords([updated])
+      } else {
+        if (!vaultData?.id) {
+          throw new Error('Vault ID is required')
+        }
+
+        await createRecord(
+          buildLoginDetectCreatePayload({
+            title: values.title,
+            username: values.username,
+            password: values.password,
+            pageUrl
           })
-        })
-        .catch(() => {})
-        .finally(() => setIsSubmitting(false))
-      return
-    }
-
-    createRecord({
-      type: RECORD_TYPES.LOGIN,
-      data: {
-        title: values.title,
-        username: values.username,
-        password: values.password,
-        websites: pageUrl ? [pageUrl] : []
+        )
       }
-    })
+
+      dismiss()
+    } catch (error) {
+      // Dual-write can succeed, then vaultSlice throws on records.push.
+      // That looks like a hang: spinner never clears, card never closes.
+      if (shouldDismissAfterSaveError(error)) {
+        dismiss()
+        return
+      }
+      setSubmitError(t`Something went wrong, please try again`)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   // Mount-once vault refresh; empty deps intentional (avoid refetch loop).
@@ -186,8 +211,9 @@ export const LoginDetect = () => {
     })
   }, [isReady, action, routerState?.iframeId, routerState?.iframeType])
 
-  // Only treat explicit create/update as busy — not vault record loading.
-  const isBusy = isCreateLoading || isSubmitting
+  // Local submit flag only. Vault isRecordLoading can stick true if the
+  // create reducer throws after pending (Immer rolls back the fulfilled reset).
+  const isBusy = isSubmitting
 
   if (!isReady || action === 'noop') {
     return null
@@ -227,6 +253,16 @@ export const LoginDetect = () => {
           {...register('password')}
         />
       </FormGroup>
+
+      {submitError ? (
+        <AlertMessage
+          variant="error"
+          size="small"
+          title={submitError}
+          description=""
+          testID="login-detect-save-error"
+        />
+      ) : null}
 
       <div className="flex justify-between">
         <Button
