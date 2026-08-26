@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/logo.png" alt="PearPass logo" width="264"/>
+  <img src="docs/logo.svg" alt="Lockwright" width="128"/>
 </p>
 
 # PearPass Browser Extension
