@@ -1,4 +1,5 @@
 import { getField, PASSWORD_MATCHERS } from './getField'
+import { isIgnoredField } from './isIgnoredField'
 import { isPasswordField } from './isPasswordField'
 import { isUsernameField } from './isUsernameField'
 
@@ -73,9 +74,13 @@ function findPrecedingUsernameCandidate(passwordField) {
   for (let i = passwordIndex - 1; i >= 0; i--) {
     const el = formInputs[i]
     const type = (el.type || 'text').toLowerCase()
-    if (type === 'text' || type === 'email' || type === 'tel') {
-      return el
+    if (type !== 'text' && type !== 'email' && type !== 'tel') {
+      continue
     }
+    if (isIgnoredField(el)) {
+      continue
+    }
+    return el
   }
 
   return null

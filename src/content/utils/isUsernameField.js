@@ -1,3 +1,5 @@
+import { isIgnoredField } from './isIgnoredField'
+
 const USERNAME_HINT_PATTERN = /user|email|login|username|account/i
 const EXCLUDED_TYPES = new Set(['password', 'hidden', 'checkbox'])
 
@@ -7,6 +9,7 @@ const EXCLUDED_TYPES = new Set(['password', 'hidden', 'checkbox'])
  */
 export const isUsernameField = (element) => {
   if (!element) return false
+  if (isIgnoredField(element)) return false
 
   const type = (element.type || '').toLowerCase()
   if (EXCLUDED_TYPES.has(type)) return false

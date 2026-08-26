@@ -66,4 +66,30 @@ describe('findLoginFields', () => {
     expect(passwordField).toBe(document.getElementById('pwd'))
     expect(usernameField).toBe(document.getElementById('acct'))
   })
+
+  it('does not use a search field as the preceding username', () => {
+    document.body.innerHTML = `
+      <form>
+        <input type="text" name="search" id="search" placeholder="Search" />
+        <input type="password" name="q" id="pwd" />
+      </form>
+    `
+
+    const { usernameField, passwordField } = findLoginFields()
+
+    expect(passwordField).toBe(document.getElementById('pwd'))
+    expect(usernameField).not.toBe(document.getElementById('search'))
+  })
+
+  it('does not treat a passport field as a password', () => {
+    document.body.innerHTML = `
+      <form>
+        <input type="text" name="passport" id="passport" />
+      </form>
+    `
+
+    const { passwordField } = findLoginFields()
+
+    expect(passwordField).toBeNull()
+  })
 })

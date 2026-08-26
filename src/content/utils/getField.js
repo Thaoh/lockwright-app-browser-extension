@@ -1,11 +1,4 @@
-export const PASSWORD_MATCHERS = [
-  'password',
-  'pass',
-  'pwd',
-  'psswd',
-  'pw',
-  'passwd'
-]
+export const PASSWORD_MATCHERS = ['password', 'pwd', 'psswd', 'passwd']
 
 /**
  * @param {string[]} keywords

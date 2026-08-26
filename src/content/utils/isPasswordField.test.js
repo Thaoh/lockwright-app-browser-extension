@@ -55,4 +55,11 @@ describe('isPasswordField', () => {
     expect(isPasswordField(document.getElementById('nc-vue-12'))).toBe(true)
     document.body.innerHTML = ''
   })
+
+  it('detects autocomplete current-password on a text input', () => {
+    const inputElement = document.createElement('input')
+    inputElement.type = 'text'
+    inputElement.setAttribute('autocomplete', 'current-password')
+    expect(isPasswordField(inputElement)).toBe(true)
+  })
 })
