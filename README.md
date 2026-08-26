@@ -4,11 +4,11 @@
 
 # Lockwright Browser Extension
 
-Chrome MV3 / Firefox extension for Lockwright. Autofill, passkeys, and a native-messaging bridge to the desktop app.
+> The browser extension for Lockwright, an open-source, end-to-end encrypted password and identity manager built on Pear Runtime.
 
 Community fork of PearPass (Apache 2.0). Not affiliated with or endorsed by Tether Data or the Pears project.
 
-npm names, store listings, and shipped binaries still say PearPass until identity `works.dexterity.lockwright` lands. Gecko id will be `lockwright@dexterity.works`. Host id is still `com.pears.pass` until that swap.
+Package names, store listings, and shipped binaries still say PearPass until identity `works.dexterity.lockwright` lands. Gecko id will be `lockwright@dexterity.works`. Host id is still `com.pears.pass` until that swap.
 
 ---
 
@@ -18,7 +18,7 @@ npm names, store listings, and shipped binaries still say PearPass until identit
 - [Features](#features)
 - [Installation](#installation)
 - [Native messaging (desktop bridge) — Firefox / Zen / Flatpak](#native-messaging-desktop-bridge--firefox--zen--flatpak)
-- [Usage](#usage)
+- [Usage Examples](#usage-examples)
 - [Testing](#testing)
 - [Dependencies](#dependencies)
 - [Related Projects](#related-projects)
@@ -29,75 +29,91 @@ npm names, store listings, and shipped binaries still say PearPass until identit
 
 ## Introduction
 
-The extension autofills logins and identities, handles passkey create/auth, and talks to the desktop app for vault operations.
+Lockwright is an open-source, privacy-first password and identity manager. It encrypts and stores all data locally on your device.
 
-Also [desktop](https://github.com/Thaoh/lockwright-app-desktop) and [mobile](https://github.com/Thaoh/lockwright-app-mobile).
+This extension brings Lockwright into the browser: it autofills saved logins and identities, handles passkey creation and authentication, and communicates with the Lockwright desktop app for vault operations.
+
+Lockwright is also available on [desktop](https://github.com/Thaoh/lockwright-app-desktop) and [mobile](https://github.com/Thaoh/lockwright-app-mobile).
 
 ---
 
 ## Features
 
-- Autofill login and identity fields from the vault
-- Passkeys (WebAuthn) stored in the vault
-- Create, unlock, and switch vaults from the popup
-- Logins, identities, cards, and notes
-- Password generator
-- Native messaging bridge to the desktop app
-- LinguiJS i18n
+- **Autofill.** Detects login and identity fields on any website and fills them from your vault in one click.
+- **Passkey support.** Creates and uses passkeys for websites that support WebAuthn, stored securely in your vault.
+- **Vault management.** Create, unlock, and switch between multiple encrypted vaults directly from the extension popup.
+- **Record management.** Stores logins, identities, credit cards, and secure notes.
+- **Password generator.** Generates strong, unique passwords.
+- **Native app bridge.** Connects to the Lockwright desktop app for vault operations.
+- **Internationalization.** Supports multiple languages using LinguiJS.
 
 ---
 
 ## Installation
 
+### Steps
+
 ```bash
+# 1. Clone the repository
 git clone git@github.com:Thaoh/lockwright-app-browser-extension.git
+
+# 2. Go to the cloned directory
 cd lockwright-app-browser-extension
+
+# 3. Enable pnpm (Corepack ships with Node)
 corepack enable
 corepack prepare pnpm@11.10.0 --activate
+
+# 4. Install dependencies (npm/yarn are blocked; lifecycle scripts are allowlisted)
 NPM_CONFIG_LEGACY_PEER_DEPS=true pnpm install
+
+# 5. Build the extension (Chrome)
 pnpm run build
-# or Firefox: dist-firefox/ + dist-firefox.zip
+
+# Or build a Firefox package (dist-firefox/ + dist-firefox.zip)
 pnpm run build:firefox
 ```
 
-`pnpm run build` writes Chromium `dist/`.
+`pnpm run build` creates a `dist/` directory for Chromium browsers.
 
-`pnpm run build:firefox` builds Chromium first, then a Gecko copy in `dist-firefox/` and `dist-firefox.zip` (Chrome-only manifest fields and `offscreen.*` stripped).
+`pnpm run build:firefox` runs the Chromium build, then packages a Gecko-ready copy into `dist-firefox/` and `dist-firefox.zip` (Chrome-only manifest fields and `offscreen.*` assets are stripped).
 
-Watch:
+For development with hot-reloading:
 
 ```bash
 pnpm run build:watch
 ```
 
-### Load in Chrome
+This will watch for file changes and rebuild automatically.
+
+### Load the extension in Chrome
 
 1. Open `chrome://extensions`.
 2. Enable **Developer mode**.
-3. **Load unpacked** → `dist/`.
+3. Click **Load unpacked** and select the `dist/` directory.
 
-### Load in Firefox
+### Load the extension in Firefox
 
-1. `pnpm run build:firefox`.
+1. Run `pnpm run build:firefox`.
 2. Open `about:debugging#/runtime/this-firefox`.
-3. **Load Temporary Add-on…** → `dist-firefox/manifest.json` (or `dist-firefox.zip`).
+3. Click **Load Temporary Add-on…** and select `dist-firefox/manifest.json` (or `dist-firefox.zip`).
 
-### Load in Zen Browser
+### Load the extension in Zen Browser
 
-Zen is a Firefox fork. Use the Firefox package, not Chromium `dist/`.
+Zen is a Firefox fork. Use the **Firefox** package (`pnpm run build:firefox`), not the Chromium `dist/`.
 
-Permanent unsigned install (pairing survives restart):
+**Recommended (permanent unsigned install. Pairing survives restarts):**
 
-1. `pnpm run build:firefox`.
-2. `about:config` → `xpinstall.signatures.required` = `false`.
-3. Add-ons manager → gear → **Install Add-on From File…** → `dist-firefox.zip`.
-4. Pair with the desktop app once.
+1. Run `pnpm run build:firefox` (produces `dist-firefox/` and `dist-firefox.zip`).
+2. In Zen, open `about:config` and set `xpinstall.signatures.required` to `false`.
+3. Open the Add-ons manager (`about:addons`) → gear menu → **Install Add-on From File…** → select `dist-firefox.zip`.
+4. Pair the extension with the Lockwright desktop app once.
 
-Temporary load (`about:debugging` → `dist-firefox/manifest.json`) dies on browser restart. You must re-pair.
+Temporary load (`about:debugging` → **Load Temporary Add-on…** → `dist-firefox/manifest.json`) also works for quick checks, but the add-on is removed on browser restart and you must re-pair.
 
 ### Native messaging (desktop bridge) — Firefox / Zen / Flatpak
 
-The extension talks to the desktop app through a native messaging host. Missing host → popup connection error with Firefox/Zen guidance.
+The extension talks to the desktop app through a native messaging host. If the host is missing, the popup shows a connection error with Firefox/Zen guidance.
 
 **Typical host manifest locations (Linux):**
 
@@ -111,19 +127,21 @@ The extension talks to the desktop app through a native messaging host. Missing 
 
 **Windows:** Mozilla native messaging registry keys (same family as Firefox).
 
-The desktop installer currently registers Mozilla-standard paths. Host id is still the PearPass one until identity lands. Zen usually picks those up. Dual-write into Zen-specific directories is a desktop follow-up. For Flatpak Zen, grant access to the host file (Flatseal filesystem, or `flatpak override`) and allow native-messaging for that host id.
+The desktop installer currently registers Mozilla-standard paths. Host id is still the PearPass one until identity lands. Zen usually picks those up; if it does not, dual-write into Zen-specific directories is a desktop-app follow-up. For Flatpak Zen, grant the app access to the host file (Flatseal → filesystem, or `flatpak override`) and ensure the webextension native-messaging permission is allowed for that host id.
 
-Keep the desktop app running with browser integration enabled.
+Always keep the desktop app running with browser integration enabled when using the extension.
 
 ---
 
-## Usage
+## Usage Examples
 
-PearPass docs at [docs.pass.pears.com](https://docs.pass.pears.com) describe the product at the fork point. They are not Lockwright docs.
+PearPass docs at [docs.pass.pears.com](https://docs.pass.pears.com) still describe setup, vault management, autofill, passkey usage, and the rest of the product at the fork point. They are not Lockwright docs.
 
 ---
 
 ## Testing
+
+This project uses Jest for unit and integration testing.
 
 ```bash
 pnpm test
@@ -145,9 +163,9 @@ pnpm test
 
 | Project | Description |
 | --- | --- |
-| [`lockwright-app-desktop`](https://github.com/Thaoh/lockwright-app-desktop) | Desktop |
-| [`lockwright-app-mobile`](https://github.com/Thaoh/lockwright-app-mobile) | Mobile |
-| [`lockwright-lib-vault`](https://github.com/Thaoh/lockwright-lib-vault) | Vault |
+| [`lockwright-app-desktop`](https://github.com/Thaoh/lockwright-app-desktop) | Desktop app for Lockwright |
+| [`lockwright-app-mobile`](https://github.com/Thaoh/lockwright-app-mobile) | Mobile app for Lockwright |
+| [`lockwright-lib-vault`](https://github.com/Thaoh/lockwright-lib-vault) | Vault management library |
 | [`lockwright-lib-vault-core`](https://github.com/Thaoh/lockwright-lib-vault-core) | Vault core |
 | [`lockwright-lib-constants`](https://github.com/Thaoh/lockwright-lib-constants) | Shared constants |
 
@@ -155,7 +173,7 @@ pnpm test
 
 ## Contributing
 
-See [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+We welcome contributions. See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the development workflow and coding conventions.
 
 ---
 
