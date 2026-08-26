@@ -45,6 +45,15 @@ describe('Firefox extension ID', () => {
     )
   })
 
+  it('pins @tetherto/pearpass-lib-constants to Thaoh git, not Tether or file:', () => {
+    const pkg = JSON.parse(
+      readFileSync(path.resolve(__dirname, '../../../package.json'), 'utf8')
+    )
+    expect(pkg.dependencies['@tetherto/pearpass-lib-constants']).toBe(
+      'git+https://github.com/Thaoh/lockwright-lib-constants.git'
+    )
+  })
+
   it('declares gecko min 140 and matching icon pixel sizes', () => {
     const manifestPath = path.resolve(
       __dirname,

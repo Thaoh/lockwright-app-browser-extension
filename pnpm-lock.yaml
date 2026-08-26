@@ -204,6 +204,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  '@tetherto/pearpass-lib-constants': git+https://github.com/Thaoh/lockwright-lib-constants.git
   react-native: 0.79.5
   react-native>@types/react: 18.3.0
   react-native-windows>react: 19.1.0
@@ -264,8 +265,8 @@ importers:
         specifier: git+https://github.com/tetherto/pear-apps-utils-validator.git#f92fbfb6ba61b3f4b17043276c826900064aba0e
         version: pear-apps-utils-validator@https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/f92fbfb6ba61b3f4b17043276c826900064aba0e(patch_hash=2101adc8996f6508d8daa3999a1509102041de68e63a74a37dc851ed1f3ccbe6)
       '@tetherto/pearpass-lib-constants':
-        specifier: file:../lockwright-lib-constants
-        version: file:../lockwright-lib-constants
+        specifier: git+https://github.com/Thaoh/lockwright-lib-constants.git
+        version: https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/12c63099acf78947e0ce01af279211a2b2eea372
       '@tetherto/pearpass-lib-ui-kit':
         specifier: git+https://github.com/tetherto/pearpass-lib-ui-react-native-components.git#3cae0a4b0f7961351b674be991371f0c643c00b0
         version: '@tetherto/pearpass-lib-ui-react-native-components@https://codeload.github.com/tetherto/pearpass-lib-ui-react-native-components/tar.gz/3cae0a4b0f7961351b674be991371f0c643c00b0(postcss@8.5.8)(react-dom@19.1.0(react@19.1.0))(react-native@0.79.5(@babel/core@7.26.10)(@types/react@19.0.0)(react@19.1.0))(react@19.1.0)'
@@ -2268,8 +2269,9 @@ packages:
       '@types/react-dom':
         optional: true
 
-  '@tetherto/pearpass-lib-constants@file:../lockwright-lib-constants':
-    resolution: {directory: ../lockwright-lib-constants, type: directory}
+  '@tetherto/pearpass-lib-constants@https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/12c63099acf78947e0ce01af279211a2b2eea372':
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/12c63099acf78947e0ce01af279211a2b2eea372}
+    version: 0.0.11
 
   '@tetherto/pearpass-lib-ui-react-native-components@https://codeload.github.com/tetherto/pearpass-lib-ui-react-native-components/tar.gz/3cae0a4b0f7961351b674be991371f0c643c00b0':
     resolution: {gitHosted: true, integrity: sha512-T66tf29EjResihD84+gR4r1qwkOOey3RPus9mpeYNqOedWGquYGYJc+93xCCAt9wGgKtsQda/oteW72MlE6P1A==, tarball: https://codeload.github.com/tetherto/pearpass-lib-ui-react-native-components/tar.gz/3cae0a4b0f7961351b674be991371f0c643c00b0}
@@ -7657,7 +7659,7 @@ snapshots:
       '@types/react': 19.0.0
       '@types/react-dom': 19.0.0
 
-  '@tetherto/pearpass-lib-constants@file:../lockwright-lib-constants': {}
+  '@tetherto/pearpass-lib-constants@https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/12c63099acf78947e0ce01af279211a2b2eea372': {}
 
   '@tetherto/pearpass-lib-ui-react-native-components@https://codeload.github.com/tetherto/pearpass-lib-ui-react-native-components/tar.gz/3cae0a4b0f7961351b674be991371f0c643c00b0(postcss@8.5.8)(react-dom@19.1.0(react@19.1.0))(react-native@0.79.5(@babel/core@7.26.10)(@types/react@19.0.0)(react@19.1.0))(react@19.1.0)':
     dependencies:
