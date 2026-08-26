@@ -26,4 +26,5 @@ run('pnpm', ['exec', 'jest', ...jestArgs])
 // Only run package tests when the full suite is requested (no path filter)
 if (jestArgs.length === 0) {
   run('node', ['--test', 'scripts/package-firefox.test.mjs'])
+  run('node', ['--test', 'scripts/package-chrome.test.mjs'])
 }

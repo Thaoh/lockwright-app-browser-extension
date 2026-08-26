@@ -35,9 +35,10 @@ if (flavor !== 'nightly') {
 
 console.log('[apply-flavor] flavor=nightly — mutating working tree')
 
-const NIGHTLY_NAME = 'PearPass-nightly'
-const NIGHTLY_DESCRIPTION = 'Password manager extension for PearPass-nightly'
-const NIGHTLY_GECKO_ID = 'pass-nightly@pears.com'
+const NIGHTLY_NAME = 'Lockwright-nightly'
+const NIGHTLY_DESCRIPTION =
+  'Lockwright nightly browser extension. Open-source, end-to-end encrypted password and identity manager.'
+const NIGHTLY_GECKO_ID = 'lockwright-nightly@dexterity.works'
 const NIGHTLY_ICON = 'icon-nightly.png'
 
 // Generated once with:
@@ -59,9 +60,9 @@ if (!existsSync(nightlyIconPath)) {
 
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
 
-if (manifest.name !== 'PearPass') {
+if (manifest.name !== 'Lockwright') {
   console.error(
-    `[apply-flavor] expected manifest.name='PearPass', got '${manifest.name}' — refusing to mutate (already flavored?)`
+    `[apply-flavor] expected manifest.name='Lockwright', got '${manifest.name}' — refusing to mutate (already flavored?)`
   )
   process.exit(1)
 }

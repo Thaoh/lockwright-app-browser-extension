@@ -264,8 +264,8 @@ importers:
         specifier: git+https://github.com/tetherto/pear-apps-utils-validator.git#f92fbfb6ba61b3f4b17043276c826900064aba0e
         version: pear-apps-utils-validator@https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/f92fbfb6ba61b3f4b17043276c826900064aba0e(patch_hash=2101adc8996f6508d8daa3999a1509102041de68e63a74a37dc851ed1f3ccbe6)
       '@tetherto/pearpass-lib-constants':
-        specifier: git+https://github.com/tetherto/pearpass-lib-constants.git#c651dc76d92b7c66501db2e5c143802cd056af98
-        version: pearpass-lib-constants@https://codeload.github.com/tetherto/pearpass-lib-constants/tar.gz/c651dc76d92b7c66501db2e5c143802cd056af98
+        specifier: file:../lockwright-lib-constants
+        version: file:../lockwright-lib-constants
       '@tetherto/pearpass-lib-ui-kit':
         specifier: git+https://github.com/tetherto/pearpass-lib-ui-react-native-components.git#3cae0a4b0f7961351b674be991371f0c643c00b0
         version: '@tetherto/pearpass-lib-ui-react-native-components@https://codeload.github.com/tetherto/pearpass-lib-ui-react-native-components/tar.gz/3cae0a4b0f7961351b674be991371f0c643c00b0(postcss@8.5.8)(react-dom@19.1.0(react@19.1.0))(react-native@0.79.5(@babel/core@7.26.10)(@types/react@19.0.0)(react@19.1.0))(react@19.1.0)'
@@ -2268,6 +2268,9 @@ packages:
       '@types/react-dom':
         optional: true
 
+  '@tetherto/pearpass-lib-constants@file:../lockwright-lib-constants':
+    resolution: {directory: ../lockwright-lib-constants, type: directory}
+
   '@tetherto/pearpass-lib-ui-react-native-components@https://codeload.github.com/tetherto/pearpass-lib-ui-react-native-components/tar.gz/3cae0a4b0f7961351b674be991371f0c643c00b0':
     resolution: {gitHosted: true, integrity: sha512-T66tf29EjResihD84+gR4r1qwkOOey3RPus9mpeYNqOedWGquYGYJc+93xCCAt9wGgKtsQda/oteW72MlE6P1A==, tarball: https://codeload.github.com/tetherto/pearpass-lib-ui-react-native-components/tar.gz/3cae0a4b0f7961351b674be991371f0c643c00b0}
     version: 0.0.40
@@ -3279,6 +3282,7 @@ packages:
   eslint@9.39.4:
     resolution: {integrity: sha512-XoMjdBOwe/esVgEvLmNsD3IRHkm7fbKIUGvrleloJXUZgDHig2IPWNniv+GwjyJXzuNqVjlr5+4yVUZjycJwfQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -4631,10 +4635,6 @@ packages:
 
   pear-interface@1.0.0:
     resolution: {integrity: sha512-eM2yObk+vU8Cemg3L1zTktskrkW7zHIqMUkztKWK6lGD+FwUIYUEMXFPWXS6tGDjAxL8ir+c5qFRN1BpRCCixQ==}
-
-  pearpass-lib-constants@https://codeload.github.com/tetherto/pearpass-lib-constants/tar.gz/c651dc76d92b7c66501db2e5c143802cd056af98:
-    resolution: {gitHosted: true, integrity: sha512-2wkELdUD459M4X34FE6GgRDH0AqJfdMmPncNojjFrdueZFOCKDGGPEhR13WjuLOWhvqytG+amN+wi+UhMqFZKA==, tarball: https://codeload.github.com/tetherto/pearpass-lib-constants/tar.gz/c651dc76d92b7c66501db2e5c143802cd056af98}
-    version: 0.0.11
 
   pearpass-utils-password-check@https://codeload.github.com/tetherto/pearpass-utils-password-check/tar.gz/a549e2b4c486e5f57eb28acd47652ea38154d9c8:
     resolution: {gitHosted: true, integrity: sha512-l+QbRZ6c6ZoJ+v35e5rZBR54sFHK98unNWioF/1XkRKxcUecbBuLyp2j5y7e7Ny9Fxe976f8T69Wa8yfHU28xw==, tarball: https://codeload.github.com/tetherto/pearpass-utils-password-check/tar.gz/a549e2b4c486e5f57eb28acd47652ea38154d9c8}
@@ -7657,6 +7657,8 @@ snapshots:
       '@types/react': 19.0.0
       '@types/react-dom': 19.0.0
 
+  '@tetherto/pearpass-lib-constants@file:../lockwright-lib-constants': {}
+
   '@tetherto/pearpass-lib-ui-react-native-components@https://codeload.github.com/tetherto/pearpass-lib-ui-react-native-components/tar.gz/3cae0a4b0f7961351b674be991371f0c643c00b0(postcss@8.5.8)(react-dom@19.1.0(react@19.1.0))(react-native@0.79.5(@babel/core@7.26.10)(@types/react@19.0.0)(react@19.1.0))(react@19.1.0)':
     dependencies:
       react: 19.1.0
@@ -10661,8 +10663,6 @@ snapshots:
       - bare-abort-controller
       - bare-buffer
       - react-native-b4a
-
-  pearpass-lib-constants@https://codeload.github.com/tetherto/pearpass-lib-constants/tar.gz/c651dc76d92b7c66501db2e5c143802cd056af98: {}
 
   pearpass-utils-password-check@https://codeload.github.com/tetherto/pearpass-utils-password-check/tar.gz/a549e2b4c486e5f57eb28acd47652ea38154d9c8: {}
 

@@ -1,13 +1,27 @@
 /**
- * Inline SVG strings for the content-script password strength pill. Paths match
- * `@tetherto/pearpass-lib-ui-kit` `dist/icons/components` (no React / react-dom/server).
+ * Inline SVG nodes for the content-script password strength pill. Paths match
+ * `@tetherto/pearpass-lib-ui-kit` `dist/icons/components` (no React / innerHTML).
  */
 
-function inlineIconSvg({ viewBox, width, height, color, paths, dataIcon }) {
-  const inner = paths
-    .map((d) => `<path fill="currentColor" d="${d}"/>`)
-    .join('')
-  return `<svg xmlns="http://www.w3.org/2000/svg" data-pearpass-icon="${dataIcon}" width="${width}" height="${height}" fill="none" viewBox="${viewBox}" style="color:${color};display:block" aria-hidden="true">${inner}</svg>`
+const SVG_NS = 'http://www.w3.org/2000/svg'
+
+function createInlineIcon({ viewBox, width, height, color, paths, dataIcon }) {
+  const svg = document.createElementNS(SVG_NS, 'svg')
+  svg.setAttribute('data-pearpass-icon', dataIcon)
+  svg.setAttribute('width', String(width))
+  svg.setAttribute('height', String(height))
+  svg.setAttribute('fill', 'none')
+  svg.setAttribute('viewBox', viewBox)
+  svg.setAttribute('aria-hidden', 'true')
+  svg.style.color = color
+  svg.style.display = 'block'
+  for (const d of paths) {
+    const path = document.createElementNS(SVG_NS, 'path')
+    path.setAttribute('fill', 'currentColor')
+    path.setAttribute('d', d)
+    svg.appendChild(path)
+  }
+  return svg
 }
 
 const PEARPASS_LOGO_PATHS = [
@@ -28,8 +42,8 @@ const PEARPASS_LOGO_PATHS = [
 ]
 
 /** @param {string} color */
-export function pearpassLogoSvgHtml(color) {
-  return inlineIconSvg({
+export function pearpassLogoSvg(color) {
+  return createInlineIcon({
     viewBox: '0 0 16 16',
     width: 14,
     height: 14,
@@ -40,8 +54,8 @@ export function pearpassLogoSvgHtml(color) {
 }
 
 /** @param {string} color */
-export function verifiedUserSvgHtml(color) {
-  return inlineIconSvg({
+export function verifiedUserSvg(color) {
+  return createInlineIcon({
     viewBox: '0 0 12 12',
     width: 12,
     height: 12,
@@ -54,8 +68,8 @@ export function verifiedUserSvgHtml(color) {
 }
 
 /** @param {string} color */
-export function gppMaybeSvgHtml(color) {
-  return inlineIconSvg({
+export function gppMaybeSvg(color) {
+  return createInlineIcon({
     viewBox: '1 0.5 10 11',
     width: 12,
     height: 12,
@@ -69,8 +83,8 @@ export function gppMaybeSvgHtml(color) {
 }
 
 /** @param {string} color */
-export function gppBadSvgHtml(color) {
-  return inlineIconSvg({
+export function gppBadSvg(color) {
+  return createInlineIcon({
     viewBox: '0 0 12 12',
     width: 12,
     height: 12,

@@ -57,7 +57,37 @@ export function transformFirefoxManifest(manifest) {
 
   out.action = { ...(out.action ?? {}), default_area: 'navbar' }
 
+  out.browser_specific_settings = {
+    ...(out.browser_specific_settings ?? {}),
+    gecko: {
+      ...(out.browser_specific_settings?.gecko ?? {}),
+      data_collection_permissions: out.browser_specific_settings?.gecko
+        ?.data_collection_permissions ?? { required: ['none'] }
+    }
+  }
+
   return out
+}
+
+/** AMO flags chrome.offscreen.* even behind a typeof guard. Firefox never has it. */
+export function stripFirefoxUnsupportedApis(source) {
+  return source
+    .replace(/chrome\.offscreen\.hasDocument/g, '(async()=>false)')
+    .replace(/chrome\.offscreen\.createDocument/g, '(async()=>{})')
+    .replace(/chrome\.offscreen/g, 'undefined')
+}
+
+const LW_SET_HTML =
+  'function __lwSetHtml(n,v){const d=new DOMParser().parseFromString("<div>"+String(v??"")+"</div>","text/html");const w=d.body&&d.body.firstElementChild;n.replaceChildren(...(w?[...w.childNodes]:[]))}'
+
+/** AMO addons-linter flags `.innerHTML=`. React uses that for dangerouslySetInnerHTML. */
+export function rewriteInnerHtmlAssignments(source) {
+  const rewritten = source.replace(
+    /([A-Za-z_$][\w$]*)\.innerHTML=([A-Za-z_$][\w$]*)/g,
+    '__lwSetHtml($1,$2)'
+  )
+  if (rewritten === source) return source
+  return `${LW_SET_HTML};${rewritten}`
 }
 
 /** Strip crossorigin and rewrite root-absolute src/href for extension pages. */
@@ -200,9 +230,15 @@ export function packageFirefox({
   )
 
   for (const { full } of listFilesRecursive(outDir)) {
-    if (!full.endsWith('.html')) continue
-    const html = readFileSync(full, 'utf8')
-    writeFileSync(full, rewriteFirefoxHtml(html), 'utf8')
+    if (full.endsWith('.html')) {
+      writeFileSync(full, rewriteFirefoxHtml(readFileSync(full, 'utf8')), 'utf8')
+      continue
+    }
+    if (!full.endsWith('.js')) continue
+    const next = rewriteInnerHtmlAssignments(
+      stripFirefoxUnsupportedApis(readFileSync(full, 'utf8'))
+    )
+    writeFileSync(full, next, 'utf8')
   }
 
   rmSync(zipPath, { force: true })

@@ -14,6 +14,7 @@ import { afterEach, beforeEach, describe, it } from 'node:test'
 import {
   packageFirefox,
   rewriteFirefoxHtml,
+  rewriteInnerHtmlAssignments,
   transformFirefoxManifest
 } from './package-firefox.mjs'
 
@@ -37,7 +38,7 @@ function makeFixtureDist(root) {
           'activeTab'
         ],
         browser_specific_settings: {
-          gecko: { id: 'pass@pears.com', strict_min_version: '109.0' }
+          gecko: { id: 'lockwright@dexterity.works', strict_min_version: '109.0' }
         },
         background: {
           service_worker: 'background.js',
@@ -63,10 +64,16 @@ function makeFixtureDist(root) {
       2
     )
   )
-  writeFileSync(path.join(distDir, 'background.js'), '// bg\n')
+  writeFileSync(
+    path.join(distDir, 'background.js'),
+    'if (typeof chrome.offscreen !== "undefined") { chrome.offscreen.hasDocument(); chrome.offscreen.createDocument({}); }\n'
+  )
   writeFileSync(path.join(distDir, 'offscreen.html'), '<html></html>\n')
   writeFileSync(path.join(distDir, 'offscreen.js'), '// offscreen\n')
-  writeFileSync(path.join(distDir, 'content.js'), '// content\n')
+  writeFileSync(
+    path.join(distDir, 'content.js'),
+    'if(l!=null){t.innerHTML=l}\n'
+  )
   writeFileSync(
     path.join(distDir, 'index.html'),
     `<!doctype html>
@@ -103,6 +110,16 @@ describe('rewriteFirefoxHtml', () => {
   })
 })
 
+describe('rewriteInnerHtmlAssignments', () => {
+  it('removes innerHTML assignments AMO flags in React', () => {
+    const out = rewriteInnerHtmlAssignments('if(l!=null){t.innerHTML=l}}break;')
+
+    assert.equal(out.includes('.innerHTML='), false)
+    assert.equal(out.includes('.innerHTML ='), false)
+    assert.match(out, /__lwSetHtml\(t,l\)/)
+  })
+})
+
 describe('transformFirefoxManifest', () => {
   it('strips Chrome-only fields and keeps gecko id + background scripts', () => {
     const input = {
@@ -113,7 +130,7 @@ describe('transformFirefoxManifest', () => {
       },
       key: 'secret',
       browser_specific_settings: {
-        gecko: { id: 'pass@pears.com', strict_min_version: '109.0' }
+        gecko: { id: 'lockwright@dexterity.works', strict_min_version: '109.0' }
       },
       action: {
         default_popup: 'index.html',
@@ -133,12 +150,35 @@ describe('transformFirefoxManifest', () => {
     assert.deepEqual(out.permissions, ['storage', 'alarms'])
     assert.deepEqual(out.background, { scripts: ['background.js'] })
     assert.equal(out.key, undefined)
-    assert.equal(out.browser_specific_settings.gecko.id, 'pass@pears.com')
+    assert.equal(out.browser_specific_settings.gecko.id, 'lockwright@dexterity.works')
     assert.equal(out.web_accessible_resources[0].use_dynamic_url, undefined)
     assert.deepEqual(out.web_accessible_resources[0].resources, ['inject.js'])
     assert.equal(out.action.default_area, 'navbar')
     assert.equal(out.action.default_popup, 'index.html')
     assert.deepEqual(out.action.default_icon, { '16': 'icons/icon16.png' })
+    assert.deepEqual(
+      out.browser_specific_settings.gecko.data_collection_permissions,
+      { required: ['none'] }
+    )
+  })
+
+  it('keeps an explicit gecko data_collection_permissions declaration', () => {
+    const out = transformFirefoxManifest({
+      background: { scripts: ['background.js'] },
+      browser_specific_settings: {
+        gecko: {
+          id: 'lockwright@dexterity.works',
+          data_collection_permissions: {
+            required: ['authenticationInfo']
+          }
+        }
+      }
+    })
+
+    assert.deepEqual(
+      out.browser_specific_settings.gecko.data_collection_permissions,
+      { required: ['authenticationInfo'] }
+    )
   })
 
   it('derives background.scripts from service_worker when scripts missing', () => {
@@ -176,6 +216,14 @@ describe('packageFirefox', () => {
     assert.equal(existsSync(path.join(outDir, 'offscreen.js')), false)
     assert.equal(existsSync(zipPath), true)
 
+    const background = readFileSync(path.join(outDir, 'background.js'), 'utf8')
+    assert.equal(background.includes('offscreen.hasDocument'), false)
+    assert.equal(background.includes('offscreen.createDocument'), false)
+
+    const content = readFileSync(path.join(outDir, 'content.js'), 'utf8')
+    assert.equal(content.includes('.innerHTML='), false)
+    assert.match(content, /__lwSetHtml\(t,l\)/)
+
     const zipBuf = readFileSync(zipPath)
     assert.ok(zipBuf.length > 22)
     // Local file header signature (STORE zip)
@@ -197,7 +245,7 @@ describe('packageFirefox', () => {
     )
     assert.equal(
       manifest.browser_specific_settings.gecko.id,
-      'pass@pears.com'
+      'lockwright@dexterity.works'
     )
     assert.equal(manifest.action.default_area, 'navbar')
     assert.equal(manifest.action.default_popup, 'index.html')

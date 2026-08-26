@@ -1,3 +1,6 @@
+import { readFileSync } from 'fs'
+import path from 'path'
+
 import {
   checkPasswordStrength,
   PASSWORD_STRENGTH
@@ -36,6 +39,14 @@ function makeInput() {
 }
 
 describe('showPasswordStrengthNearField', () => {
+  it('does not assign innerHTML (AMO flags that in content.js)', () => {
+    const source = readFileSync(
+      path.join(__dirname, 'showPasswordStrengthNearField.js'),
+      'utf8'
+    )
+    expect(source).not.toMatch(/\.innerHTML\s*=/)
+  })
+
   let rafSpy
 
   beforeEach(() => {
@@ -104,11 +115,15 @@ describe('showPasswordStrengthNearField', () => {
     expect(pill).not.toBeNull()
     expect(pill.getAttribute('role')).toBe('status')
     expect(pill.textContent).toMatch(/Strong/)
-    expect(pill.innerHTML).toContain('#BEE35A')
-    expect(pill.innerHTML).toContain('#15180E')
-    expect(pill.innerHTML).toContain('#212814')
-    expect(pill.innerHTML).toContain('data-pearpass-icon="verified-user"')
-    expect(pill.innerHTML).toContain('data-pearpass-icon="pearpass-logo"')
+    expect(
+      pill.querySelector('[data-pearpass-icon="verified-user"]')
+    ).not.toBeNull()
+    expect(
+      pill.querySelector('[data-pearpass-icon="pearpass-logo"]')
+    ).not.toBeNull()
+    expect(pill.children[0].style.background).toBe('rgb(21, 24, 14)')
+    expect(pill.children[1].style.background).toBe('rgb(33, 40, 20)')
+    expect(pill.children[1].style.color).toBe('rgb(190, 227, 90)')
   })
 
   it('renders Decent + GppMaybe color for WEAK', () => {
@@ -121,8 +136,10 @@ describe('showPasswordStrengthNearField', () => {
 
     const pill = document.querySelector('[data-pearpass-password-strength]')
     expect(pill.textContent).toMatch(/Decent/)
-    expect(pill.innerHTML).toContain('#D7D245')
-    expect(pill.innerHTML).toContain('data-pearpass-icon="gpp-maybe"')
+    expect(
+      pill.querySelector('[data-pearpass-icon="gpp-maybe"]')
+    ).not.toBeNull()
+    expect(pill.children[1].style.color).toBe('rgb(215, 210, 69)')
   })
 
   it('renders Vulnerable + GppBad color for VULNERABLE', () => {
@@ -135,9 +152,9 @@ describe('showPasswordStrengthNearField', () => {
 
     const pill = document.querySelector('[data-pearpass-password-strength]')
     expect(pill.textContent).toMatch(/Vulnerable/)
-    expect(pill.innerHTML).toContain('#D13B3D')
-    expect(pill.innerHTML).toContain('#1c1c1c')
-    expect(pill.innerHTML).toContain('data-pearpass-icon="gpp-bad"')
+    expect(pill.querySelector('[data-pearpass-icon="gpp-bad"]')).not.toBeNull()
+    expect(pill.children[1].style.background).toBe('rgb(28, 28, 28)')
+    expect(pill.children[1].style.color).toBe('rgb(209, 59, 61)')
   })
 
   it('replaces an existing strength pill on the same field', () => {

@@ -6,10 +6,10 @@ import {
 } from '@tetherto/pearpass-utils-password-check'
 
 import {
-  gppBadSvgHtml,
-  gppMaybeSvgHtml,
-  pearpassLogoSvgHtml,
-  verifiedUserSvgHtml
+  gppBadSvg,
+  gppMaybeSvg,
+  pearpassLogoSvg,
+  verifiedUserSvg
 } from './passwordStrengthInlineIcons'
 
 /** @type {WeakMap<HTMLElement, { el: HTMLDivElement; cleanup: () => void }>} */
@@ -70,7 +70,7 @@ const GAP_PILL_EYE = 8
 const PILL_H = 20
 const POSITION_LEFT_NUDGE = 8
 
-const PEARPASS_LOGO_SVG_HTML = pearpassLogoSvgHtml(STRENGTH_COLORS.lockLime)
+const PEARPASS_LOGO_COLOR = STRENGTH_COLORS.lockLime
 
 /**
  * @param {HTMLInputElement} input
@@ -158,14 +158,13 @@ export function showPasswordStrengthNearField(inputElement, password) {
   const label = getDisplayLabel(type)
   const colors = THEME[type] || THEME[PASSWORD_STRENGTH.VULNERABLE]
   const c = colors.accent
-  const lockSvg = PEARPASS_LOGO_SVG_HTML
-  let statusIconSvg
+  let statusIcon
   if (type === PASSWORD_STRENGTH.SAFE) {
-    statusIconSvg = verifiedUserSvgHtml(c)
+    statusIcon = verifiedUserSvg(c)
   } else if (type === PASSWORD_STRENGTH.WEAK) {
-    statusIconSvg = gppMaybeSvgHtml(c)
+    statusIcon = gppMaybeSvg(c)
   } else {
-    statusIconSvg = gppBadSvgHtml(c)
+    statusIcon = gppBadSvg(c)
   }
   const labelFontSizePx = STRENGTH_TYPOGRAPHY.labelFontSizePx
 
@@ -173,23 +172,31 @@ export function showPasswordStrengthNearField(inputElement, password) {
   el.setAttribute('data-pearpass-password-strength', '1')
   el.setAttribute('role', 'status')
   el.setAttribute('aria-live', 'polite')
-  el.innerHTML = [
-    '<div style="display:flex;align-items:center;border-radius: 100px;justify-content:center;flex-shrink:0;padding:4px 2px 4px 5px;background:',
-    colors.pocketBg,
-    '">',
-    lockSvg,
-    '</div><div style="display:flex;border-radius: 100px;align-items:center;flex:1;flex-shrink:0;min-width:0;align-self:stretch;background:',
-    colors.statusBg,
-    ';padding:4px 7px 4px 4px;color:',
-    c,
-    '">',
-    statusIconSvg,
-    '<span style="margin-left:4px;white-space:nowrap;font-size:',
-    labelFontSizePx,
-    'px;font-weight:400;letter-spacing:0.01em">',
-    escapeHtml(label),
-    '</span></div>'
-  ].join('')
+
+  const pocket = document.createElement('div')
+  pocket.style.cssText =
+    'display:flex;align-items:center;border-radius: 100px;justify-content:center;flex-shrink:0;padding:4px 2px 4px 5px;background:' +
+    colors.pocketBg
+  pocket.appendChild(pearpassLogoSvg(PEARPASS_LOGO_COLOR))
+
+  const status = document.createElement('div')
+  status.style.cssText =
+    'display:flex;border-radius: 100px;align-items:center;flex:1;flex-shrink:0;min-width:0;align-self:stretch;background:' +
+    colors.statusBg +
+    ';padding:4px 7px 4px 4px;color:' +
+    c
+
+  const labelEl = document.createElement('span')
+  labelEl.style.cssText =
+    'margin-left:4px;white-space:nowrap;font-size:' +
+    labelFontSizePx +
+    'px;font-weight:400;letter-spacing:0.01em'
+  labelEl.textContent = label
+
+  status.appendChild(statusIcon)
+  status.appendChild(labelEl)
+  el.appendChild(pocket)
+  el.appendChild(status)
 
   el.style.cssText = [
     'position: fixed',
@@ -273,15 +280,4 @@ export function showPasswordStrengthNearField(inputElement, password) {
   inputElement.addEventListener('input', onUserInput)
 
   activeByField.set(inputElement, { el, cleanup })
-}
-
-/**
- * @param {string} s
- */
-function escapeHtml(s) {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
 }

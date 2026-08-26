@@ -67,14 +67,14 @@ corepack prepare pnpm@11.10.0 --activate
 # 4. Install dependencies (npm/yarn are blocked; lifecycle scripts are allowlisted)
 NPM_CONFIG_LEGACY_PEER_DEPS=true pnpm install
 
-# 5. Build the extension (Chrome)
-pnpm run build
+# 5. Build the extension (Chrome: dist/ + dist-chrome.zip)
+pnpm run build:chrome
 
 # Or build a Firefox package (dist-firefox/ + dist-firefox.zip)
 pnpm run build:firefox
 ```
 
-`pnpm run build` creates a `dist/` directory for Chromium browsers.
+`pnpm run build` creates a `dist/` directory for Chromium browsers. `pnpm run build:chrome` runs that, then writes `dist-chrome.zip` (manifest at the zip root) for Chrome Web Store upload.
 
 `pnpm run build:firefox` runs the Chromium build, then packages a Gecko-ready copy into `dist-firefox/` and `dist-firefox.zip` (Chrome-only manifest fields and `offscreen.*` assets are stripped).
 
