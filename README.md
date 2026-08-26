@@ -10,8 +10,6 @@ Site: [lockwright.dexterity.works](https://lockwright.dexterity.works)
 
 Community fork of PearPass (Apache 2.0). Not affiliated with or endorsed by Tether Data or the Pears project. This GitHub repo stays a fork of `tetherto/pearpass-app-browser-extension` on purpose. Do not open pull requests against Tether.
 
-Package names, store listings, and shipped binaries still say PearPass until identity `works.dexterity.lockwright` lands. Gecko id will be `lockwright@dexterity.works`. Host id is still `com.pears.pass` until that swap.
-
 ---
 
 ## Table of Contents
