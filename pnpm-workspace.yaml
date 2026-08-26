@@ -30,6 +30,7 @@ allowBuilds:
   "@tetherto/pearpass-lib-constants": true
   "@tetherto/pearpass-lib-constants@https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/e8ea95e7456ea9ffc7057bbb97093d6a9563d859": true
   "@tetherto/pearpass-lib-constants@https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/12c63099acf78947e0ce01af279211a2b2eea372": true
+  "@tetherto/pearpass-lib-constants@https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/1f3338f06101e409255402e5ac6a4d696540d02b": true
   "pearpass-lib-vault@https://codeload.github.com/tetherto/pearpass-lib-vault/tar.gz/7e58479a45f8f802d2e8cb8145d526e74495c3af": true
   "pearpass-utils-password-check@https://codeload.github.com/tetherto/pearpass-utils-password-check/tar.gz/a549e2b4c486e5f57eb28acd47652ea38154d9c8": true
   "pearpass-utils-password-generator@https://codeload.github.com/tetherto/pearpass-utils-password-generator/tar.gz/ce69cd540a232550de361752d04450f0e600ca8a": true
