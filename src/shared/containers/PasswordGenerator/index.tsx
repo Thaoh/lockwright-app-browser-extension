@@ -147,6 +147,7 @@ export const PasswordGenerator = ({
   const [history, setHistory] = useState<HistoryEntry[]>([])
   // Kit Slider has no onSlidingComplete — suppress history until mouse/touch release.
   const [isSlidingLength, setIsSlidingLength] = useState(false)
+  const [generationNonce, setGenerationNonce] = useState(0)
 
   const lengthValue =
     mode === MODE_MEMORABLE ? memorable.words : random.characters
@@ -182,7 +183,7 @@ export const PasswordGenerator = ({
       upperCase: random.capitalLetters,
       numbers: random.numbers
     })
-  }, [mode, memorable, random])
+  }, [mode, memorable, random, generationNonce])
 
   useEffect(() => {
     onGeneratedChange?.(generated)
@@ -354,9 +355,32 @@ export const PasswordGenerator = ({
   return (
     <div className="flex flex-col gap-[var(--spacing16)]">
       <section className="flex flex-col gap-[var(--spacing12)]">
-        <Text variant="caption" color={theme.colors.colorTextSecondary}>
-          {t`Generated Password`}
-        </Text>
+        <div className="flex items-center justify-between gap-[var(--spacing8)]">
+          <Text variant="caption" color={theme.colors.colorTextSecondary}>
+            {t`Generated Password`}
+          </Text>
+          <div className="flex shrink-0 items-center gap-[var(--spacing8)]">
+            <Button
+              variant="secondary"
+              size="small"
+              type="button"
+              onClick={() => setGenerationNonce((n) => n + 1)}
+              data-testid="password-generator-generate"
+            >
+              {t`Generate`}
+            </Button>
+            <Button
+              variant="tertiary"
+              size="small"
+              type="button"
+              iconBefore={<ContentCopy width={16} height={16} />}
+              onClick={() => copyToClipboard(generated)}
+              data-testid="password-generator-copy"
+            >
+              {t`Copy`}
+            </Button>
+          </div>
+        </div>
 
         <div className="border-border-primary flex flex-col overflow-hidden rounded-[var(--radius8)] border">
           <div className="border-border-primary flex flex-col items-center gap-[var(--spacing16)] border-b px-[var(--spacing16)] py-[var(--spacing24)]">

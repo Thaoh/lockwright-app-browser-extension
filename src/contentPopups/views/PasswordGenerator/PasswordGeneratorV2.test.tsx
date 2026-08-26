@@ -99,7 +99,9 @@ jest.mock('@tetherto/pearpass-lib-ui-kit', () => {
     Radio: () => R.createElement('div', { 'data-testid': 'radio-stub' }),
     Slider: () => R.createElement('div', { 'data-testid': 'slider-stub' }),
     ListItem: () => R.createElement('div', { 'data-testid': 'listitem-stub' }),
-    ToggleSwitch: () => R.createElement('div', { 'data-testid': 'toggle-stub' })
+    ToggleSwitch: () =>
+      R.createElement('div', { 'data-testid': 'toggle-stub' }),
+    InputField: () => R.createElement('input', { 'data-testid': 'input-stub' })
   }
 })
 

@@ -281,6 +281,42 @@ describe('PasswordGenerator', () => {
     )
   })
 
+  it('Generate re-runs generation with the current settings', async () => {
+    render(<PasswordGenerator />)
+
+    const lengthInput = screen.getByTestId('password-generator-length-input')
+    fireEvent.change(lengthInput, { target: { value: '48' } })
+    fireEvent.blur(lengthInput)
+
+    mockGeneratePassword.mockClear()
+    mockGeneratePassword.mockReturnValue('Len48Again!')
+    mockAppendHistory.mockClear()
+
+    fireEvent.click(screen.getByTestId('password-generator-generate'))
+
+    expect(mockGeneratePassword).toHaveBeenCalledTimes(1)
+    expect(mockGeneratePassword).toHaveBeenCalledWith(
+      48,
+      expect.objectContaining({
+        upperCase: true,
+        lowerCase: true,
+        numbers: true,
+        includeSpecialChars: true
+      })
+    )
+    await waitFor(() => {
+      expect(mockAppendHistory).toHaveBeenCalledWith('Len48Again!')
+    })
+  })
+
+  it('copy button copies the current generated password', () => {
+    render(<PasswordGenerator />)
+
+    fireEvent.click(screen.getByTestId('password-generator-copy'))
+
+    expect(mockCopyToClipboard).toHaveBeenCalledWith('Abcdef1!')
+  })
+
   it('does not append history for intermediate slider values until release', async () => {
     render(<PasswordGenerator />)
 
