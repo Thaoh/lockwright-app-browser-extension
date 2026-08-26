@@ -1,25 +1,26 @@
-# Contributing to PearPass
+# Contributing to Lockwright
 
-The source is open to use as per the [LICENSE](./LICENSE).
- 
-Be aware that **any pull-request or issue may be closed without explanation**.
+The source is open under the [LICENSE](./LICENSE.md).
+
+This GitHub repo is a fork of `tetherto/pearpass-app-browser-extension` on purpose. Open issues and pull requests here (`Thaoh/lockwright-app-browser-extension`). Never open a pull request against `tetherto/pearpass-app-browser-extension`.
+
+Any pull request or issue may be closed without explanation.
 
 ## Issues
 
-- Feature requests are welcome. 
-- For bug reports, please provide a failing test case or steps to reproduce. 
+- Feature requests are welcome.
+- For bug reports, provide a failing test case or steps to reproduce.
 
 ## Pull Request
 
-Newer contributors are encouraged to start small and simple. Tests - both failing and passing - are very helpful.
+Newer contributors are encouraged to start small. Tests, both failing and passing, are very helpful.
 
 - Keep pull requests focused on a single feature or bug fix
 - Provide a clear description of changes
 - Ensure code passes linting: `pnpm run lint`
 - Ensure tests are passing: `pnpm test`
-  - except, of course, any added failing tests
-
+  - except any added failing tests
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the project [LICENSE](./LICENSE).
+By contributing, you agree that your contributions will be licensed under the project [LICENSE](./LICENSE.md).
