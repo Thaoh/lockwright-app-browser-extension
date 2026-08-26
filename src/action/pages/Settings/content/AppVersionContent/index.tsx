@@ -7,7 +7,7 @@ import {
 } from '@tetherto/pearpass-lib-constants'
 import { Link, PageHeader, Text, useTheme } from '@tetherto/pearpass-lib-ui-kit'
 
-import { version } from '../../../../../../public/manifest.json'
+import { getExtensionDisplayVersion } from '../../../../../shared/utils/appDisplayVersion'
 
 const TEST_IDS = {
   root: 'settings-app-version',
@@ -74,7 +74,7 @@ export const AppVersionContent = () => {
           color={colors.colorLinkText}
           data-testid={TEST_IDS.versionValue}
         >
-          {version}
+          {getExtensionDisplayVersion()}
         </Text>
       </div>
     </div>

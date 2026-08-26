@@ -6,9 +6,14 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import viteBabel from 'vite-plugin-babel'
 
+import { readGitSha6 } from './scripts/gitSha.mjs'
+
 const webOnlyExtensions = [".web.js", ".web.jsx", ".web.ts", ".web.tsx"];
 
 export default defineConfig({
+  define: {
+    'globalThis.__LOCKWRIGHT_GIT_SHA__': JSON.stringify(readGitSha6())
+  },
   plugins: [
     react({
       babel: {

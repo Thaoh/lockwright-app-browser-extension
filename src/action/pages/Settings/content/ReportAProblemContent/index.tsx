@@ -12,7 +12,7 @@ import {
 } from '@tetherto/pearpass-lib-ui-kit'
 import { Send } from '@tetherto/pearpass-lib-ui-kit/icons'
 
-import { version } from '../../../../../../public/manifest.json'
+import { getExtensionDisplayVersion } from '../../../../../shared/utils/appDisplayVersion'
 import {
   GOOGLE_FORM_KEY,
   GOOGLE_FORM_MAPPING,
@@ -64,7 +64,7 @@ export const ReportAProblemContent = () => {
         app: 'BROWSER_EXTENSION' as const,
         operatingSystem: nav.userAgentData?.platform ?? '',
         deviceModel: nav.platform ?? '',
-        appVersion: version
+        appVersion: getExtensionDisplayVersion()
       }
 
       const sendBoth = async () => {
