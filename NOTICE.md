@@ -1,3 +1,9 @@
+Lockwright
+Copyright 2026 Lockwright Contributors
+
+This product is a Derivative Work of PearPass (Apache License 2.0).
+The following attribution notice is from the PearPass NOTICE:
+
 Copyright 2026 Tether Inc
 
 Licensed under the Apache License, Version 2.0 (the "License");

@@ -183,6 +183,7 @@ recommend that a file or class name and description of purpose be included on
 the same “printed page” as the copyright notice for easier identification within
 third-party archives.
 
+Copyright 2026 Lockwright Contributors
 Copyright 2026 Tether Inc
 
 Licensed under the Apache License, Version 2.0 (the "License");
