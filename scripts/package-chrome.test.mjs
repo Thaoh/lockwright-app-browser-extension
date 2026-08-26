@@ -20,7 +20,7 @@ function makeFixtureDist(root) {
     path.join(distDir, 'manifest.json'),
     JSON.stringify({
       manifest_version: 3,
-      name: 'PearPass',
+      name: 'Lockwright',
       permissions: ['storage', 'offscreen'],
       background: { service_worker: 'background.js' }
     })

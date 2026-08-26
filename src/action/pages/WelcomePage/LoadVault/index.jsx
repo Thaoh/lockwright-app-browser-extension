@@ -83,8 +83,8 @@ export const LoadVault = () => {
 
         <p className="text-white-mode1 text-center text-[14px]">
           <Trans>
-            Using PearPass on your other device, use "Add Device" to generate a
-            QR or connection code to pair your vault. This method keeps your
+            Using Lockwright on your other device, use "Add Device" to generate
+            a QR or connection code to pair your vault. This method keeps your
             account secure.
           </Trans>
         </p>

@@ -159,7 +159,7 @@ export const ShareVaultModalContent = () => {
           variant="info"
           size="small"
           title=""
-          description={t`Keep your vault private. Only pair with your own trusted devices. Pairing grants full access to your PearPass data.`}
+          description={t`Keep your vault private. Only pair with your own trusted devices. Pairing grants full access to your Lockwright data.`}
           testID="pairing-disclaimer"
         />
       </div>

@@ -104,7 +104,7 @@ describe('DesktopConnectionModalContent', () => {
     expect(screen.getByText('Desktop app required')).toBeInTheDocument()
     expect(
       screen.getByText(
-        /The browser extension needs the PearPass desktop app to be open and running/
+        /The browser extension needs the Lockwright desktop app to be open and running/
       )
     ).toBeInTheDocument()
     expect(

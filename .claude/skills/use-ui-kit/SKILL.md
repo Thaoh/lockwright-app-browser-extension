@@ -7,7 +7,7 @@ description: Use whenever creating or editing UI in this repo — React componen
 
 # UI conventions for pearpass-app-browser-extension
 
-This is the browser extension (Chrome MV3) for PearPass. It's written in React + TypeScript. The extension has four build targets — the action popup ([src/action/](../../../src/action/)), content scripts ([src/content/](../../../src/content/)) and their in-page popups ([src/contentPopups/](../../../src/contentPopups/)), an injected page script ([src/inject/](../../../src/inject/)), and the background service worker ([src/background/](../../../src/background/)). UI is built on the shared component library `@tetherto/pearpass-lib-ui-kit`.
+This is the browser extension (Chrome MV3) for Lockwright. It's written in React + TypeScript. The extension has four build targets — the action popup ([src/action/](../../../src/action/)), content scripts ([src/content/](../../../src/content/)) and their in-page popups ([src/contentPopups/](../../../src/contentPopups/)), an injected page script ([src/inject/](../../../src/inject/)), and the background service worker ([src/background/](../../../src/background/)). UI is built on the shared component library `@tetherto/pearpass-lib-ui-kit`.
 
 This document is for **anyone contributing UI** to the repo — new hires, current engineers, and AI coding assistants (Claude Code, Cursor, Codex, etc.). It captures the component catalog, styling conventions, file-naming rules, and patterns we use when building UI in this extension. Read it once before your first UI change; keep it open when you're in doubt.
 

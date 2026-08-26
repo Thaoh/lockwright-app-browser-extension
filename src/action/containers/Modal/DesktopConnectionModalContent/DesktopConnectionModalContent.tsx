@@ -98,8 +98,8 @@ export const DesktopConnectionModalContent = ({
       <div className="flex flex-col gap-[var(--spacing12)]">
         <Text variant="caption" color={colors.colorTextSecondary}>
           <Trans>
-            The browser extension needs the PearPass desktop app to be open and
-            running to access your secure vaults.
+            The browser extension needs the Lockwright desktop app to be open
+            and running to access your secure vaults.
           </Trans>
         </Text>
         {detail ? (

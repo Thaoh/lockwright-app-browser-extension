@@ -239,7 +239,7 @@ export const AppPreferencesContent = () => {
       <PageHeader
         as="h1"
         title={t`App Preferences`}
-        subtitle={t`Control how PearPass works and keep your vault secure.`}
+        subtitle={t`Control how Lockwright works and keep your vault secure.`}
       />
 
       <section className="flex flex-col gap-[12px]">
@@ -269,7 +269,7 @@ export const AppPreferencesContent = () => {
             <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
               <Text variant="labelEmphasized">{t`Default URI match`}</Text>
               <Text variant="caption" color={colors.colorTextSecondary}>
-                {t`Choose how PearPass decides when to offer autofill for a site.`}
+                {t`Choose how Lockwright decides when to offer autofill for a site.`}
               </Text>
             </div>
             <Dropdown

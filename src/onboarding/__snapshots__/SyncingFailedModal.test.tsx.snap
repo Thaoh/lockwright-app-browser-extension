@@ -13,7 +13,7 @@ exports[`SyncingFailedModal matches snapshot with all props supplied 1`] = `
         Syncing Failed
       </h2>
       <p>
-        Ensure the PearPass desktop app is open and Browser Sync is enabled.
+        Ensure the Lockwright desktop app is open and Browser Sync is enabled.
       </p>
       <p
         data-testid="syncing-failed-modal-error-detail"

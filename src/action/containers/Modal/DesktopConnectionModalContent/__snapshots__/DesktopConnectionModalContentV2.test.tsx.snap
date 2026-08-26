@@ -19,7 +19,7 @@ exports[`DesktopConnectionModalContent matches snapshot 1`] = `
         class="flex flex-col gap-[var(--spacing12)]"
       >
         <p>
-          The browser extension needs the PearPass desktop app to be open and running to access your secure vaults.
+          The browser extension needs the Lockwright desktop app to be open and running to access your secure vaults.
         </p>
         <p
           data-testid="desktop-connection-modal-tips"

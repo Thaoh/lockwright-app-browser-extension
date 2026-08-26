@@ -121,13 +121,13 @@ export const Step2Dialog = ({ onNext }: Step2Props) => {
         <div className="flex flex-col gap-[var(--spacing16)]">
           <div className="flex flex-col items-center gap-[var(--spacing16)] text-center">
             <Title as="h2">
-              <Trans>Connect This Browser to PearPass</Trans>
+              <Trans>Connect This Browser to Lockwright</Trans>
             </Title>
             <div className="flex flex-col gap-[var(--spacing12)]">
               <Text as="p">
                 <Trans>
-                  PearPass doesn't use accounts. To connect this browser, you'll
-                  pair it with the PearPass app using a one-time code.
+                  Lockwright doesn't use accounts. To connect this browser,
+                  you'll pair it with the Lockwright app using a one-time code.
                 </Trans>
               </Text>
               <div className="flex flex-col gap-[var(--spacing8)]">
@@ -143,7 +143,7 @@ export const Step2Dialog = ({ onNext }: Step2Props) => {
                   />
                   <Text as="span" noWrap>
                     <span style={{ color: accentColor }}>
-                      <Trans>PearPass</Trans>
+                      <Trans>Lockwright</Trans>
                     </span>{' '}
                     <Trans>app</Trans>
                   </Text>

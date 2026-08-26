@@ -18,7 +18,7 @@ import { logger } from '../shared/utils/logger'
 import { runtime } from '../shared/utils/runtime'
 
 /**
- * Native Messaging Client for PearPass Vault
+ * Native Messaging Client for Lockwright Vault
  * Communicates with the desktop app via Native Messaging API
  *
  * This client dynamically creates methods based on command definitions.

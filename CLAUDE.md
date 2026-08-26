@@ -1,6 +1,6 @@
 # pearpass-app-browser-extension
 
-PearPass browser extension (Chrome MV3). React + TypeScript. Four build targets: action popup ([src/action/](src/action/)), content scripts ([src/content/](src/content/)) + in-page popups ([src/contentPopups/](src/contentPopups/)), injected page script ([src/inject/](src/inject/)), background service worker ([src/background/](src/background/)).
+Lockwright browser extension (Chrome MV3). React + TypeScript. Four build targets: action popup ([src/action/](src/action/)), content scripts ([src/content/](src/content/)) + in-page popups ([src/contentPopups/](src/contentPopups/)), injected page script ([src/inject/](src/inject/)), background service worker ([src/background/](src/background/)).
 
 ## UI: always use `@tetherto/pearpass-lib-ui-kit`
 

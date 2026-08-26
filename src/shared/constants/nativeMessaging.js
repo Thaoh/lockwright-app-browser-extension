@@ -86,14 +86,14 @@ export const DISCONNECTION_ERROR_MESSAGES = {
  */
 export const AVAILABILITY_ERROR_MESSAGES = {
   NOT_RUNNING:
-    'Desktop app is not running. Please start the PearPass desktop app and try again.',
+    'Desktop app is not running. Please start the Lockwright desktop app and try again.',
   INTEGRATION_DISABLED:
-    'Unable to connect to desktop app. Please ensure the PearPass desktop app is running and browser extension integration is enabled in Privacy settings.',
+    'Unable to connect to desktop app. Please ensure the Lockwright desktop app is running and browser extension integration is enabled in Privacy settings.',
   CONNECTING: 'Connecting to desktop app. Please wait...',
   HOST_NOT_FOUND:
-    'Native messaging host not found. Start the PearPass desktop app with browser integration enabled. On Firefox or Zen, ensure the host is installed under Mozilla native-messaging paths (see README → Firefox / Zen). Flatpak Zen needs host filesystem access.',
+    'Native messaging host not found. Start the Lockwright desktop app with browser integration enabled. On Firefox or Zen, ensure the host is installed under Mozilla native-messaging paths (see README → Firefox / Zen). Flatpak Zen needs host filesystem access.',
   DEFAULT:
-    'Unable to connect to desktop app. Please ensure the PearPass desktop app is running.'
+    'Unable to connect to desktop app. Please ensure the Lockwright desktop app is running.'
 }
 
 /**

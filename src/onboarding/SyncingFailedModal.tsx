@@ -48,7 +48,8 @@ export const SyncingFailedModal = ({
         </Title>
         <Text variant="body" color={colors.colorTextSecondary}>
           <Trans>
-            Ensure the PearPass desktop app is open and Browser Sync is enabled.
+            Ensure the Lockwright desktop app is open and Browser Sync is
+            enabled.
           </Trans>
         </Text>
         {errorMessage && (

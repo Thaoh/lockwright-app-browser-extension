@@ -127,9 +127,9 @@ export const AddDevice = () => {
 
           <p className="text-white-mode1 font-inter h-[38px] flex-1 text-center text-[12px] font-normal">
             <Trans>
-              Scan this QR code or paste the vault key into the PearPass app on
-              your other device to connect it to your account. This method keeps
-              your account secure.
+              Scan this QR code or paste the vault key into the Lockwright app
+              on your other device to connect it to your account. This method
+              keeps your account secure.
             </Trans>
           </p>
 
@@ -154,7 +154,7 @@ export const AddDevice = () => {
       <>
         <div className="flex flex-col items-center gap-2">
           <div className="text-white-mode1 font-inter text-sm font-medium">
-            <Trans>Scan this QR-code while in the PearPass App</Trans>
+            <Trans>Scan this QR-code while in the Lockwright App</Trans>
           </div>
 
           <div

@@ -57,7 +57,7 @@ export const LockedScreen = () => {
       <div className="m-auto flex w-full max-w-[520px] flex-col items-center gap-[var(--spacing24)] px-[var(--spacing24)] py-[var(--spacing16)] text-center">
         <PageHeader
           as="h1"
-          title={t`PearPass locked`}
+          title={t`Lockwright locked`}
           testID="locked-screen-headline-v2"
         />
 

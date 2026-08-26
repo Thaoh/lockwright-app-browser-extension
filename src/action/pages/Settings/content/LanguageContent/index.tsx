@@ -67,7 +67,7 @@ export const LanguageContent = () => {
         <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
           <Text variant="labelEmphasized">{t`App Language`}</Text>
           <Text variant="caption" color={colors.colorTextSecondary}>
-            {t`Select the language used throughout PearPass.`}
+            {t`Select the language used throughout Lockwright.`}
           </Text>
         </div>
 

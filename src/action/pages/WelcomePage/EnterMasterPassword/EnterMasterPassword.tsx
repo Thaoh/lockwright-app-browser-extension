@@ -128,7 +128,7 @@ export const EnterMasterPassword = () => {
               ? submitError
               : t`Incorrect password. Please try again.`
           )
-          logger.error('Error unlocking PearPass:', submitError)
+          logger.error('Error unlocking Lockwright:', submitError)
           return
         }
 
@@ -146,7 +146,7 @@ export const EnterMasterPassword = () => {
             ? submitError
             : getIncorrectPasswordError(status)
         )
-        logger.error('Error unlocking PearPass:', submitError)
+        logger.error('Error unlocking Lockwright:', submitError)
       }
     },
     [

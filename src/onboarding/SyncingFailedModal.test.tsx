@@ -61,7 +61,7 @@ describe('SyncingFailedModal', () => {
     expect(screen.getByText('Syncing Failed')).toBeInTheDocument()
     expect(
       screen.getByText(
-        /Ensure the PearPass desktop app is open and Browser Sync is enabled\./
+        /Ensure the Lockwright desktop app is open and Browser Sync is enabled\./
       )
     ).toBeInTheDocument()
   })

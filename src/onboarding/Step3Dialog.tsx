@@ -50,7 +50,7 @@ export const Step3Dialog = () => {
           data-testid="onboarding-step3-toolbar-hint"
         >
           <Trans>
-            Click the PearPass icon in your browser toolbar to open the
+            Click the Lockwright icon in your browser toolbar to open the
             extension.
           </Trans>
         </Text>
@@ -61,7 +61,7 @@ export const Step3Dialog = () => {
         onClick={handleNext}
         data-testid="onboarding-step3-open-button"
       >
-        <Trans>Open PearPass Extension</Trans>
+        <Trans>Open Lockwright Extension</Trans>
       </Button>
     </div>
   )
@@ -83,7 +83,7 @@ export const Step3Dialog = () => {
         </div>
         <div className="flex flex-col items-center gap-[var(--spacing16)] text-center">
           <Title as="h2">
-            <Trans>PearPass is Ready</Trans>
+            <Trans>Lockwright is Ready</Trans>
           </Title>
           <div className="flex flex-col gap-[var(--spacing12)]">
             <Text as="p">

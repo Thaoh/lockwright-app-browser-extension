@@ -26,7 +26,7 @@ function makeFixtureDist(root) {
     JSON.stringify(
       {
         manifest_version: 3,
-        name: 'PearPass',
+        name: 'Lockwright',
         version: '2.2.0',
         permissions: [
           'storage',

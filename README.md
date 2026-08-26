@@ -127,8 +127,6 @@ The extension talks to the desktop app through a native messaging host. If the h
 
 **Windows:** Mozilla native messaging registry keys (same family as Firefox).
 
-The desktop installer currently registers Mozilla-standard paths. Zen usually picks those up; if it does not, dual-write into Zen-specific directories is a desktop-app follow-up. For Flatpak Zen, grant the app access to the host file (Flatseal → filesystem, or `flatpak override`) and ensure the webextension native-messaging permission is allowed for that host id.
-
 Always keep the desktop app running with browser integration enabled when using the extension.
 
 ---
