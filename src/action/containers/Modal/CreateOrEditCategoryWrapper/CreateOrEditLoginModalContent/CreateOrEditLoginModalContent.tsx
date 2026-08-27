@@ -47,7 +47,7 @@ import {
   buildLoginUris,
   getDefaultUriMatchTypeSync,
   hydrateUriMatchSettings,
-  resolveUriMatchType
+  websiteRowsFromRecord
 } from '../../../../../shared/utils/uriMatchSetting'
 import { useCreateOrEditRecord } from '../../../../hooks/useCreateOrEditRecord'
 
@@ -171,14 +171,7 @@ export const CreateOrEditLoginModalContent = ({
       otpSecret:
         initialRecord?.data?.otpInput ?? initialRecord?.data?.otp?.secret ?? '',
       note: initialRecord?.data?.note ?? '',
-      websites: initialRecord?.data?.websites?.length
-        ? initialRecord.data.websites.map((website: string) => ({
-            website,
-            matchType: initialRecord
-              ? resolveUriMatchType(initialRecord, website)
-              : getDefaultUriMatchTypeSync()
-          }))
-        : [{ website: '', matchType: getDefaultUriMatchTypeSync() }],
+      websites: websiteRowsFromRecord(initialRecord),
       customFields: initialRecord?.data?.customFields?.length
         ? initialRecord.data.customFields
         : [{ type: 'note', name: 'note', note: '' }],
@@ -217,15 +210,7 @@ export const CreateOrEditLoginModalContent = ({
     let alive = true
     void hydrateUriMatchSettings().then(() => {
       if (!alive || !initialRecord?.id) return
-      const websites = initialRecord.data?.websites ?? []
-      if (!websites.length) return
-      setValueRef.current(
-        'websites',
-        websites.map((website: string) => ({
-          website,
-          matchType: resolveUriMatchType(initialRecord, website)
-        }))
-      )
+      setValueRef.current('websites', websiteRowsFromRecord(initialRecord))
     })
     return () => {
       alive = false
@@ -254,7 +239,7 @@ export const CreateOrEditLoginModalContent = ({
     const websites = websiteRows.map((website) =>
       normalizeUrl(website.website as string)
     )
-    const uris = buildLoginUris(websiteRows)
+    const uris = buildLoginUris(websiteRows, initialRecord?.data?.uris)
 
     const data = {
       type: RECORD_TYPES.LOGIN,
