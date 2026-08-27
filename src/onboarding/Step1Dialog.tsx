@@ -55,16 +55,16 @@ export const Step1Dialog = ({ onNext }: Step1Props) => {
         </div>
         <div className="flex flex-col items-center gap-[var(--spacing16)] text-center">
           <Title as="h2">
-            <Trans>Pin Pearpass for quick access</Trans>
+            <Trans>Pin Lockwright for quick access</Trans>
           </Title>
           <div className="flex flex-col gap-[var(--spacing12)]">
             <Text as="p">
               <Trans>
-                Pinning Pearpass keeps it one click away whenever you need it.
+                Pinning Lockwright keeps it one click away whenever you need it.
               </Trans>
               <br />
               <Trans>
-                Keep Pearpass accessible in your toolbar for quick access to
+                Keep Lockwright accessible in your toolbar for quick access to
                 your items
               </Trans>
             </Text>
@@ -92,7 +92,7 @@ export const Step1Dialog = ({ onNext }: Step1Props) => {
                   height={ONBOARDING_ICON_SIZE}
                 />
                 <Text as="span">
-                  <Trans>next to a Pearpass</Trans>
+                  <Trans>next to Lockwright</Trans>
                 </Text>
               </div>
             </div>

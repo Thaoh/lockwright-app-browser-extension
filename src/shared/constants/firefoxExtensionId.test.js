@@ -45,6 +45,18 @@ describe('Firefox extension ID', () => {
     )
   })
 
+  it('onboarding copy says Lockwright, not Pearpass', () => {
+    const dir = path.resolve(__dirname, '../../onboarding')
+    const leftover = []
+    for (const name of ['index.tsx', 'Step1Dialog.tsx']) {
+      const src = readFileSync(path.join(dir, name), 'utf8')
+      if (/Pearpass|PearPass/.test(src.replace(/PearpassLogo/g, ''))) {
+        leftover.push(name)
+      }
+    }
+    expect(leftover).toEqual([])
+  })
+
   it('pins @tetherto/pearpass-lib-constants to Thaoh git, not Tether or file:', () => {
     const pkg = JSON.parse(
       readFileSync(path.resolve(__dirname, '../../../package.json'), 'utf8')

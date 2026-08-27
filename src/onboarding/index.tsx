@@ -86,7 +86,7 @@ const OnboardingPage = () => {
         <img
           src="/assets/images/logo.svg"
           className="shrink-0"
-          alt={t`Pearpass`}
+          alt={t`Lockwright`}
         />
 
         {initialStep !== null && <OnboardingSteps initialStep={initialStep} />}
