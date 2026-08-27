@@ -32,12 +32,18 @@ jest.mock('../shared/commandDefinitions', () => ({
     'encryptionGetStatus',
     'encryptionInit',
     'encryptionGet',
-    'fetchFavicon'
+    'fetchFavicon',
+    'activeVaultGetFile',
+    'activeVaultAddFile'
   ],
   getCommandParams: jest.fn((commandName, args) => {
     switch (commandName) {
       case 'vaultsInit':
         return { encryptionKey: args[0] }
+      case 'activeVaultGetFile':
+        return { key: args[0] }
+      case 'activeVaultAddFile':
+        return { key: args[0], data: args[1], name: args[2] }
       default:
         return {}
     }
@@ -220,6 +226,59 @@ describe('PearpassVaultClient', () => {
 
       await expect(client.vaultsGetStatus()).rejects.toThrow('boom')
       expect(logger.error).toHaveBeenCalled()
+    })
+  })
+
+  describe('vault file commands', () => {
+    it('activeVaultAddFile encodes raw bytes before NM', async () => {
+      const client = createMockClient()
+      client.connected = true
+      runtime.sendMessage.mockImplementation((message, callback) => {
+        if (message.command === 'checkAvailability') {
+          callback({
+            success: true,
+            result: { available: true, status: 'connected', message: 'ok' }
+          })
+          return
+        }
+        callback({ success: true, result: { success: true } })
+      })
+
+      await client.activeVaultAddFile(
+        'record-v2/r/file/f',
+        new Uint8Array([104, 105]),
+        'note.txt'
+      )
+
+      const sent = runtime.sendMessage.mock.calls.find(
+        ([message]) => message.command === 'activeVaultAddFile'
+      )
+      expect(sent[0].params).toEqual({
+        key: 'record-v2/r/file/f',
+        data: { encoding: 'base64', data: 'aGk=' },
+        name: 'note.txt'
+      })
+    })
+
+    it('activeVaultGetFile decodes the NM envelope to bytes', async () => {
+      const client = createMockClient()
+      client.connected = true
+      runtime.sendMessage.mockImplementation((message, callback) => {
+        if (message.command === 'checkAvailability') {
+          callback({
+            success: true,
+            result: { available: true, status: 'connected', message: 'ok' }
+          })
+          return
+        }
+        callback({
+          success: true,
+          result: { encoding: 'base64', data: 'aGk=' }
+        })
+      })
+
+      const got = await client.activeVaultGetFile('record-v2/r/file/f')
+      expect(Array.from(got)).toEqual([104, 105])
     })
   })
 })

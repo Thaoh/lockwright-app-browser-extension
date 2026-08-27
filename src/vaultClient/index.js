@@ -15,6 +15,7 @@ import {
 } from '../shared/constants/nativeMessaging'
 import { isExpectedQuietError } from '../shared/utils/isExpectedQuietError'
 import { logger } from '../shared/utils/logger'
+import { decodeNmFile, encodeNmFile } from '../shared/utils/nmFile'
 import { runtime } from '../shared/utils/runtime'
 
 /**
@@ -138,13 +139,26 @@ export class PearpassVaultClient extends EventEmitter {
     }
 
     try {
+      let requestParams = params
+      if (
+        command === 'activeVaultAddFile' &&
+        params?.data !== undefined &&
+        params.data !== null &&
+        params.data.encoding !== 'base64'
+      ) {
+        requestParams = { ...params, data: encodeNmFile(params.data) }
+      }
+
       const response = await this._sendMessage({
         type: NATIVE_MESSAGE_TYPES.REQUEST,
         command,
-        params
+        params: requestParams
       })
 
       if (response.success) {
+        if (command === 'activeVaultGetFile') {
+          return decodeNmFile(response.result)
+        }
         return response.result
       } else {
         // This shouldn't happen as _sendMessage handles it, but just in case

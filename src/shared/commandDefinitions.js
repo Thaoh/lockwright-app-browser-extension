@@ -40,6 +40,8 @@ export const COMMAND_DEFINITIONS = {
   activeVaultCreateInvite: { params: [] },
   activeVaultDeleteInvite: { params: [] },
   activeVaultRemoveFile: { params: ['key'] },
+  activeVaultGetFile: { params: ['key'] },
+  activeVaultAddFile: { params: ['key', 'data', 'name'] },
   activeVaultGetWriterKey: { params: [] },
 
   // Password and encryption key commands
