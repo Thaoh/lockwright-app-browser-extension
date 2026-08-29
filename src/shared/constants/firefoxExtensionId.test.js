@@ -66,6 +66,15 @@ describe('Firefox extension ID', () => {
     )
   })
 
+  it('pins @tetherto/pearpass-lib-ui-kit to Thaoh git, not Tether', () => {
+    const pkg = JSON.parse(
+      readFileSync(path.resolve(__dirname, '../../../package.json'), 'utf8')
+    )
+    expect(pkg.dependencies['@tetherto/pearpass-lib-ui-kit']).toBe(
+      'git+https://github.com/Thaoh/lockwright-lib-ui-react-native-components.git#design-system-v2'
+    )
+  })
+
   it('declares gecko min 140 and matching icon pixel sizes', () => {
     const manifestPath = path.resolve(
       __dirname,

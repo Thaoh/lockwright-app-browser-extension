@@ -11,6 +11,7 @@ publicHoistPattern:
 
 overrides:
   "@tetherto/pearpass-lib-constants": "git+https://github.com/Thaoh/lockwright-lib-constants.git"
+  "@tetherto/pearpass-lib-ui-kit": "git+https://github.com/Thaoh/lockwright-lib-ui-react-native-components.git#design-system-v2"
   react-native: 0.79.5
   react-native>@types/react: 18.3.0
   react-native-windows>react: 19.1.0
@@ -35,6 +36,7 @@ allowBuilds:
   "pearpass-utils-password-check@https://codeload.github.com/tetherto/pearpass-utils-password-check/tar.gz/a549e2b4c486e5f57eb28acd47652ea38154d9c8": true
   "pearpass-utils-password-generator@https://codeload.github.com/tetherto/pearpass-utils-password-generator/tar.gz/ce69cd540a232550de361752d04450f0e600ca8a": true
   "@tetherto/pearpass-lib-ui-react-native-components@https://codeload.github.com/tetherto/pearpass-lib-ui-react-native-components/tar.gz/3cae0a4b0f7961351b674be991371f0c643c00b0": true
+  "@tetherto/pearpass-lib-ui-react-native-components@https://codeload.github.com/Thaoh/lockwright-lib-ui-react-native-components/tar.gz/4b254fff341c791a27a45f3e1488a3860f2b1987": true
   "@tetherto/pearpass-lib-vault@file:../lockwright-lib-vault": true
   "@tetherto/tether-dev-docs@https://codeload.github.com/tetherto/tether-dev-docs/tar.gz/64c264c34e8255360ca6c805457119168c789583": true
 
