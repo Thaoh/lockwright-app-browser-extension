@@ -45,6 +45,16 @@ describe('Firefox extension ID', () => {
     )
   })
 
+  it('onboarding wordmark is the hatch plate, not PearPass lime', () => {
+    const src = readFileSync(
+      path.resolve(__dirname, '../../../public/assets/images/logo.svg'),
+      'utf8'
+    )
+    expect(src).toContain('#b08d57')
+    expect(src).toContain('Lockwright')
+    expect(src).not.toMatch(/#B0D944|#BADE5B|PearPass/i)
+  })
+
   it('onboarding copy says Lockwright, not Pearpass', () => {
     const dir = path.resolve(__dirname, '../../onboarding')
     const leftover = []

@@ -25,6 +25,8 @@ describe('LogoLock', () => {
     expect(svg).toBeInTheDocument()
     expect(svg.getAttribute('width')).toBe('32')
     expect(svg.getAttribute('height')).toBe('43')
+    expect(svg.innerHTML).toContain('#b08d57')
+    expect(svg.innerHTML).not.toMatch(/#B0D944|#BADE5B/i)
   })
 
   it('accepts custom width and height props', () => {

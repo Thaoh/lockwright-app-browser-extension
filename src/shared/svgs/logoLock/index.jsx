@@ -1,8 +1,6 @@
 import React from 'react'
 
 /**
- * Lock logo SVG used in branding or UI visuals.
- *
  * @param {{
  *  width?: string,
  *  height?: string
@@ -13,69 +11,32 @@ export const LogoLock = ({ width = '32', height = '43' }) => (
     xmlns="http://www.w3.org/2000/svg"
     width={width}
     height={height}
-    viewBox="0 0 32 43"
+    viewBox="0 0 64 64"
     fill="none"
+    role="img"
+    aria-label="Lockwright"
   >
-    <path d="M31.3531 39.3716H12.626V41.1685H31.3531V39.3716Z" fill="#BADE5B" />
-    <path d="M31.353 40.0859H0.665039V42.25H31.353V40.0859Z" fill="#BADE5B" />
-    <path d="M31.3531 36.1118H12.626V37.9088H31.3531V36.1118Z" fill="#BADE5B" />
-    <path d="M31.353 36.8247H0.665039V38.9888H31.353V36.8247Z" fill="#BADE5B" />
-    <path d="M31.3531 32.8511H12.626V34.648H31.3531V32.8511Z" fill="#BADE5B" />
-    <path d="M31.353 33.5645H0.665039V35.7286H31.353V33.5645Z" fill="#BADE5B" />
-    <path d="M31.3531 29.5913H12.626V31.3883H31.3531V29.5913Z" fill="#BADE5B" />
-    <path d="M31.353 30.3047H0.665039V32.4688H31.353V30.3047Z" fill="#BADE5B" />
-    <path d="M31.3531 26.3306H12.626V28.1275H31.3531V26.3306Z" fill="#BADE5B" />
-    <path d="M31.353 27.0469H0.665039V29.211H31.353V27.0469Z" fill="#BADE5B" />
-    <path d="M31.3531 23.0698H12.626V24.8668H31.3531V23.0698Z" fill="#BADE5B" />
-    <path d="M31.353 23.7856H0.665039V25.9498H31.353V23.7856Z" fill="#BADE5B" />
-    <path d="M31.3531 19.8096H12.626V21.6065H31.3531V19.8096Z" fill="#BADE5B" />
-    <path d="M31.353 20.5264H0.665039V22.6905H31.353V20.5264Z" fill="#BADE5B" />
-    <path d="M9.4536 17.2651H2.69238V19.4292H9.4536V17.2651Z" fill="#BADE5B" />
-    <path
-      d="M28.9165 16.5522H24.6865V18.3492H28.9165V16.5522Z"
-      fill="#BADE5B"
+    <rect
+      x="4"
+      y="4"
+      width="56"
+      height="56"
+      rx="2"
+      fill="#14161b"
+      stroke="#b08d57"
+      strokeWidth="1.5"
     />
-    <path d="M9.45067 16.5522H5.2207V18.3492H9.45067V16.5522Z" fill="#BADE5B" />
-    <path
-      d="M28.9175 17.2651H22.1562V19.4292H28.9175V17.2651Z"
-      fill="#BADE5B"
+    <rect
+      x="14"
+      y="14"
+      width="36"
+      height="36"
+      rx="2"
+      fill="#08090b"
+      stroke="#2a2e36"
+      strokeWidth="1"
     />
-    <path d="M9.4536 14.0049H2.69238V16.169H9.4536V14.0049Z" fill="#BADE5B" />
-    <path
-      d="M28.9165 13.2915H24.6865V15.0885H28.9165V13.2915Z"
-      fill="#BADE5B"
-    />
-    <path d="M9.45067 13.2915H5.2207V15.0885H9.45067V13.2915Z" fill="#BADE5B" />
-    <path d="M28.9175 14.0049H22.1562V16.169H28.9175V14.0049Z" fill="#BADE5B" />
-    <path d="M9.4536 10.7446H2.69238V12.9087H9.4536V10.7446Z" fill="#BADE5B" />
-    <path
-      d="M28.9165 10.0312H24.6865V11.8282H28.9165V10.0312Z"
-      fill="#BADE5B"
-    />
-    <path d="M9.45067 10.0312H5.2207V11.8282H9.45067V10.0312Z" fill="#BADE5B" />
-    <path
-      d="M28.9175 10.7446H22.1562V12.9087H28.9175V10.7446Z"
-      fill="#BADE5B"
-    />
-    <path d="M10.7847 7.4873H4.02344V9.65141H10.7847V7.4873Z" fill="#BADE5B" />
-    <path
-      d="M27.7202 6.77051H23.4902V8.56747H27.7202V6.77051Z"
-      fill="#BADE5B"
-    />
-    <path
-      d="M10.7817 6.77051H6.55176V8.56747H10.7817V6.77051Z"
-      fill="#BADE5B"
-    />
-    <path d="M27.7202 7.4873H20.959V9.65141H27.7202V7.4873Z" fill="#BADE5B" />
-    <path d="M25.2047 3.51074H12.4502V5.3077H25.2047V3.51074Z" fill="#BADE5B" />
-    <path
-      d="M25.2065 4.22607H6.55176V6.39018H25.2065V4.22607Z"
-      fill="#BADE5B"
-    />
-    <path d="M22.4995 0.25H13.1553V2.04696H22.4995V0.25Z" fill="#BADE5B" />
-    <path
-      d="M22.5002 0.966309H8.7373V3.13042H22.5002V0.966309Z"
-      fill="#BADE5B"
-    />
+    <rect x="25" y="20" width="14" height="14" rx="2" fill="#d4af77" />
+    <rect x="29" y="32" width="6" height="14" rx="1" fill="#d4af77" />
   </svg>
 )

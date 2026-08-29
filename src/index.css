@@ -62,21 +62,21 @@ body {
   height: 16px;
   width: 16px;
   border-radius: 50%;
-  background-color: #BADE5B;
+  background-color: #b08d57;
   /* Replace with actual color (e.g., colors.primary400.mode1) */
   border: none;
   cursor: pointer;
 
   &:hover {
-    box-shadow: 0 0 0 4px #BADE5B66
+    box-shadow: 0 0 0 4px #b08d5766
   }
 
   &:active::-webkit-slider-thumb {
-    box-shadow: 0 0 0 4px #BADE5B66;
+    box-shadow: 0 0 0 4px #b08d5766;
   }
 
   &:focus::-webkit-slider-thumb {
-    box-shadow: 0 0 0 4px #BADE5B66;
+    box-shadow: 0 0 0 4px #b08d5766;
   }
 }
 

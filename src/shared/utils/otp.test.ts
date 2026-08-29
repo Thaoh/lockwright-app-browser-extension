@@ -6,6 +6,6 @@ describe('getTimerColor', () => {
   })
 
   it('should return primary when expiring is false', () => {
-    expect(getTimerColor(false)).toBe('#B0D944')
+    expect(getTimerColor(false)).toBe('#b08d57')
   })
 })

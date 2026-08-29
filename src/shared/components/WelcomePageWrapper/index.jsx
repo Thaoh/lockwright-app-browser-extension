@@ -7,7 +7,11 @@ import React from 'react'
  */
 export const WelcomePageWrapper = ({ children }) => (
   <div className="bg-grey500-mode1 relative flex h-full w-full flex-col items-center gap-5 overflow-hidden p-9 pt-[52px]">
-    <img src="/assets/images/logoLock.png" className="h-[50px] w-[190px]" />
+    <img
+      src="/assets/images/logo.svg"
+      className="h-[50px] w-[190px]"
+      alt="Lockwright"
+    />
     <div className="z-10 flex min-h-0 w-full flex-1 flex-col gap-[20px]">
       {children}
     </div>

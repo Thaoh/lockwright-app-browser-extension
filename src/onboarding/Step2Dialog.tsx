@@ -15,10 +15,10 @@ import { secureChannelMessages } from '../shared/services/messageBridge'
 import { pendingPairingStore } from '../shared/services/pendingPairingStore'
 import {
   ContentPaste,
-  PearpassLogo,
   Settings,
   SwapVert
 } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { LockwrightMark } from '../shared/components/LockwrightMark'
 
 interface Step2Props {
   onNext: () => void
@@ -135,7 +135,7 @@ export const Step2Dialog = ({ onNext }: Step2Props) => {
                   <Text as="span" noWrap>
                     <Trans>1. Open the</Trans>
                   </Text>
-                  <PearpassLogo
+                  <LockwrightMark
                     color={accentColor}
                     width={ONBOARDING_ICON_SIZE}
                     height={ONBOARDING_ICON_SIZE}

@@ -1,2 +1,2 @@
 export const getTimerColor = (expiring: boolean): string =>
-  expiring ? '#D13B3D' : '#B0D944'
+  expiring ? '#D13B3D' : '#b08d57'

@@ -1,5 +1,6 @@
 import { Button, Text, useTheme } from '@tetherto/pearpass-lib-ui-kit'
-import { Close, PearpassLogo } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { Close } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { LockwrightMark } from '../../../shared/components/LockwrightMark'
 
 type PasskeyPopupHeaderProps = {
   title: string
@@ -13,7 +14,7 @@ export const PasskeyPopupHeader = ({
   const { theme } = useTheme()
   return (
     <div className="flex items-center justify-between px-[var(--spacing12)] py-[var(--spacing10)]">
-      <PearpassLogo
+      <LockwrightMark
         width={20}
         height={20}
         color={theme.colors.colorAccentActive}
