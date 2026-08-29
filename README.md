@@ -17,6 +17,7 @@ Community fork of PearPass (Apache 2.0). Not affiliated with or endorsed by Teth
 - [Introduction](#introduction)
 - [Features](#features)
 - [Installation](#installation)
+- [Source review (AMO)](#source-review-amo)
 - [Native messaging (desktop bridge) — Firefox / Zen / Flatpak](#native-messaging-desktop-bridge--firefox--zen--flatpak)
 - [Usage Examples](#usage-examples)
 - [Testing](#testing)
@@ -51,28 +52,40 @@ Lockwright is also available on [desktop](https://github.com/Thaoh/lockwright-ap
 
 ## Installation
 
+### Build environment
+
+- **OS:** Linux, macOS, or Windows
+- **Node.js** 22.12.0 (see `.nvmrc`). [Install Node](https://nodejs.org/) or use nvm / fnm
+- **pnpm** 11.10.0 via Corepack (ships with Node). Do not use npm or yarn
+- **git** on `PATH` (`pnpm install` fetches git-hosted packages)
+
+This repo is self-contained. Lockwright libs are pinned to GitHub SHAs. You do not need sibling clones.
+
 ### Steps
 
-```bash
-# 1. Clone the repository
-git clone git@github.com:Thaoh/lockwright-app-browser-extension.git
+A git clone or a GitHub source zip of this repo is enough.
 
-# 2. Go to the cloned directory
+```bash
+# 1. Enter the source tree (clone, or unzip the GitHub archive)
 cd lockwright-app-browser-extension
 
-# 3. Enable pnpm (Corepack ships with Node)
+# 2. Enable pnpm (Corepack ships with Node)
 corepack enable
 corepack prepare pnpm@11.10.0 --activate
 
-# 4. Install dependencies (npm/yarn are blocked; lifecycle scripts are allowlisted)
+# 3. Install dependencies (npm/yarn are blocked; lifecycle scripts are allowlisted)
 NPM_CONFIG_LEGACY_PEER_DEPS=true pnpm install
 
-# 5. Build the extension (Chrome: dist/ + dist-chrome.zip)
+# 4. Build the extension (Chrome: dist/ + dist-chrome.zip)
 pnpm run build:chrome
 
 # Or build a Firefox package (dist-firefox/ + dist-firefox.zip)
 pnpm run build:firefox
 ```
+
+### Source review (AMO)
+
+`pnpm run build:firefox` is the build script. It runs Lingui extract/compile, the four Vite builds, then `scripts/package-firefox.mjs`. Compare `dist-firefox.zip` to the uploaded add-on. They should match.
 
 `pnpm run build` creates a `dist/` directory for Chromium browsers. `pnpm run build:chrome` runs that, then writes `dist-chrome.zip` (manifest at the zip root) for Chrome Web Store upload.
 

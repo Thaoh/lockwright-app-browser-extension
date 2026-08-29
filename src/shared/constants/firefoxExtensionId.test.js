@@ -67,22 +67,27 @@ describe('Firefox extension ID', () => {
     expect(leftover).toEqual([])
   })
 
-  it('pins @tetherto/pearpass-lib-constants to Thaoh git, not Tether or file:', () => {
+  it('pins Lockwright libs to Thaoh git SHAs so a source zip installs without siblings', () => {
     const pkg = JSON.parse(
       readFileSync(path.resolve(__dirname, '../../../package.json'), 'utf8')
     )
-    expect(pkg.dependencies['@tetherto/pearpass-lib-constants']).toBe(
-      'git+https://github.com/Thaoh/lockwright-lib-constants.git'
-    )
-  })
+    const pins = {
+      '@tetherto/pearpass-lib-constants': 'lockwright-lib-constants',
+      '@tetherto/pearpass-lib-ui-kit':
+        'lockwright-lib-ui-react-native-components',
+      '@tetherto/pearpass-lib-vault': 'lockwright-lib-vault'
+    }
 
-  it('pins @tetherto/pearpass-lib-ui-kit to Thaoh git, not Tether', () => {
-    const pkg = JSON.parse(
-      readFileSync(path.resolve(__dirname, '../../../package.json'), 'utf8')
-    )
-    expect(pkg.dependencies['@tetherto/pearpass-lib-ui-kit']).toBe(
-      'git+https://github.com/Thaoh/lockwright-lib-ui-react-native-components.git#design-system-v2'
-    )
+    for (const [name, repo] of Object.entries(pins)) {
+      const spec = pkg.dependencies[name]
+      expect(spec).toMatch(
+        new RegExp(
+          `^git\\+https://github\\.com/Thaoh/${repo}\\.git#[0-9a-f]{40}$`
+        )
+      )
+      expect(spec).not.toMatch(/file:/)
+      expect(spec).not.toMatch(/tetherto\//)
+    }
   })
 
   it('declares gecko min 140 and matching icon pixel sizes', () => {
