@@ -29,6 +29,10 @@ import {
   clearHistory,
   loadHistory
 } from '../../utils/passwordGeneratorHistory'
+import {
+  loadLastCharacterCount,
+  saveLastCharacterCount
+} from '../../utils/passwordGeneratorPrefs'
 
 const MODE_MEMORABLE = 'memorable'
 const MODE_RANDOM = 'random'
@@ -138,7 +142,7 @@ export const PasswordGenerator = ({
     numbers: true
   })
   const [random, setRandom] = useState<RandomRules>({
-    characters: 20,
+    characters: loadLastCharacterCount(),
     capitalLetters: true,
     lowercaseLetters: true,
     numbers: true,
@@ -254,6 +258,9 @@ export const PasswordGenerator = ({
 
       return { ...prev, [key]: value }
     })
+    if (key === 'characters' && typeof value === 'number') {
+      saveLastCharacterCount(value)
+    }
   }
 
   const lengthMin = mode === MODE_MEMORABLE ? MEMORABLE_MIN : RANDOM_MIN
