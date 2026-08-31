@@ -80,12 +80,12 @@ const OnboardingPage = () => {
         }}
       />
       <div
-        className="relative flex h-full w-full flex-col items-center gap-18 overflow-y-auto p-[var(--spacing40)]"
+        className="relative flex h-full w-full flex-col items-center gap-[var(--spacing24)] overflow-y-auto p-[var(--spacing40)]"
         style={{ scrollbarWidth: 'auto', msOverflowStyle: 'auto' }}
       >
         <img
           src="/assets/images/logo.svg"
-          className="shrink-0"
+          className="h-[50px] w-[172px] shrink-0"
           alt={t`Lockwright`}
         />
 

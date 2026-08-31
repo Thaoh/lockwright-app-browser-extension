@@ -52,6 +52,17 @@ describe('Firefox extension ID', () => {
     )
   })
 
+  it('onboarding header logo is capped so the pair-code step stays on screen', () => {
+    const src = readFileSync(
+      path.resolve(__dirname, '../../onboarding/index.tsx'),
+      'utf8'
+    )
+    expect(src).toContain('logo.svg')
+    expect(src).toMatch(/h-\[50px\]/)
+    expect(src).toMatch(/w-\[172px\]/)
+    expect(src).not.toMatch(/gap-18/)
+  })
+
   it('onboarding wordmark is the hatch plate, not PearPass lime', () => {
     const src = readFileSync(
       path.resolve(__dirname, '../../../public/assets/images/logo.svg'),
