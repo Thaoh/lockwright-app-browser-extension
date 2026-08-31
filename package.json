@@ -1,5 +1,5 @@
 {
-  "name": "pearpass-app-browser-extension",
+  "name": "lockwright-app-browser-extension",
   "private": true,
   "version": "0.0.15",
   "type": "module",

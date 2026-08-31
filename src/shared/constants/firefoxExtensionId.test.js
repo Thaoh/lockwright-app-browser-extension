@@ -25,6 +25,13 @@ describe('Firefox extension ID', () => {
     expect(FIREFOX_EXTENSION_ID).toBe('lockwright@dexterity.works')
   })
 
+  it('uses package name lockwright-app-browser-extension, not pearpass-app-browser-extension', () => {
+    const pkg = JSON.parse(
+      readFileSync(path.resolve(__dirname, '../../../package.json'), 'utf8')
+    )
+    expect(pkg.name).toBe('lockwright-app-browser-extension')
+  })
+
   it('ships Lockwright name and description, not PearPass', () => {
     const manifestPath = path.resolve(
       __dirname,
