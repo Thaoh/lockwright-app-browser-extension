@@ -27,7 +27,8 @@ allowBuilds:
   "pear-apps-utils-generate-unique-id@https://codeload.github.com/tetherto/pear-apps-utils-generate-unique-id/tar.gz/a2a927374b353f26c05beda7f1052e4e1322027f": true
   "pear-apps-utils-pattern-search@https://codeload.github.com/tetherto/pear-apps-utils-pattern-search/tar.gz/0e593f8fcee9680342e7b4fa4be6a861a5c48f45": true
   "pear-apps-utils-qr@https://codeload.github.com/tetherto/pear-apps-utils-qr/tar.gz/0c3f32b3b3e9732aff190c5c7b60ed0f5beb02a7": true
-  "pear-apps-utils-validator@https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/f92fbfb6ba61b3f4b17043276c826900064aba0e": true
+  "pear-apps-utils-validator@https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff": true
+  "@tetherto/pear-apps-utils-validator@https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff": true
   "@tetherto/pearpass-lib-constants": true
   "@tetherto/pearpass-lib-constants@https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/e8ea95e7456ea9ffc7057bbb97093d6a9563d859": true
   "@tetherto/pearpass-lib-constants@https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/12c63099acf78947e0ce01af279211a2b2eea372": true
@@ -42,4 +43,4 @@ allowBuilds:
   "@tetherto/tether-dev-docs@https://codeload.github.com/tetherto/tether-dev-docs/tar.gz/64c264c34e8255360ca6c805457119168c789583": true
 
 patchedDependencies:
-  pear-apps-utils-validator@0.0.10: patches/pear-apps-utils-validator@0.0.10.patch
+  "@tetherto/pear-apps-utils-validator@0.0.10": patches/pear-apps-utils-validator@0.0.10.patch

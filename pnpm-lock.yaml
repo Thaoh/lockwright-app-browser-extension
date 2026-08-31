@@ -211,7 +211,7 @@ overrides:
   react-native-windows>react: 19.1.0
 
 patchedDependencies:
-  pear-apps-utils-validator@0.0.10: 2101adc8996f6508d8daa3999a1509102041de68e63a74a37dc851ed1f3ccbe6
+  '@tetherto/pear-apps-utils-validator@0.0.10': 2101adc8996f6508d8daa3999a1509102041de68e63a74a37dc851ed1f3ccbe6
 
 importers:
 
@@ -263,8 +263,8 @@ importers:
         specifier: git+https://github.com/tetherto/pear-apps-utils-qr.git#0c3f32b3b3e9732aff190c5c7b60ed0f5beb02a7
         version: pear-apps-utils-qr@https://codeload.github.com/tetherto/pear-apps-utils-qr/tar.gz/0c3f32b3b3e9732aff190c5c7b60ed0f5beb02a7
       '@tetherto/pear-apps-utils-validator':
-        specifier: git+https://github.com/tetherto/pear-apps-utils-validator.git#f92fbfb6ba61b3f4b17043276c826900064aba0e
-        version: pear-apps-utils-validator@https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/f92fbfb6ba61b3f4b17043276c826900064aba0e(patch_hash=2101adc8996f6508d8daa3999a1509102041de68e63a74a37dc851ed1f3ccbe6)
+        specifier: git+https://github.com/tetherto/pear-apps-utils-validator.git#bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff
+        version: https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff(patch_hash=2101adc8996f6508d8daa3999a1509102041de68e63a74a37dc851ed1f3ccbe6)
       '@tetherto/pearpass-lib-constants':
         specifier: git+https://github.com/Thaoh/lockwright-lib-constants.git#e0c0c4226f6c4520a2760e1ca6f2e4ee40d16073
         version: https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/e0c0c4226f6c4520a2760e1ca6f2e4ee40d16073
@@ -2269,6 +2269,10 @@ packages:
         optional: true
       '@types/react-dom':
         optional: true
+
+  '@tetherto/pear-apps-utils-validator@https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff':
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff}
+    version: 0.0.10
 
   '@tetherto/pearpass-lib-constants@https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/e0c0c4226f6c4520a2760e1ca6f2e4ee40d16073':
     resolution: {gitHosted: true, integrity: sha512-KXK/P/uulU/pfwTnfhXIBWOUkafs2539dC9SdSRWThnH/EVeGTW4QHXNY63sE3YJWCfa8wj01FrrE+z366nqXA==, tarball: https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/e0c0c4226f6c4520a2760e1ca6f2e4ee40d16073}
@@ -4632,10 +4636,6 @@ packages:
   pear-apps-utils-qr@https://codeload.github.com/tetherto/pear-apps-utils-qr/tar.gz/0c3f32b3b3e9732aff190c5c7b60ed0f5beb02a7:
     resolution: {gitHosted: true, integrity: sha512-zSOIWxy7uCnmeuo8czWv1sByYIJ9GFQX3oQrdsPLBxTkyPzHFiZfl8hGuG3BCCc2IyfmcjJDRRYv6QiPUWEO9A==, tarball: https://codeload.github.com/tetherto/pear-apps-utils-qr/tar.gz/0c3f32b3b3e9732aff190c5c7b60ed0f5beb02a7}
     version: 0.0.5
-
-  pear-apps-utils-validator@https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/f92fbfb6ba61b3f4b17043276c826900064aba0e:
-    resolution: {gitHosted: true, integrity: sha512-bOgF8hQIb7AtVd96HP0qZ+Qfly2oX5l6tFi+4jtJVtPj1ZTshO/l6/UPlImY7w0TVvG78KGK6wjhPXTQ5FJAYg==, tarball: https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/f92fbfb6ba61b3f4b17043276c826900064aba0e}
-    version: 0.0.10
 
   pear-interface@1.0.0:
     resolution: {integrity: sha512-eM2yObk+vU8Cemg3L1zTktskrkW7zHIqMUkztKWK6lGD+FwUIYUEMXFPWXS6tGDjAxL8ir+c5qFRN1BpRCCixQ==}
@@ -7661,6 +7661,8 @@ snapshots:
       '@types/react': 19.0.0
       '@types/react-dom': 19.0.0
 
+  '@tetherto/pear-apps-utils-validator@https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff(patch_hash=2101adc8996f6508d8daa3999a1509102041de68e63a74a37dc851ed1f3ccbe6)': {}
+
   '@tetherto/pearpass-lib-constants@https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/e0c0c4226f6c4520a2760e1ca6f2e4ee40d16073': {}
 
   '@tetherto/pearpass-lib-ui-react-native-components@https://codeload.github.com/Thaoh/lockwright-lib-ui-react-native-components/tar.gz/4b254fff341c791a27a45f3e1488a3860f2b1987(postcss@8.5.8)(react-dom@19.1.0(react@19.1.0))(react-native@0.79.5(@babel/core@7.26.10)(@types/react@19.0.0)(react@19.1.0))(react@19.1.0)':
@@ -10655,8 +10657,6 @@ snapshots:
   pear-apps-utils-qr@https://codeload.github.com/tetherto/pear-apps-utils-qr/tar.gz/0c3f32b3b3e9732aff190c5c7b60ed0f5beb02a7:
     dependencies:
       qrcode: 1.5.4
-
-  pear-apps-utils-validator@https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/f92fbfb6ba61b3f4b17043276c826900064aba0e(patch_hash=2101adc8996f6508d8daa3999a1509102041de68e63a74a37dc851ed1f3ccbe6): {}
 
   pear-interface@1.0.0:
     dependencies:
