@@ -62,7 +62,7 @@
     "@tetherto/pear-apps-utils-pattern-search": "git+https://github.com/tetherto/pear-apps-utils-pattern-search.git#0e593f8fcee9680342e7b4fa4be6a861a5c48f45",
     "@tetherto/pear-apps-utils-qr": "git+https://github.com/tetherto/pear-apps-utils-qr.git#0c3f32b3b3e9732aff190c5c7b60ed0f5beb02a7",
     "@tetherto/pear-apps-utils-validator": "git+https://github.com/tetherto/pear-apps-utils-validator.git#bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff",
-    "@tetherto/pearpass-lib-constants": "git+https://github.com/Thaoh/lockwright-lib-constants.git#e0c0c4226f6c4520a2760e1ca6f2e4ee40d16073",
+    "@tetherto/pearpass-lib-constants": "git+https://github.com/Thaoh/lockwright-lib-constants.git#52680e3ab3f9ec5604ce2e12e951275101799de5",
     "@tetherto/pearpass-lib-ui-kit": "git+https://github.com/Thaoh/lockwright-lib-ui-react-native-components.git#4b254fff341c791a27a45f3e1488a3860f2b1987",
     "@tetherto/pearpass-lib-vault": "git+https://github.com/Thaoh/lockwright-lib-vault.git#ef0583b144ccc172ae6ccaf61b25b871f4039741",
     "@tetherto/pearpass-utils-password-check": "git+https://github.com/tetherto/pearpass-utils-password-check.git#a549e2b4c486e5f57eb28acd47652ea38154d9c8",
