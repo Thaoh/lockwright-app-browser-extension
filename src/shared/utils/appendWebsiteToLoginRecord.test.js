@@ -100,4 +100,27 @@ describe('appendWebsiteToLoginRecord', () => {
       ])
     )
   })
+
+  it('stores the new site with host match when asked', () => {
+    const record = {
+      id: '1',
+      type: 'login',
+      data: { websites: [], uris: [] }
+    }
+
+    const updated = appendWebsiteToLoginRecord(
+      record,
+      'https://app.example.com/login',
+      { matchType: 'host' }
+    )
+
+    expect(updated).not.toBeNull()
+    expect(updated.data.uris).toEqual([
+      expect.objectContaining({
+        uri: 'https://app.example.com/login',
+        match: 'host'
+      })
+    ])
+    expect(getDefaultUriMatchTypeSync).not.toHaveBeenCalled()
+  })
 })
