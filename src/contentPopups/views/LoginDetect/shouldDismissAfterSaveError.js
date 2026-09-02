@@ -24,6 +24,8 @@ export const shouldDismissAfterSaveError = (error) => {
   return (
     message.includes("reading 'push'") ||
     message.includes('reading "push"') ||
+    message.includes("reading 'records'") ||
+    message.includes('reading "records"') ||
     message.includes('immer')
   )
 }

@@ -7,6 +7,11 @@ describe('shouldDismissAfterSaveError', () => {
         new TypeError("Cannot read properties of undefined (reading 'push')")
       )
     ).toBe(true)
+    expect(
+      shouldDismissAfterSaveError(
+        new TypeError("Cannot read properties of null (reading 'records')")
+      )
+    ).toBe(true)
   })
 
   it('is false for timeout, missing vault, or a real create failure', () => {

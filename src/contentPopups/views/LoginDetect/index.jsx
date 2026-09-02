@@ -19,6 +19,7 @@ import {
 import { buildLoginDetectCreatePayload } from './buildLoginDetectCreatePayload'
 import { isLoginDetectReady } from './isLoginDetectReady'
 import { shouldDismissAfterSaveError } from './shouldDismissAfterSaveError'
+import { visibleSaveError } from './visibleSaveError'
 import { FormGroup } from '../../../shared/components/FormGroup'
 import { InputField } from '../../../shared/components/InputField'
 import { InputFieldPassword } from '../../../shared/components/InputFieldPassword'
@@ -175,7 +176,9 @@ export const LoginDetect = () => {
         dismiss()
         return
       }
-      setSubmitError(t`Something went wrong, please try again`)
+      setSubmitError(
+        visibleSaveError(t`Something went wrong, please try again`)
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -270,7 +273,6 @@ export const LoginDetect = () => {
           size="small"
           type="button"
           onClick={dismiss}
-          disabled={isBusy}
           data-testid="login-detect-not-now"
         >
           {t`Not now`}
