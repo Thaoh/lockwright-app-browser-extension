@@ -1,0 +1,53 @@
+# Changelog
+
+All notable changes to the Lockwright browser extension are documented here.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Headings are App versions (`package.json` / `public/manifest.json`), not superproject Release tags.
+
+Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
+
+## [Unreleased]
+
+## [0.0.19] - 2026-09-04
+
+`85ff729a2f1079b7f95a1aa8b9e1c7af477d08a9`
+
+### Added
+
+- Settings toggle **Debug logging**. Off by default. When on, expected events print in the extension console.
+
+### Fixed
+
+- Wrong password, lockout `getMasterPasswordStatus` probes, and favicon misses no longer `console.error`.
+- Auto-lock timeout labels compile as Lingui messages (`30 seconds`, `1 Minute`, and the rest).
+
+## [0.0.18] - 2026-09-04
+
+`644506a6e6ef468f34fb4a859d213ca8d8a5627c`
+
+### Added
+
+- Pairing handshake sends the browser name so desktop can list which client is which.
+
+### Fixed
+
+- Wrong pairing password stays retryable. Token is kept. Prompt stays up.
+
+## [0.0.17] - 2026-09-02
+
+`b1016b80772725d39d624aaad1cc70001d9b97a6`
+
+### Added
+
+- Autofill items on the login-detect right-click menu.
+
+### Fixed
+
+- Login-detect popup closes after a successful save.
+- Onboarding wordmark capped so the pair step still fits.
+
+[unreleased]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/85ff729a2f1079b7f95a1aa8b9e1c7af477d08a9...HEAD
+[0.0.19]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/644506a6e6ef468f34fb4a859d213ca8d8a5627c...85ff729a2f1079b7f95a1aa8b9e1c7af477d08a9
+[0.0.18]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/b1016b80772725d39d624aaad1cc70001d9b97a6...644506a6e6ef468f34fb4a859d213ca8d8a5627c
+[0.0.17]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/c9bb84cc16c3d05db86da28f4b76f214533350ba...b1016b80772725d39d624aaad1cc70001d9b97a6

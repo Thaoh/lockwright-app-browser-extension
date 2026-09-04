@@ -4,11 +4,11 @@
 
 # Lockwright Browser Extension
 
-> The browser extension for Lockwright, an open-source, end-to-end encrypted password and identity manager built on Pear Runtime.
+> Browser extension for Lockwright. Autofill, passkeys, and a bridge to the desktop vault.
 
 Site: [lockwright.dexterity.works](https://lockwright.dexterity.works)
 
-Community fork of PearPass (Apache 2.0). Not affiliated with or endorsed by Tether Data or the Pears project. This GitHub repo stays a fork of `tetherto/pearpass-app-browser-extension` on purpose. Do not open pull requests against Tether.
+Community fork of PearPass (Apache 2.0). Not affiliated with or endorsed by Tether Data or the Pears project.
 
 ---
 
@@ -17,6 +17,7 @@ Community fork of PearPass (Apache 2.0). Not affiliated with or endorsed by Teth
 - [Introduction](#introduction)
 - [Features](#features)
 - [Installation](#installation)
+- [Changelog](CHANGELOG.md)
 - [Source review (AMO)](#source-review-amo)
 - [Native messaging (desktop bridge) — Firefox / Zen / Flatpak](#native-messaging-desktop-bridge--firefox--zen--flatpak)
 - [Usage Examples](#usage-examples)
@@ -186,7 +187,7 @@ pnpm test
 
 ## Contributing
 
-Open issues and pull requests on this repo (`Thaoh/lockwright-app-browser-extension`). Do not open PRs against `tetherto/pearpass-app-browser-extension`. See [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+Issues and pull requests are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ---
 
