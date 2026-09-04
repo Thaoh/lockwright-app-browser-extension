@@ -99,15 +99,6 @@ export const PairingRequiredModalContent = ({
     return () => clearTimeout(timer)
   }, [error])
 
-  useEffect(() => {
-    if (!passwordError) return
-    const timer = setTimeout(async () => {
-      await openOnboardingPage()
-      window.close()
-    }, 2000)
-    return () => clearTimeout(timer)
-  }, [passwordError])
-
   if (missingToken) {
     return (
       <div

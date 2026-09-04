@@ -21,8 +21,7 @@ const PAIRING_ERROR_MESSAGES = {
   FAILED_TO_GET_IDENTITY:
     'Failed to get identity. Please ensure the desktop app is running.',
   PAIRING_FAILED: 'Pairing failed',
-  INVALID_PASSWORD:
-    'Invalid master password. Pairing was reset, returning to onboarding...'
+  INVALID_PASSWORD: 'Invalid master password. Please try again.'
 }
 
 /**
@@ -181,7 +180,10 @@ export const useDesktopPairing = ({
       await secureChannelMessages.unlockClientKeystore(password)
       return true
     } catch (e) {
-      if (e?.message?.includes(AUTH_ERROR_PATTERNS.MASTER_PASSWORD_REQUIRED)) {
+      if (
+        e?.message?.includes(AUTH_ERROR_PATTERNS.MASTER_PASSWORD_REQUIRED) ||
+        e?.message?.includes(AUTH_ERROR_PATTERNS.MASTER_PASSWORD_INVALID)
+      ) {
         setToast({ message: t`Incorrect password. Please try again.` })
         logger.error('Error unlocking keystore:', e)
         return false
@@ -193,15 +195,13 @@ export const useDesktopPairing = ({
   }
 
   /**
-   * Finalizes the pairing process by confirming and pinning the identity
+   * Confirms pairing after the vault has accepted the master password.
    * @async
    * @param {Object} validatedIdentity - The validated desktop identity
-   * @param {string} password - Master password for vault initialization
    * @returns {Promise<void>}
    * @throws {Error} If pairing confirmation or identity pinning fails
    */
-  const finalizePairing = async (validatedIdentity, password) => {
-    // Confirm pairing with latest identity from desktop
+  const finalizePairing = async (validatedIdentity) => {
     const { confirmed: pairingConfirmed } =
       await secureChannelMessages.confirmPair()
     const { success: identityPinned } =
@@ -214,20 +214,7 @@ export const useDesktopPairing = ({
       throw new Error(PAIRING_ERROR_MESSAGES.PAIRING_FAILED)
     }
 
-    // Validate password via vault, then commit the keystore. Roll back on
-    // failure so a wrong password never persists pairing state or keystore.
-    // Also drop the pending token: it has been consumed by confirmPair and
-    // the user must start again from the onboarding token-entry step.
-    try {
-      await logIn({ password })
-      await initVaults({ password })
-      await secureChannelMessages.commitClientKeystore()
-    } catch (err) {
-      await secureChannelMessages.unpair()
-      await pendingPairingStore.clear()
-      throw err
-    }
-
+    await secureChannelMessages.commitClientKeystore()
     await pendingPairingStore.clear()
     setToast({ message: t`Paired successfully!` })
     onPairSuccess()
@@ -255,17 +242,26 @@ export const useDesktopPairing = ({
       const validatedIdentity = await revalidateIdentity()
       if (!validatedIdentity) return
 
+      try {
+        await logIn({ password })
+        await initVaults({ password })
+      } catch (err) {
+        logger.error('Invalid master password during pairing:', err)
+        setPasswordError(t(PAIRING_ERROR_MESSAGES.INVALID_PASSWORD))
+        return
+      }
+
       const unlocked = await unlockKeystore(password)
       if (!unlocked) return
 
-      await finalizePairing(validatedIdentity, password)
+      await finalizePairing(validatedIdentity)
     } catch (error) {
       logger.error('Failed to complete pairing:', error)
       const isPairingFailed =
         error.message === PAIRING_ERROR_MESSAGES.PAIRING_FAILED
       const message = isPairingFailed
         ? t`Pairing failed`
-        : t`Invalid master password. Pairing was reset, returning to onboarding...`
+        : t(PAIRING_ERROR_MESSAGES.INVALID_PASSWORD)
       if (isPairingFailed) {
         setToast({ message })
       } else {

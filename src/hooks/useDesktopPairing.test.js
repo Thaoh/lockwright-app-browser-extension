@@ -189,7 +189,7 @@ describe('usePairing', () => {
       expect(mockOnPairSuccess).toHaveBeenCalled()
     })
 
-    it('should roll back pairing when vault login fails', async () => {
+    it('should keep pairing pending when vault login fails so the password can be retried', async () => {
       const mockIdentity = {
         ed25519PublicKey: 'pubKey',
         x25519PublicKey: 'xKey'
@@ -198,11 +198,6 @@ describe('usePairing', () => {
         success: true,
         identity: mockIdentity
       })
-      secureChannelMessages.confirmPair.mockResolvedValue({ confirmed: true })
-      secureChannelMessages.unlockClientKeystore.mockResolvedValue({
-        success: true
-      })
-      secureChannelMessages.pinIdentity.mockResolvedValue({ success: true })
       mockLogIn.mockRejectedValueOnce(new Error('Invalid master password'))
 
       const { result } = renderHook(() => useDesktopPairing(props))
@@ -217,18 +212,66 @@ describe('usePairing', () => {
         await result.current.completePairing('wrong-password')
       })
 
-      expect(secureChannelMessages.confirmPair).toHaveBeenCalled()
-      expect(secureChannelMessages.pinIdentity).toHaveBeenCalledWith(
-        mockIdentity
-      )
       expect(mockLogIn).toHaveBeenCalledWith({ password: 'wrong-password' })
+      expect(secureChannelMessages.confirmPair).not.toHaveBeenCalled()
+      expect(secureChannelMessages.pinIdentity).not.toHaveBeenCalled()
+      expect(secureChannelMessages.unlockClientKeystore).not.toHaveBeenCalled()
       expect(secureChannelMessages.commitClientKeystore).not.toHaveBeenCalled()
-      expect(secureChannelMessages.unpair).toHaveBeenCalled()
-      expect(pendingPairingStore.clear).toHaveBeenCalled()
+      expect(secureChannelMessages.unpair).not.toHaveBeenCalled()
+      expect(pendingPairingStore.clear).not.toHaveBeenCalled()
       expect(mockOnPairSuccess).not.toHaveBeenCalled()
+      expect(result.current.identity).toEqual(mockIdentity)
       expect(result.current.passwordError).toEqual(
         expect.stringContaining('Invalid master password')
       )
+      expect(result.current.passwordError).toEqual(
+        expect.stringContaining('try again')
+      )
+    })
+
+    it('should complete pairing on a later attempt after a wrong password', async () => {
+      const mockIdentity = {
+        ed25519PublicKey: 'pubKey',
+        x25519PublicKey: 'xKey'
+      }
+      secureChannelMessages.getIdentity.mockResolvedValue({
+        success: true,
+        identity: mockIdentity
+      })
+      secureChannelMessages.confirmPair.mockResolvedValue({ confirmed: true })
+      secureChannelMessages.unlockClientKeystore.mockResolvedValue({
+        success: true
+      })
+      secureChannelMessages.pinIdentity.mockResolvedValue({ success: true })
+      secureChannelMessages.commitClientKeystore.mockResolvedValue({
+        success: true
+      })
+      mockLogIn
+        .mockRejectedValueOnce(new Error('Invalid master password'))
+        .mockResolvedValue(undefined)
+
+      const { result } = renderHook(() => useDesktopPairing(props))
+
+      await act(async () => {
+        result.current.setPairingToken('token-long-enough')
+      })
+      await act(async () => {
+        await result.current.fetchIdentity()
+      })
+      await act(async () => {
+        await result.current.completePairing('wrong-password')
+      })
+      await act(async () => {
+        await result.current.completePairing('right-password')
+      })
+
+      expect(secureChannelMessages.confirmPair).toHaveBeenCalledTimes(1)
+      expect(mockLogIn).toHaveBeenLastCalledWith({ password: 'right-password' })
+      expect(secureChannelMessages.unlockClientKeystore).toHaveBeenCalledWith(
+        'right-password'
+      )
+      expect(mockOnPairSuccess).toHaveBeenCalled()
+      expect(result.current.passwordError).toBeNull()
     })
 
     it('should clear pairing data on pairing failure', async () => {
