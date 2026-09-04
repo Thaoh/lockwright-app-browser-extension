@@ -11,7 +11,8 @@ export const CHROME_STORAGE_KEYS = {
   ALLOW_HTTP_ENABLED: 'allow-http-enabled',
   LOCALE: 'locale',
   DEFAULT_URI_MATCH_TYPE: 'default-uri-match-type',
-  URI_MATCH_OVERRIDES: 'uri-match-overrides'
+  URI_MATCH_OVERRIDES: 'uri-match-overrides',
+  DEBUG_LOGGING: 'debug-logging'
 }
 
 export const PASSKEY_VERIFICATION_OPTIONS = {

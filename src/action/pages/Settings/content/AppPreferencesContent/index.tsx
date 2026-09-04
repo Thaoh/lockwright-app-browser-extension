@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { t } from '@lingui/core/macro'
-import { useLingui } from '@lingui/react'
 import {
   AUTO_LOCK_TIMEOUT_OPTIONS,
   BE_AUTO_LOCK_ENABLED
@@ -33,7 +32,12 @@ import {
   getAutofillEnabled,
   setAutofillEnabled
 } from '../../../../../shared/utils/autofillSetting'
+import {
+  loadDebugLogging,
+  setDebugLogging
+} from '../../../../../shared/utils/debugLogging'
 import { isPasswordChangeReminderDisabled } from '../../../../../shared/utils/isPasswordChangeReminderDisabled'
+import { logger } from '../../../../../shared/utils/logger'
 import { getPasskeyVerificationPreference } from '../../../../../shared/utils/passkeyVerificationPreference'
 import {
   getDefaultUriMatchType,
@@ -50,7 +54,8 @@ const TEST_IDS = {
   autoLockOption: 'settings-auto-lock-option',
   copyToClipboardToggle: 'settings-copy-to-clipboard-toggle',
   remindersToggle: 'settings-reminders-toggle',
-  passkeyValidation: 'settings-passkey-validation'
+  passkeyValidation: 'settings-passkey-validation',
+  debugLoggingToggle: 'settings-debug-logging-toggle'
 } as const
 
 type UriMatchOption = {
@@ -71,8 +76,21 @@ const TIMEOUT_OPTIONS: TimeoutOption[] = Object.entries(
   >
 ).map(([key, option]) => ({ key, label: option.label, value: option.value }))
 
+const TIMEOUT_LABEL_BY_KEY: Record<string, string> = {
+  SECONDS_30: t`30 seconds`,
+  MINUTES_1: t`1 Minute`,
+  MINUTES_3: t`3 Minutes`,
+  MINUTES_5: t`5 Minutes`,
+  MINUTES_10: t`10 Minutes`,
+  MINUTES_15: t`15 minutes`,
+  MINUTES_30: t`30 Minutes`,
+  HOURS_1: t`1 Hour`,
+  HOURS_3: t`3 Hours`,
+  HOURS_4: t`4 hours`,
+  NEVER: t`Never`
+}
+
 export const AppPreferencesContent = () => {
-  const { i18n } = useLingui()
   const { theme } = useTheme()
   const { colors } = theme
 
@@ -98,6 +116,7 @@ export const AppPreferencesContent = () => {
   const [passkeyVerification, setPasskeyVerification] = useState(() =>
     getPasskeyVerificationPreference()
   )
+  const [isDebugLoggingEnabled, setIsDebugLoggingEnabled] = useState(false)
 
   useEffect(() => {
     let alive = true
@@ -106,6 +125,9 @@ export const AppPreferencesContent = () => {
     })
     getDefaultUriMatchType().then((matchType) => {
       if (alive) setDefaultUriMatchTypeState(matchType as UriMatchType)
+    })
+    loadDebugLogging().then(() => {
+      if (alive) setIsDebugLoggingEnabled(logger.debugMode)
     })
     return () => {
       alive = false
@@ -147,9 +169,9 @@ export const AppPreferencesContent = () => {
     () =>
       TIMEOUT_OPTIONS.map((option) => ({
         ...option,
-        label: i18n._(option.label)
+        label: TIMEOUT_LABEL_BY_KEY[option.key] ?? option.label
       })),
-    [i18n]
+    []
   )
 
   const selectedTimeoutOption = useMemo(
@@ -190,6 +212,11 @@ export const AppPreferencesContent = () => {
     } catch {
       // storage write failed — leave state as-is
     }
+  }, [])
+
+  const handleDebugLoggingToggle = useCallback((isOn: boolean) => {
+    setIsDebugLoggingEnabled(isOn)
+    void setDebugLogging(isOn)
   }, [])
 
   const passkeyOptions = useMemo(
@@ -385,6 +412,16 @@ export const AppPreferencesContent = () => {
               onChange={handleReminderToggle}
               label={t`Reminders`}
               description={t`Get alerts when it's time to update your passwords`}
+            />
+          </div>
+
+          <div className="border-border-primary border-t p-[12px]">
+            <ToggleSwitch
+              data-testid={TEST_IDS.debugLoggingToggle}
+              checked={isDebugLoggingEnabled}
+              onChange={handleDebugLoggingToggle}
+              label={t`Debug logging`}
+              description={t`Show expected errors in the browser console`}
             />
           </div>
         </div>

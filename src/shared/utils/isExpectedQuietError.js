@@ -1,7 +1,10 @@
 const QUIET_PATTERNS = [
   'masterpasswordrequired',
+  'masterpasswordinvalid',
   'favicon not found',
-  'invalid_url'
+  'invalid_url',
+  'unknown method: getmasterpasswordstatus',
+  'unknown_method: getmasterpasswordstatus'
 ]
 
 /**

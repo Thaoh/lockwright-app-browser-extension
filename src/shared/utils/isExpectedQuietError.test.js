@@ -19,6 +19,32 @@ describe('isExpectedQuietError', () => {
     expect(isExpectedQuietError('INVALID_URL: bad url')).toBe(true)
   })
 
+  it('returns true for MasterPasswordInvalid', () => {
+    expect(isExpectedQuietError(new Error('MasterPasswordInvalid'))).toBe(true)
+  })
+
+  it('returns true for MessageBridgeError wrapping MasterPasswordInvalid', () => {
+    expect(
+      isExpectedQuietError(
+        new Error(
+          "Handler error for message 'SECURE_CHANNEL_UNLOCK_CLIENT_KEYSTORE': MasterPasswordInvalid"
+        )
+      )
+    ).toBe(true)
+  })
+
+  it('returns true for lockout probe Unknown method: getMasterPasswordStatus', () => {
+    expect(
+      isExpectedQuietError(new Error('Unknown method: getMasterPasswordStatus'))
+    ).toBe(true)
+  })
+
+  it('returns true for UNKNOWN_METHOD: getMasterPasswordStatus', () => {
+    expect(
+      isExpectedQuietError(new Error('UNKNOWN_METHOD: getMasterPasswordStatus'))
+    ).toBe(true)
+  })
+
   it('returns false for unrelated errors', () => {
     expect(isExpectedQuietError(new Error('boom'))).toBe(false)
   })

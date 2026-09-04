@@ -22,6 +22,10 @@ import {
 } from '../shared/services/messageBridge'
 import { arrayBufferToBase64Url } from '../shared/utils/arrayBufferToBase64Url'
 import { base64UrlToArrayBuffer } from '../shared/utils/base64UrlToArrayBuffer'
+import {
+  loadDebugLogging,
+  watchDebugLogging
+} from '../shared/utils/debugLogging'
 import { logger } from '../shared/utils/logger'
 import { runtime } from '../shared/utils/runtime'
 
@@ -30,6 +34,9 @@ const { CLEAR_CLIPBOARD } = ALARMS
 
 const pending = new Map()
 const conditionalPasskeyRequests = new Map()
+
+void loadDebugLogging()
+watchDebugLogging()
 
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {

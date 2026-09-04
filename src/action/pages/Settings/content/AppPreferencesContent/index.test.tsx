@@ -144,6 +144,15 @@ jest.mock('../../../../../shared/utils/passkeyVerificationPreference', () => ({
   getPasskeyVerificationPreference: () => 'requested'
 }))
 
+const mockLoadDebugLogging = jest.fn(async () => undefined)
+const mockSetDebugLogging = jest.fn(async () => undefined)
+
+jest.mock('../../../../../shared/utils/debugLogging', () => ({
+  __esModule: true,
+  loadDebugLogging: () => mockLoadDebugLogging(),
+  setDebugLogging: (v: boolean) => mockSetDebugLogging(v)
+}))
+
 jest.mock('@lingui/react', () => ({
   __esModule: true,
   useLingui: () => ({ i18n: { _: (str: string) => str } })
@@ -199,6 +208,9 @@ describe('AppPreferencesContent', () => {
     mockGetDefaultUriMatch.mockClear()
     mockSetDefaultUriMatch.mockClear()
     mockGetDefaultUriMatch.mockResolvedValue('domain')
+    mockLoadDebugLogging.mockClear()
+    mockSetDebugLogging.mockClear()
+    mockLoadDebugLogging.mockResolvedValue(undefined)
     mockTimeoutMs = 30_000
     mockIsAllowHttpEnabled = false
     mockIsCopyEnabled = true
@@ -231,6 +243,9 @@ describe('AppPreferencesContent', () => {
     expect(screen.getByTestId('settings-reminders-toggle')).toBeInTheDocument()
     expect(
       screen.getByTestId('settings-passkey-validation')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByTestId('settings-debug-logging-toggle')
     ).toBeInTheDocument()
 
     expect(screen.queryByText('Clear Clipboard')).not.toBeInTheDocument()
@@ -299,6 +314,20 @@ describe('AppPreferencesContent', () => {
     fireEvent.click(screen.getByTestId('settings-auto-lock-option-minutes_1'))
 
     expect(mockSetTimeoutMs).toHaveBeenCalledWith(60_000)
+  })
+
+  it('renders auto-lock timeout labels from compiled messages', () => {
+    render(<AppPreferencesContent />)
+
+    expect(screen.getAllByText('30 seconds').length).toBeGreaterThan(0)
+  })
+
+  it('toggles debug logging through setDebugLogging', () => {
+    render(<AppPreferencesContent />)
+
+    fireEvent.click(screen.getByTestId('settings-debug-logging-toggle'))
+
+    expect(mockSetDebugLogging).toHaveBeenCalledWith(true)
   })
 
   it('persists Default URI match through setDefaultUriMatchType', async () => {

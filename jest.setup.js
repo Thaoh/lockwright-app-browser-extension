@@ -115,7 +115,10 @@ if (typeof global.chrome === 'undefined') {
     },
     storage: {
       session: makeStorageArea(),
-      local: makeStorageArea()
+      local: makeStorageArea(),
+      onChanged: {
+        addListener: jest.fn()
+      }
     }
   }
 }

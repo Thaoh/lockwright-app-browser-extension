@@ -2,6 +2,7 @@ import { initializeUser } from '@tetherto/pearpass-lib-vault/src/actions/initial
 import userReducer from '@tetherto/pearpass-lib-vault/src/slices/userSlice'
 import { Logger } from '@tetherto/pearpass-lib-vault/src/utils/logger.js'
 
+import { logger } from './logger'
 import { silenceVaultLibLogger } from './silenceVaultLibLogger'
 
 describe('silenceVaultLibLogger', () => {
@@ -14,6 +15,18 @@ describe('silenceVaultLibLogger', () => {
     vaultLogger.error({ message: 'MasterPasswordRequired' })
 
     expect(originalError).not.toHaveBeenCalled()
+  })
+
+  it('forwards expected quiet errors when debug logging is on', () => {
+    const originalError = jest.fn()
+    const vaultLogger = { error: originalError }
+    logger.setDebugMode(true)
+    silenceVaultLibLogger(vaultLogger)
+
+    vaultLogger.error({ message: 'MasterPasswordInvalid' })
+
+    expect(originalError).toHaveBeenCalledWith('MasterPasswordInvalid')
+    logger.setDebugMode(false)
   })
 
   it('forwards a non-quiet SerializedError as its message', () => {

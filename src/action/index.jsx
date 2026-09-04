@@ -16,6 +16,10 @@ import { LoadingProvider } from '../shared/context/LoadingContext'
 import { ModalProvider } from '../shared/context/ModalContext'
 import { RouterProvider } from '../shared/context/RouterContext'
 import { ToastProvider } from '../shared/context/ToastContext'
+import {
+  loadDebugLogging,
+  watchDebugLogging
+} from '../shared/utils/debugLogging'
 import { getLocaleFromStorage } from '../shared/utils/localeStorage'
 import { logger } from '../shared/utils/logger'
 import { silenceVaultLibLogger } from '../shared/utils/silenceVaultLibLogger'
@@ -23,6 +27,9 @@ import '../index.css'
 import '../strict.css'
 
 silenceVaultLibLogger(vaultLibLogger)
+
+void loadDebugLogging()
+watchDebugLogging()
 
 i18n.load('en', messages)
 i18n.activate('en')

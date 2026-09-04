@@ -1,4 +1,5 @@
 import { isExpectedQuietError } from './isExpectedQuietError'
+import { logger } from './logger'
 
 /**
  * Vault Logger.error does `console.error(messages)` (the args array).
@@ -34,7 +35,7 @@ export const silenceVaultLibLogger = (vaultLogger) => {
   const originalError = vaultLogger.error.bind(vaultLogger)
 
   vaultLogger.error = (...args) => {
-    if (args.some((arg) => isExpectedQuietError(arg))) {
+    if (args.some((arg) => isExpectedQuietError(arg)) && !logger.debugMode) {
       return
     }
     return originalError(...args.map(formatVaultLogArg))
