@@ -23,6 +23,7 @@ import {
   BLOCKING_STATE
 } from '../shared/constants/nativeMessaging'
 import { base64Encode, base64Decode } from '../shared/utils/base64'
+import { getBrowserLabel } from '../shared/utils/getBrowserLabel'
 import { logger } from '../shared/utils/logger'
 import { resolveNativeHostUserMessage } from '../shared/utils/nativeHostErrors'
 import { secureZero } from '../shared/utils/secureZero'
@@ -336,7 +337,7 @@ export class SecureChannelClient {
       // will not yet pin a client identity.
     }
 
-    const params = { pairingToken }
+    const params = { pairingToken, browserName: getBrowserLabel() }
     if (clientPublicKeyB64) {
       params.clientEd25519PublicKeyB64 = clientPublicKeyB64
     }
@@ -457,11 +458,18 @@ export class SecureChannelClient {
       // Hold ephemeral in instance for finish
       this._ephemeralKeyPair = extensionEphemeralKeyPair
 
+      const { publicKey: clientPublicKey } =
+        await ensureClientKeypairGeneratedForPairing()
+      const clientEd25519PublicKeyB64 = clientPublicKey
+        ? base64Encode(clientPublicKey)
+        : undefined
+
       // Request host handshake
       const handshakeResponse = await nativeMessaging.sendRequest(
         'nmBeginHandshake',
         {
-          extEphemeralPubB64: extensionEphemeralPublicKeyB64
+          extEphemeralPubB64: extensionEphemeralPublicKeyB64,
+          clientEd25519PublicKeyB64
         }
       )
 

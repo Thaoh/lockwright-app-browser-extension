@@ -46,6 +46,9 @@ jest.mock('./nativeMessaging', () => ({
     sendRequest: jest.fn()
   }
 }))
+jest.mock('../shared/utils/getBrowserLabel', () => ({
+  getBrowserLabel: jest.fn(() => 'Firefox')
+}))
 
 const mockSendRequest = nativeMessaging.sendRequest
 
@@ -92,6 +95,13 @@ describe('SecureChannelClient', () => {
     // Provide required pairing token
     const id = await secureChannel.getAppIdentity('test-pairing-token')
     expect(id.fingerprint).toBe('ff00aa11')
+    expect(mockSendRequest).toHaveBeenCalledWith(
+      'nmGetAppIdentity',
+      expect.objectContaining({
+        pairingToken: 'test-pairing-token',
+        browserName: 'Firefox'
+      })
+    )
 
     await secureChannel.pinIdentity(id)
     const pinned = await secureChannel.getPinnedIdentity()
@@ -137,6 +147,14 @@ describe('SecureChannelClient', () => {
     })
 
     const result = await client.beginHandshake()
+
+    expect(mockSendRequest).toHaveBeenCalledWith(
+      'nmBeginHandshake',
+      expect.objectContaining({
+        extEphemeralPubB64: expect.any(String),
+        clientEd25519PublicKeyB64: expect.any(String)
+      })
+    )
 
     // When not paired, beginHandshake should clear the session and report NotPaired
     expect(result).toEqual({
