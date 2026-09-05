@@ -43,6 +43,7 @@ allowBuilds:
   "@tetherto/pearpass-lib-ui-react-native-components@https://codeload.github.com/Thaoh/lockwright-lib-ui-react-native-components/tar.gz/4b254fff341c791a27a45f3e1488a3860f2b1987": true
   "@tetherto/pearpass-lib-vault@https://codeload.github.com/Thaoh/lockwright-lib-vault/tar.gz/ef0583b144ccc172ae6ccaf61b25b871f4039741": true
   "@tetherto/pearpass-lib-vault@https://codeload.github.com/Thaoh/lockwright-lib-vault/tar.gz/0d24ed6348c11329074b68b2228880b85829115f": true
+  "@tetherto/pearpass-lib-vault@https://codeload.github.com/Thaoh/lockwright-lib-vault/tar.gz/e27dbb763e67d480463a11c4ae5e905c4cb002f8": true
   "@tetherto/tether-dev-docs@https://codeload.github.com/tetherto/tether-dev-docs/tar.gz/64c264c34e8255360ca6c805457119168c789583": true
 
 patchedDependencies:

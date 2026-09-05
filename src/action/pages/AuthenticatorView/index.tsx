@@ -27,6 +27,7 @@ import {
   isExpiring,
   RECORD_TYPES,
   useFolders,
+  useOtpWatch,
   useRecords,
   useUserData,
   useVault,
@@ -67,6 +68,7 @@ type OtpRecord = VaultRecord & {
 }
 
 export const AuthenticatorView = () => {
+  useOtpWatch('all')
   const { theme } = useTheme()
   const { setModal, isOpen: isModalOpen } = useModal()
   const { searchValue } = useAppHeaderContext() as { searchValue: string }

@@ -125,6 +125,8 @@ declare module '@tetherto/pearpass-lib-vault' {
     isLoading: boolean
   }
 
+  export function useOtpWatch(scope: 'all' | string | null | undefined): void
+
   export const OtpRefreshProvider: any
   export function useOtpRefresh(): (() => void) | null
 

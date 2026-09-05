@@ -272,8 +272,8 @@ importers:
         specifier: git+https://github.com/Thaoh/lockwright-lib-ui-react-native-components.git#4b254fff341c791a27a45f3e1488a3860f2b1987
         version: '@tetherto/pearpass-lib-ui-react-native-components@https://codeload.github.com/Thaoh/lockwright-lib-ui-react-native-components/tar.gz/4b254fff341c791a27a45f3e1488a3860f2b1987(postcss@8.5.8)(react-dom@19.1.0(react@19.1.0))(react-native@0.79.5(@babel/core@7.26.10)(@types/react@19.0.0)(react@19.1.0))(react@19.1.0)'
       '@tetherto/pearpass-lib-vault':
-        specifier: git+https://github.com/Thaoh/lockwright-lib-vault.git#0d24ed6348c11329074b68b2228880b85829115f
-        version: https://codeload.github.com/Thaoh/lockwright-lib-vault/tar.gz/0d24ed6348c11329074b68b2228880b85829115f(@types/react@19.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(redux@5.0.1)
+        specifier: git+https://github.com/Thaoh/lockwright-lib-vault.git#e27dbb763e67d480463a11c4ae5e905c4cb002f8
+        version: https://codeload.github.com/Thaoh/lockwright-lib-vault/tar.gz/e27dbb763e67d480463a11c4ae5e905c4cb002f8(@types/react@19.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(redux@5.0.1)
       '@tetherto/pearpass-utils-password-check':
         specifier: git+https://github.com/tetherto/pearpass-utils-password-check.git#a549e2b4c486e5f57eb28acd47652ea38154d9c8
         version: pearpass-utils-password-check@https://codeload.github.com/tetherto/pearpass-utils-password-check/tar.gz/a549e2b4c486e5f57eb28acd47652ea38154d9c8
@@ -2304,8 +2304,8 @@ packages:
       react-native-svg:
         optional: true
 
-  '@tetherto/pearpass-lib-vault@https://codeload.github.com/Thaoh/lockwright-lib-vault/tar.gz/0d24ed6348c11329074b68b2228880b85829115f':
-    resolution: {gitHosted: true, integrity: sha512-XrsdOXjsDb232rHL7R5S/ul054UJKCvv8vqNCOvuD3SxAfvwEPuZ7weM2Q1HuJPZJI8u4gxiHO5lv+BvwW2TUg==, tarball: https://codeload.github.com/Thaoh/lockwright-lib-vault/tar.gz/0d24ed6348c11329074b68b2228880b85829115f}
+  '@tetherto/pearpass-lib-vault@https://codeload.github.com/Thaoh/lockwright-lib-vault/tar.gz/e27dbb763e67d480463a11c4ae5e905c4cb002f8':
+    resolution: {gitHosted: true, integrity: sha512-M6tOjXR//tSTZYBONLdOOrFEFNynRSDRnOGRKrSHVpmsDaaiN0R970h8kXE+B9fGX57Ced7Lt/iFDeVMtGWFyw==, tarball: https://codeload.github.com/Thaoh/lockwright-lib-vault/tar.gz/e27dbb763e67d480463a11c4ae5e905c4cb002f8}
     version: 0.1.0
     engines: {node: '>=22.12.0', pnpm: '>=11.10.0'}
     peerDependencies:
@@ -7676,7 +7676,7 @@ snapshots:
       - postcss
       - supports-color
 
-  '@tetherto/pearpass-lib-vault@https://codeload.github.com/Thaoh/lockwright-lib-vault/tar.gz/0d24ed6348c11329074b68b2228880b85829115f(@types/react@19.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(redux@5.0.1)':
+  '@tetherto/pearpass-lib-vault@https://codeload.github.com/Thaoh/lockwright-lib-vault/tar.gz/e27dbb763e67d480463a11c4ae5e905c4cb002f8(@types/react@19.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(redux@5.0.1)':
     dependencies:
       '@reduxjs/toolkit': 2.5.0(react-redux@9.1.2(@types/react@19.0.0)(react@19.1.0)(redux@5.0.1))(react@19.1.0)
       react: 19.1.0
