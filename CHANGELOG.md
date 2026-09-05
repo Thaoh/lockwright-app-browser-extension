@@ -9,6 +9,10 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+## [0.0.20] - 2026-09-05
+
+`BUMP_SHA`
+
 ### Fixed
 
 - Authenticator asks for OTP codes so digits and the 1s timer show after Home skipped them.
@@ -51,7 +55,8 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 - Login-detect popup closes after a successful save.
 - Onboarding wordmark capped so the pair step still fits.
 
-[unreleased]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/85ff729a2f1079b7f95a1aa8b9e1c7af477d08a9...HEAD
+[unreleased]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/BUMP_SHA...HEAD
+[0.0.20]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/85ff729a2f1079b7f95a1aa8b9e1c7af477d08a9...BUMP_SHA
 [0.0.19]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/644506a6e6ef468f34fb4a859d213ca8d8a5627c...85ff729a2f1079b7f95a1aa8b9e1c7af477d08a9
 [0.0.18]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/b1016b80772725d39d624aaad1cc70001d9b97a6...644506a6e6ef468f34fb4a859d213ca8d8a5627c
 [0.0.17]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/c9bb84cc16c3d05db86da28f4b76f214533350ba...b1016b80772725d39d624aaad1cc70001d9b97a6
