@@ -9,6 +9,10 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+## [0.0.21] - 2026-09-05
+
+`BUMP_SHA`
+
 ### Fixed
 
 - Login URIs store as typed. Edit unwraps glued `https://androidapp://` so Save writes the app URI.
@@ -59,7 +63,8 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 - Login-detect popup closes after a successful save.
 - Onboarding wordmark capped so the pair step still fits.
 
-[unreleased]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/caae17d0182e756e65b20674a56b2df17ba98274...HEAD
+[unreleased]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/BUMP_SHA...HEAD
+[0.0.21]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/caae17d0182e756e65b20674a56b2df17ba98274...BUMP_SHA
 [0.0.20]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/85ff729a2f1079b7f95a1aa8b9e1c7af477d08a9...caae17d0182e756e65b20674a56b2df17ba98274
 [0.0.19]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/644506a6e6ef468f34fb4a859d213ca8d8a5627c...85ff729a2f1079b7f95a1aa8b9e1c7af477d08a9
 [0.0.18]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/b1016b80772725d39d624aaad1cc70001d9b97a6...644506a6e6ef468f34fb4a859d213ca8d8a5627c
