@@ -197,11 +197,19 @@ describe('uriMatchSetting', () => {
       expect(
         buildLoginUris([
           { website: 'example.com', matchType: URI_MATCH_TYPES.DOMAIN },
-          { website: 'https://other.com/path', matchType: URI_MATCH_TYPES.HOST }
+          {
+            website: 'https://other.com/path',
+            matchType: URI_MATCH_TYPES.HOST
+          },
+          {
+            website: 'androidapp://com.twitter.android',
+            matchType: URI_MATCH_TYPES.HOST
+          }
         ])
       ).toEqual([
-        { uri: 'https://example.com', match: 'baseDomain' },
-        { uri: 'https://other.com/path', match: 'host' }
+        { uri: 'example.com', match: 'baseDomain' },
+        { uri: 'https://other.com/path', match: 'host' },
+        { uri: 'androidapp://com.twitter.android', match: 'host' }
       ])
     })
 
@@ -212,6 +220,26 @@ describe('uriMatchSetting', () => {
           [{ uri: 'https://example.com', match: 'exact' }]
         )
       ).toEqual([{ uri: 'https://example.com', match: 'exact' }])
+    })
+
+    it('keeps stored match when the typed URI is schemeless and vault has https', () => {
+      expect(
+        buildLoginUris(
+          [{ website: 'example.com' }],
+          [{ uri: 'https://example.com', match: 'exact' }]
+        )
+      ).toEqual([{ uri: 'example.com', match: 'exact' }])
+    })
+
+    it('unwraps glued https on androidapp URIs so save repairs vault rows', () => {
+      expect(
+        buildLoginUris([
+          {
+            website: 'https://androidapp://com.twitter.android',
+            matchType: URI_MATCH_TYPES.HOST
+          }
+        ])
+      ).toEqual([{ uri: 'androidapp://com.twitter.android', match: 'host' }])
     })
 
     it('websiteRowsFromRecord keeps stored match type on each row', () => {
@@ -243,6 +271,27 @@ describe('uriMatchSetting', () => {
         {
           website: 'https://dashboard.stripe.com',
           matchType: URI_MATCH_TYPES.EXACT
+        }
+      ])
+    })
+
+    it('shows unwrapped androidapp URIs in edit rows', () => {
+      expect(
+        websiteRowsFromRecord({
+          data: {
+            websites: ['https://androidapp://com.twitter.android'],
+            uris: [
+              {
+                uri: 'https://androidapp://com.twitter.android',
+                match: 'host'
+              }
+            ]
+          }
+        })
+      ).toEqual([
+        {
+          website: 'androidapp://com.twitter.android',
+          matchType: URI_MATCH_TYPES.HOST
         }
       ])
     })

@@ -70,7 +70,7 @@ export const LoginDetect = () => {
     password: Validator.string(),
     websites: Validator.array().items(
       Validator.object({
-        website: Validator.string().website('Wrong format of website')
+        website: Validator.string()
       })
     )
   })

@@ -1,6 +1,5 @@
 import { RECORD_TYPES } from '@tetherto/pearpass-lib-vault'
 
-import { normalizeUrl } from '../../../shared/utils/normalizeUrl'
 import {
   buildLoginUris,
   getDefaultUriMatchTypeSync
@@ -34,10 +33,11 @@ export const buildLoginDetectCreatePayload = ({
   pageUrl
 }) => {
   const trimmedUrl = typeof pageUrl === 'string' ? pageUrl.trim() : ''
-  const website = trimmedUrl ? normalizeUrl(trimmedUrl) || trimmedUrl : ''
-  const websites = website ? [website] : []
-  const uris = website
-    ? buildLoginUris([{ website, matchType: getDefaultUriMatchTypeSync() }])
+  const websites = trimmedUrl ? [trimmedUrl] : []
+  const uris = trimmedUrl
+    ? buildLoginUris([
+        { website: trimmedUrl, matchType: getDefaultUriMatchTypeSync() }
+      ])
     : []
 
   return {

@@ -16,7 +16,6 @@ import { useRouter } from '../../../shared/context/RouterContext'
 import { RecordItemIcon } from '../../../shared/containers/RecordItemIcon'
 import { sanitizeCredentialForPage } from '../../../shared/utils/sanitizeCredentialForPage'
 import { formatPasskeyDate } from '../../../shared/utils/formatPasskeyDate'
-import { normalizeUrl } from '../../../shared/utils/normalizeUrl'
 import { PasskeyContainer } from '../../containers/PasskeyContainer/PasskeyContainer'
 
 export const PasskeyLoginCreate = () => {
@@ -81,9 +80,9 @@ export const PasskeyLoginCreate = () => {
     formatPasskeyDate(passkeyCreatedAt) ?? t`Passkey stored`
 
   const onSubmit = (formValues: Record<string, unknown>) => {
-    const normalizedWebsites = (websites as string[]).map((w) =>
-      normalizeUrl(w)
-    )
+    const storedWebsites = (websites as string[])
+      .map((w) => w.trim())
+      .filter(Boolean)
 
     createRecord(
       {
@@ -92,7 +91,7 @@ export const PasskeyLoginCreate = () => {
           title: formValues.title,
           username: formValues.username,
           password: formValues.password,
-          websites: normalizedWebsites,
+          websites: storedWebsites,
           credential: passkeyCredential,
           passkeyCreatedAt
         }

@@ -43,4 +43,16 @@ describe('normalizeUrl', () => {
     expect(normalizeUrl('not a valid url')).toBeNull()
     expect(normalizeUrl('')).toBeNull()
   })
+
+  test('keeps androidapp URIs', () => {
+    expect(normalizeUrl('androidapp://com.twitter.android')).toBe(
+      'androidapp://com.twitter.android'
+    )
+  })
+
+  test('unwraps an https prefix glued onto an androidapp URI', () => {
+    expect(normalizeUrl('https://androidapp://com.twitter.android')).toBe(
+      'androidapp://com.twitter.android'
+    )
+  })
 })

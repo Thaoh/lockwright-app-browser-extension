@@ -41,6 +41,9 @@ export const toVaultUriMatch = (matchType) => {
   return VAULT_MATCH_BASE_DOMAIN
 }
 
+const storedLoginUri = (website) =>
+  website.trim().replace(/^(https?:\/\/)((?:android|ios)app:\/\/)/i, '$2')
+
 const normalizeWebsiteKey = (website) => {
   if (!website || typeof website !== 'string') return null
   return normalizeUrl(website, true) || website.trim().toLowerCase() || null
@@ -256,8 +259,9 @@ export const buildLoginUris = (websiteRows, existingUris) => {
     }
   }
   for (const row of websiteRows) {
-    const uri = normalizeUrl(row?.website)
-    if (!uri) continue
+    const trimmed = typeof row?.website === 'string' ? row.website.trim() : ''
+    if (!trimmed) continue
+    const uri = storedLoginUri(trimmed)
     if (row.matchType && isValidMatchType(row.matchType)) {
       uris.push({ uri, match: toVaultUriMatch(row.matchType) })
       continue
@@ -280,15 +284,17 @@ export const buildLoginUris = (websiteRows, existingUris) => {
  */
 export const getRecordWebsiteValues = (record) => {
   const websites = Array.isArray(record?.data?.websites)
-    ? record.data.websites.filter(
-        (website) => typeof website === 'string' && website.trim() !== ''
-      )
+    ? record.data.websites
+        .filter(
+          (website) => typeof website === 'string' && website.trim() !== ''
+        )
+        .map(storedLoginUri)
     : []
   const fromUris = Array.isArray(record?.data?.uris)
     ? record.data.uris
         .map((entry) =>
           entry && typeof entry.uri === 'string' && entry.uri.trim() !== ''
-            ? entry.uri
+            ? storedLoginUri(entry.uri)
             : null
         )
         .filter((uri) => uri !== null)

@@ -20,7 +20,6 @@ import { MESSAGE_TYPES } from '../../../shared/services/messageBridge'
 import { getHostname } from '../../../shared/utils/getHostname'
 import { getRecordSubtitle } from '../../../shared/utils/getRecordSubtitle'
 import { logger } from '../../../shared/utils/logger'
-import { normalizeUrl } from '../../../shared/utils/normalizeUrl'
 import { PasskeyContainer } from '../../containers/PasskeyContainer/PasskeyContainer'
 
 type RecordEntry = {
@@ -93,7 +92,7 @@ export const CreatePasskey = () => {
             initialData: {
               title: publicKey.rp.name,
               username: publicKey.user.name,
-              websites: [normalizeUrl(publicKey.rp.id, true)]
+              websites: [publicKey.rp.id]
             },
             serializedPublicKey,
             requestId,

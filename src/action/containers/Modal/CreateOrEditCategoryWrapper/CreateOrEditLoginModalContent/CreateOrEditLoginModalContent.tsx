@@ -42,7 +42,6 @@ import { useGlobalLoading } from '../../../../../shared/context/LoadingContext'
 import { useModal } from '../../../../../shared/context/ModalContext'
 import { useToast } from '../../../../../shared/context/ToastContext'
 import { formatPasskeyDate } from '../../../../../shared/utils/formatPasskeyDate'
-import { normalizeUrl } from '../../../../../shared/utils/normalizeUrl'
 import {
   buildLoginUris,
   getDefaultUriMatchTypeSync,
@@ -151,7 +150,7 @@ export const CreateOrEditLoginModalContent = ({
     note: Validator.string(),
     websites: Validator.array().items(
       Validator.object({
-        website: Validator.string().website(t`Wrong format of website`),
+        website: Validator.string(),
         matchType: Validator.string()
       })
     ),
@@ -236,10 +235,8 @@ export const CreateOrEditLoginModalContent = ({
     const websiteRows = ((formValues.websites as Website[]) ?? []).filter(
       (website) => !!website?.website?.trim().length
     )
-    const websites = websiteRows.map((website) =>
-      normalizeUrl(website.website as string)
-    )
     const uris = buildLoginUris(websiteRows, initialRecord?.data?.uris)
+    const websites = uris.map((entry) => entry.uri)
 
     const data = {
       type: RECORD_TYPES.LOGIN,

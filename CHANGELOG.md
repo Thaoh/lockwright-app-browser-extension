@@ -9,6 +9,10 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+### Fixed
+
+- Login URIs store as typed. Edit unwraps glued `https://androidapp://` so Save writes the app URI.
+
 ## [0.0.20] - 2026-09-05
 
 `caae17d0182e756e65b20674a56b2df17ba98274`
